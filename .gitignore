@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# User-specific configuration
+user-config.py
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.cmake
+!CMakeLists.txt
+!CMakeUserPresets.json
+
+# Build artifacts
+*.o
+*.a
+*.lib
+*.dll
+*.exe
+*.dylib
+*.so
+
+# JUCE build outputs
+Build/
+build/
+*.app
+*.component
+*.vst3
+*.vst
+
+# OS
+.DS_Store
+Thumbs.db
