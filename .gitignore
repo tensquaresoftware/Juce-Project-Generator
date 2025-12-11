@@ -34,9 +34,6 @@ ENV/
 *~
 .DS_Store
 
-# User-specific configuration
-user-config.py
-
 # CMake
 CMakeCache.txt
 CMakeFiles/
