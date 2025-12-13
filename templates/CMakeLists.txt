@@ -55,9 +55,9 @@ set(PLUGIN_SOURCES
     # Add your new source files below
 )
 
-# ============================================================================
+# =============================================================================
 # PLUGIN CONFIGURATION
-# ============================================================================
+# =============================================================================
 
 # Platform-specific plugin formats (filter out AU on Windows)
 set(PLUGIN_FORMATS_LIST {pluginFormats})
@@ -67,6 +67,13 @@ if(NOT APPLE)
     string(REPLACE " AU" "" PLUGIN_FORMATS_LIST "${{PLUGIN_FORMATS_LIST}}")
     string(REPLACE "AU" "" PLUGIN_FORMATS_LIST "${{PLUGIN_FORMATS_LIST}}")
     string(STRIP "${{PLUGIN_FORMATS_LIST}}" PLUGIN_FORMATS_LIST)
+endif()
+
+# Platform-specific COPY_PLUGIN_AFTER_BUILD setting
+if(APPLE)
+    set(COPY_PLUGIN_AFTER_BUILD_VALUE TRUE)
+else()
+    set(COPY_PLUGIN_AFTER_BUILD_VALUE FALSE)
 endif()
 
 juce_add_plugin({projectName}
@@ -82,7 +89,7 @@ juce_add_plugin({projectName}
     NEEDS_MIDI_OUTPUT {needsMidiOutput}
     IS_MIDI_EFFECT {isMidiEffect}
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-    COPY_PLUGIN_AFTER_BUILD ${{APPLE}}
+    COPY_PLUGIN_AFTER_BUILD ${{COPY_PLUGIN_AFTER_BUILD_VALUE}}
     VST3_CATEGORIES {vst3Categories}
     AU_MAIN_TYPE {auMainType}
 )
@@ -108,10 +115,10 @@ target_compile_definitions({projectName}
         JUCE_REPORT_APP_USAGE=0
 )
 
-# ============================================================================
+# =============================================================================
 # CUSTOM VST3 INSTALLATION (Windows)
 # Copy VST3 plugin to custom folder after build for easy testing
-# ============================================================================
+# =============================================================================
 #
 # CONFIGURATION:
 # ------------
@@ -127,7 +134,7 @@ target_compile_definitions({projectName}
 # Note: Using a personal folder avoids requiring administrator privileges.
 #       Configure your DAW to scan this custom folder for VST3 plugins.
 #
-# ============================================================================
+# =============================================================================
 
 if(WIN32)
     # Define custom VST3 folder (can be overridden via CMake cache)
