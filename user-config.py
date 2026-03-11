@@ -52,9 +52,9 @@ JUCE_DIR_LINUX = None  # Set to your JUCE path if needed
 #   This code uniquely identifies your plugin and must be unique for each plugin.
 #   It's used internally by JUCE for plugin identification.
 #
-DEFAULT_MANUFACTURER_NAME = "My Company"
-DEFAULT_MANUFACTURER_CODE = "Myco"
-DEFAULT_PLUGIN_CODE = "Mypl"
+DEFAULT_MANUFACTURER_NAME = "Ten Square Software"
+DEFAULT_MANUFACTURER_CODE = "Tssf"
+DEFAULT_PLUGIN_CODE = "Tssp"
 
 # =============================================================================
 # DEFAULT PROJECT DESTINATION
