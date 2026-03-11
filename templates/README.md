@@ -14,7 +14,7 @@ Formats: {pluginFormats}
 - Cursor 2
 - CMake 3.22+
 - Ninja build system
-- JUCE 8 installed (set `JUCE_DIR` environment variable to your JUCE installation path, e.g., `/Applications/JUCE`)
+- JUCE 8 installed at `/Applications/JUCE` (or set `JUCE_DIR` if elsewhere)
 
 #### Windows
 
@@ -22,25 +22,22 @@ Formats: {pluginFormats}
 - Cursor 2
 - CMake 3.22+ (add to system PATH during installation)
 - Visual Studio 2022 with "Desktop development with C++" workload
-- JUCE 8 installed (set `JUCE_DIR` environment variable to your JUCE installation path, e.g., `C:\JUCE`)
+- JUCE 8 installed at `C:\Program Files\JUCE` (or set `JUCE_DIR` if elsewhere)
 
 ### Environment Setup
 
-Set the `JUCE_DIR` environment variable to point to your JUCE installation:
+JUCE is auto-detected at standard locations (`/Applications/JUCE` on macOS, `C:/Program Files/JUCE` on Windows, `/usr/local/JUCE` on Linux). If installed elsewhere, set `JUCE_DIR`:
 
 **macOS:**
 
 ```bash
-export JUCE_DIR=/Applications/JUCE
+export JUCE_DIR=/path/to/JUCE
 ```
 
 **Windows:**
 
 ```powershell
-# System environment variable (recommended)
-# Set via: System Properties → Environment Variables → System variables
-# Name: JUCE_DIR
-# Value: C:\JUCE
+# System environment variable: JUCE_DIR = C:\path\to\JUCE
 ```
 
 ### Build

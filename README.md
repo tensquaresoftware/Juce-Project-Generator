@@ -36,13 +36,11 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 1. **Configure JUCE installation path** (recommended):
    
-   Edit `user-config.py` and set the JUCE path for your platform:
+   Edit `user-config.py` and set the JUCE path for your platform (optional—generated projects auto-detect JUCE at build time):
    
    - **macOS**: `JUCE_DIR_MACOS = "/Applications/JUCE"`
    - **Windows**: `JUCE_DIR_WINDOWS = "C:/JUCE"`
    - **Linux**: `JUCE_DIR_LINUX = "/opt/JUCE"`
-   
-   Alternatively, you can set the `JUCE_DIR` environment variable (see Configuration section below).
 
 2. **Configure your environment** (optional):
    
@@ -80,22 +78,17 @@ The generator uses a `user-config.py` file to store user-specific settings. This
 
 #### `JUCE_DIR_MACOS`, `JUCE_DIR_WINDOWS`, `JUCE_DIR_LINUX`
 
-**Purpose**: Defines the path to your JUCE installation directory for each platform.
+**Purpose**: Optional. Used for validation when generating (warns if path doesn't exist). Generated projects are **portable**: they auto-detect JUCE at build time based on the platform where they are compiled.
 
-**Why**: This eliminates the need to set the `JUCE_DIR` environment variable. The generator will automatically use the correct path based on your platform when creating projects.
+**Why**: Projects can be generated on Windows and opened on macOS (or vice versa)—JUCE is detected at standard locations (`/Applications/JUCE`, `C:/Program Files/JUCE`, `/usr/local/JUCE`) or via `JUCE_DIR` env var / `-DJUCE_DIR`.
 
 **Examples**:
 
 - macOS: `JUCE_DIR_MACOS = "/Applications/JUCE"`
-- Windows: `JUCE_DIR_WINDOWS = "C:/JUCE"` or `"C:/Program Files/JUCE"` (forward slashes recommended, but backslashes are automatically normalized)
+- Windows: `JUCE_DIR_WINDOWS = "C:/JUCE"` or `"C:/Program Files/JUCE"`
 - Linux: `JUCE_DIR_LINUX = "/opt/JUCE"` or `"/usr/local/JUCE"`
 
-**Note on path format**: The generator automatically normalizes paths for cross-platform compatibility. You can use forward slashes (`/`) or backslashes (`\`) on Windows - both will work correctly.
-
-**Note**: 
-
-- If set to `None` or not configured, the generated project will require the `JUCE_DIR` environment variable to be set.
-- You can still override this per-project by setting the `JUCE_DIR` environment variable or configuring CMake with `-DJUCE_DIR=/path/to/JUCE`.
+**Note**: If set to `None`, the generator skips path validation. The generated project will auto-detect JUCE when built.
 
 #### `CUSTOM_VST3_FOLDER_WINDOWS`
 

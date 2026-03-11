@@ -25,23 +25,32 @@ project({projectName} VERSION {projectVersion})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Reference JUCE from configuration or environment variable
-# Priority: 1) CMake variable JUCE_DIR, 2) Environment variable JUCE_DIR
-if("{juceDir}" STREQUAL "")
-    # No JUCE_DIR from user-config.py, check environment variable
-    if(DEFINED ENV{{JUCE_DIR}})
-        add_subdirectory($ENV{{JUCE_DIR}} "${{CMAKE_BINARY_DIR}}/JUCE")
-    else()
-        message(FATAL_ERROR "JUCE_DIR not set. Please either:\n"
-            "  1. Set JUCE_DIR_MACOS/JUCE_DIR_WINDOWS/JUCE_DIR_LINUX in user-config.py before generating the project, or\n"
-            "  2. Set JUCE_DIR environment variable, or\n"
-            "  3. Configure CMake with: cmake .. -DJUCE_DIR=/path/to/JUCE")
-    endif()
-else()
-    # Use JUCE_DIR from user-config.py (path is already normalized with forward slashes)
-    set(JUCE_DIR "{juceDir}" CACHE PATH "Path to JUCE installation")
-    add_subdirectory(${{JUCE_DIR}} "${{CMAKE_BINARY_DIR}}/JUCE")
+# Reference JUCE: priority cache (preset/-D), then ENV, then platform default
+# Portable logic - works on any platform regardless of where the project was generated
+set(JUCE_DIR_CANDIDATE "")
+if(DEFINED JUCE_DIR AND NOT JUCE_DIR STREQUAL "" AND EXISTS "${{JUCE_DIR}}")
+    set(JUCE_DIR_CANDIDATE "${{JUCE_DIR}}")
+elseif(DEFINED ENV{{JUCE_DIR}} AND NOT "$ENV{{JUCE_DIR}}" STREQUAL "")
+    set(JUCE_DIR_CANDIDATE "$ENV{{JUCE_DIR}}")
+elseif(APPLE AND EXISTS "/Applications/JUCE")
+    set(JUCE_DIR_CANDIDATE "/Applications/JUCE")
+elseif(WIN32 AND EXISTS "C:/Program Files/JUCE")
+    set(JUCE_DIR_CANDIDATE "C:/Program Files/JUCE")
+elseif(UNIX AND EXISTS "/usr/local/JUCE")
+    set(JUCE_DIR_CANDIDATE "/usr/local/JUCE")
 endif()
+
+if(JUCE_DIR_CANDIDATE STREQUAL "")
+    message(FATAL_ERROR "JUCE not found. Set JUCE_DIR (e.g. export JUCE_DIR=/Applications/JUCE) or use -DJUCE_DIR=/path/to/JUCE")
+endif()
+
+set(JUCE_DIR "${{JUCE_DIR_CANDIDATE}}" CACHE PATH "Path to JUCE installation" FORCE)
+
+if(NOT EXISTS "${{JUCE_DIR}}")
+    message(FATAL_ERROR "JUCE not found at ${{JUCE_DIR}}. Check JUCE_DIR path.")
+endif()
+
+add_subdirectory(${{JUCE_DIR}} "${{CMAKE_BINARY_DIR}}/JUCE")
 
 # ============================================================================
 # SOURCE FILES
