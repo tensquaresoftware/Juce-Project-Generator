@@ -1,0 +1,164 @@
+{{
+    "version": "2.0.0",
+    "tasks": [
+        {{
+            "label": "CMake: Configure",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-B", "{buildDirWindows}",
+                "-G", "Visual Studio 17 2022",
+                "-DCMAKE_BUILD_TYPE=Debug"
+            ],
+            "windows": {{
+                "args": [
+                    "-B", "{buildDirWindows}",
+                    "-G", "Visual Studio 17 2022",
+                    "-DCMAKE_BUILD_TYPE=Debug"
+                ]
+            }},
+            "osx": {{
+                "args": [
+                    "-B", "{buildDirMacOS}",
+                    "-G", "Ninja",
+                    "-DCMAKE_BUILD_TYPE=Debug"
+                ]
+            }},
+            "group": "build",
+            "problemMatcher": []
+        }},
+        {{
+            "label": "Build: Standalone",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build", "{buildDirWindows}",
+                "--target", "{projectName}_Standalone",
+                "--config", "Debug"
+            ],
+            "windows": {{
+                "args": [
+                    "--build", "{buildDirWindows}",
+                    "--target", "{projectName}_Standalone",
+                    "--config", "Debug"
+                ]
+            }},
+            "osx": {{
+                "args": [
+                    "--build", "{buildDirMacOS}",
+                    "--target", "{projectName}_Standalone",
+                    "--config", "Debug"
+                ]
+            }},
+            "group": "build",
+            "dependsOn": ["CMake: Configure"],
+            "problemMatcher": [
+                "$gcc",
+                "$msCompile"
+            ]
+        }},
+        {{
+            "label": "Build: AU",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build", "{buildDirMacOS}",
+                "--target", "{projectName}_AU",
+                "--config", "Debug"
+            ],
+            "osx": {{
+                "args": [
+                    "--build", "{buildDirMacOS}",
+                    "--target", "{projectName}_AU",
+                    "--config", "Debug"
+                ]
+            }},
+            "group": "build",
+            "dependsOn": ["CMake: Configure"],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {{
+                "statusbar": {{
+                    "hide": true
+                }}
+            }}
+        }},
+        {{
+            "label": "Build: VST3",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build", "{buildDirWindows}",
+                "--target", "{projectName}_VST3",
+                "--config", "Debug"
+            ],
+            "windows": {{
+                "args": [
+                    "--build", "{buildDirWindows}",
+                    "--target", "{projectName}_VST3",
+                    "--config", "Debug"
+                ]
+            }},
+            "osx": {{
+                "args": [
+                    "--build", "{buildDirMacOS}",
+                    "--target", "{projectName}_VST3",
+                    "--config", "Debug"
+                ]
+            }},
+            "group": "build",
+            "dependsOn": ["CMake: Configure"],
+            "problemMatcher": [
+                "$gcc",
+                "$msCompile"
+            ]
+        }},
+        {{
+            "label": "Build: All",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build", "{buildDirWindows}",
+                "--config", "Debug"
+            ],
+            "windows": {{
+                "args": [
+                    "--build", "{buildDirWindows}",
+                    "--config", "Debug"
+                ]
+            }},
+            "osx": {{
+                "args": [
+                    "--build", "{buildDirMacOS}",
+                    "--config", "Debug"
+                ]
+            }},
+            "group": {{
+                "kind": "build",
+                "isDefault": true
+            }},
+            "dependsOn": ["CMake: Configure"],
+            "problemMatcher": [
+                "$gcc",
+                "$msCompile"
+            ]
+        }},
+        {{
+            "label": "Clean",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "-rf", "Builds"
+            ],
+            "windows": {{
+                "command": "powershell",
+                "args": [
+                    "-Command",
+                    "Remove-Item -Recurse -Force Builds -ErrorAction SilentlyContinue"
+                ]
+            }},
+            "group": "build"
+        }}
+    ]
+}}

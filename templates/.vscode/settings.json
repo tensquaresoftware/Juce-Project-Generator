@@ -1,0 +1,23 @@
+{{
+    "cmake.configureOnOpen": true,
+    "cmake.configurePreset": "{configurePreset}",
+    "cmake.buildDirectory": "${{workspaceFolder}}/{buildDirectory}",
+    "cmake.configureEnvironment": {{
+        "JUCE_DIR": "${{env:JUCE_DIR}}"
+    }},
+    "cmake.configureOnEdit": false,
+    "cmake.buildBeforeRun": true,
+    "cmake.saveBeforeBuild": true,
+    "cmake.clearOutputBeforeBuild": true,
+    
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "files.associations": {{
+        "*.h": "cpp",
+        "*.cpp": "cpp"
+    }},
+    "files.exclude": {{
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/Builds": true
+    }}
+}}

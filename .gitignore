@@ -26,8 +26,8 @@ env/
 ENV/
 .venv
 
-# IDE
-.vscode/
+# IDE (root only; templates/.vscode/ is versioned)
+/.vscode/
 .idea/
 *.swp
 *.swo
