@@ -7,7 +7,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 **Author:** Guillaume DUPONT  
 **Organization:** Ten Square Software  
 **Version:** 1.0.0  
-**Revision date:** 2025-12-12
+**Revision date:** 2026-03-11
 
 ---
 
@@ -15,7 +15,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 - ✅ Complete JUCE plugin project structure
 - ✅ CMake build system configuration
-- ✅ Platform-specific settings (macOS/Windows)
+- ✅ Platform-specific settings (macOS Apple Silicon/Intel, Windows, Linux)
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS path differences)
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
 - ✅ Automatic VST3 plugin installation to custom folder (Windows)
@@ -226,6 +226,12 @@ YourProject/
 │   ├── PluginEditor.h
 │   ├── PluginEditor.cpp
 │   └── PluginFactory.cpp
+├── Builds/
+│   ├── macOS/
+│   │   ├── ARM/      ← Apple Silicon (M1/M2/M3)
+│   │   └── Intel/    ← Mac Intel
+│   ├── Windows/
+│   └── Linux/
 ├── .vscode/
 │   ├── settings.json
 │   ├── tasks.json
@@ -236,21 +242,36 @@ YourProject/
 └── README.md
 ```
 
+Build directories are separated by platform and architecture to avoid mixing files when switching between Mac Intel and Apple Silicon, or between different operating systems.
+
 ## Usage
 
 ### Building
 
 1. Open the project in Cursor
 
-2. Select the CMake kit when prompted
+2. Select the CMake kit when prompted (the project is auto-configured for your platform and, on macOS, for your processor architecture—Intel or Apple Silicon)
 
 3. Build the project:
    - Use the command palette: `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) → "CMake: Build"
    - Or use the terminal:
    
    ```bash
-   cmake --preset default-windows  # or default-macos
+   # macOS Apple Silicon
+   cmake --preset default-macos-arm64
+   cmake --build --preset default-macos-arm64
+   
+   # macOS Intel
+   cmake --preset default-macos-x86_64
+   cmake --build --preset default-macos-x86_64
+   
+   # Windows
+   cmake --preset default-windows
    cmake --build --preset default-windows
+   
+   # Linux
+   cmake --preset default-linux
+   cmake --build --preset default-linux
    ```
 
 ### Testing Plugins
@@ -277,13 +298,19 @@ Press `F5` in Cursor to start debugging. Debug configurations are available for:
 
 ## Platform Switching
 
-If you open a project on a different platform than where it was generated:
+If you open a project on a different platform than where it was generated (or on a different Mac architecture—Intel vs Apple Silicon):
 
 ```bash
 python configure-platform.py
 ```
 
-This automatically updates `.vscode/settings.json` for the current platform.
+This script automatically detects your operating system and, on macOS, your processor architecture (Intel or Apple Silicon). It updates:
+
+- `.vscode/settings.json` (CMake build directory and preset)
+- `.vscode/launch.json` (debug executable paths)
+- `.vscode/tasks.json` (build paths)
+
+You can also manually select the appropriate CMake preset: `Ctrl+Shift+P` → "CMake: Select Configure Preset" → Choose the preset for your platform (e.g., `default-macos-arm64`, `default-macos-x86_64`, `default-windows`, `default-linux`).
 
 ## Customization
 

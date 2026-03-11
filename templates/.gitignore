@@ -1,6 +1,5 @@
 # Build artifacts (platform-specific)
-build-macos/
-build-windows/
+Builds/
 *.o
 *.obj
 

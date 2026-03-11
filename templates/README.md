@@ -45,35 +45,50 @@ export JUCE_DIR=/Applications/JUCE
 
 ### Build
 
-**Important:** Build directories are separated by platform (`build-macos` and `build-windows`) to avoid mixing files from different platforms.
+**Important:** Build directories are separated by platform and architecture (`Builds/macOS/ARM`, `Builds/macOS/Intel`, `Builds/Windows`, `Builds/Linux`) to avoid mixing files when switching between Mac Intel and Apple Silicon.
 
-#### macOS
+#### macOS (Apple Silicon)
 
 ```bash
 # Configure (using Ninja)
-cmake -B build-macos -G Ninja -DCMAKE_BUILD_TYPE=Debug
+cmake -B Builds/macOS/ARM -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_OSX_ARCHITECTURES=arm64
 
 # Build all formats
-cmake --build build-macos --config Debug
+cmake --build Builds/macOS/ARM --config Debug
 
 # Or build specific format
-cmake --build build-macos --target {projectName}_Standalone --config Debug
-cmake --build build-macos --target {projectName}_AU --config Debug
-cmake --build build-macos --target {projectName}_VST3 --config Debug
+cmake --build Builds/macOS/ARM --target {projectName}_Standalone --config Debug
+cmake --build Builds/macOS/ARM --target {projectName}_AU --config Debug
+cmake --build Builds/macOS/ARM --target {projectName}_VST3 --config Debug
+```
+
+#### macOS (Intel)
+
+```bash
+# Configure (using Ninja)
+cmake -B Builds/macOS/Intel -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_OSX_ARCHITECTURES=x86_64
+
+# Build all formats
+cmake --build Builds/macOS/Intel --config Debug
+
+# Or build specific format
+cmake --build Builds/macOS/Intel --target {projectName}_Standalone --config Debug
+cmake --build Builds/macOS/Intel --target {projectName}_AU --config Debug
+cmake --build Builds/macOS/Intel --target {projectName}_VST3 --config Debug
 ```
 
 #### Windows
 
 ```powershell
 # Configure (using Visual Studio 2022)
-cmake -B build-windows -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Debug
+cmake -B Builds/Windows -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Debug
 
 # Build all formats
-cmake --build build-windows --config Debug
+cmake --build Builds/Windows --config Debug
 
 # Or build specific format
-cmake --build build-windows --target {projectName}_Standalone --config Debug
-cmake --build build-windows --target {projectName}_VST3 --config Debug
+cmake --build Builds/Windows --target {projectName}_Standalone --config Debug
+cmake --build Builds/Windows --target {projectName}_VST3 --config Debug
 ```
 
 **Note:** Audio Unit (AU) format is only available on macOS. On Windows, only VST3 and Standalone formats are built.
@@ -85,7 +100,8 @@ The project is **automatically configured** for your platform when generated. Si
 1. Open the project folder in Cursor
 2. CMake Tools extension will automatically detect the project and use the correct preset
 3. Select your build kit when prompted (CMake Tools will suggest the correct one):
-   - **macOS**: Ninja generator
+   - **macOS Apple Silicon**: Ninja generator, preset `default-macos-arm64`
+   - **macOS Intel**: Ninja generator, preset `default-macos-x86_64`
    - **Windows**: Visual Studio 2022 generator
 4. Build the project:
    - Use the command palette: `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) → "CMake: Build"
@@ -116,11 +132,11 @@ Debug configurations are available in `.vscode/launch.json`:
 - **macOS**: Standalone, AU in Logic Pro, VST3 in Reaper, AU in Ableton Live
 - **Windows**: Standalone, VST3 in Reaper
 
-Press `F5` in Cursor to start debugging. The debugger will automatically use the correct build directory (`build-macos` or `build-windows`) based on your platform.
+Press `F5` in Cursor to start debugging. The debugger will automatically use the correct build directory (`Builds/macOS/ARM`, `Builds/macOS/Intel`, `Builds/Windows`, or `Builds/Linux`) based on your platform.
 
 ### Cross-Platform Configuration
 
 The project generator automatically configures `.vscode/settings.json` for the platform where it's run. If you need to switch platforms:
 
-- **Automatic**: Run `python configure-platform.py` from the project root
+- **Automatic**: Run `python configure-platform.py` from the project root (detects OS and Mac architecture automatically)
 - **Manual**: Select the appropriate CMake preset in Cursor (CMake Tools will handle the rest)

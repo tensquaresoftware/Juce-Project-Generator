@@ -413,6 +413,19 @@ class JuceProjectGenerator:
         (self.projectDir / "Source").mkdir(parents=True, exist_ok=True)
         (self.projectDir / ".vscode").mkdir(parents=True, exist_ok=True)
     
+    def getBuildDirMacOS(self) -> str:
+        system = platform.system()
+        if system == "Darwin":
+            arch = platform.machine()
+            return "Builds/macOS/ARM" if arch == "arm64" else "Builds/macOS/Intel"
+        return "Builds/macOS/ARM"
+
+    def getBuildDirWindows(self) -> str:
+        return "Builds/Windows"
+
+    def getBuildDirLinux(self) -> str:
+        return "Builds/Linux"
+
     def renderTemplate(self, templateContent: str) -> str:
         juceDirValue = self.juceDir if self.juceDir else ""
         return templateContent.format(
@@ -431,7 +444,10 @@ class JuceProjectGenerator:
             vst3Categories=self.vst3Categories,
             bundleId=self.bundleId,
             customVst3Folder=self.customVst3Folder,
-            juceDir=juceDirValue
+            juceDir=juceDirValue,
+            buildDirMacOS=self.getBuildDirMacOS(),
+            buildDirWindows=self.getBuildDirWindows(),
+            buildDirLinux=self.getBuildDirLinux()
         )
     
     def generateCMakeLists(self) -> None:
@@ -469,10 +485,16 @@ class JuceProjectGenerator:
     def getPlatformBuildConfig(self) -> tuple:
         system = platform.system()
         if system == "Darwin":
-            return "build-macos", "default-macos"
+            arch = platform.machine()
+            if arch == "arm64":
+                return "Builds/macOS/ARM", "default-macos-arm64"
+            else:
+                return "Builds/macOS/Intel", "default-macos-x86_64"
         elif system == "Windows":
-            return "build-windows", "default-windows"
-        return "build", "default"
+            return "Builds/Windows", "default-windows"
+        elif system == "Linux":
+            return "Builds/Linux", "default-linux"
+        return "Builds/macOS/ARM", "default"
     
     def generateVSCodeSettings(self) -> None:
         print(f"{Color.GREEN}📝 Generating .vscode/settings.json...{Color.RESET}")
@@ -528,9 +550,15 @@ class JuceProjectGenerator:
     def getPlatformInfo(self) -> tuple:
         system = platform.system()
         if system == "Darwin":
-            return "macOS", "default-macos"
+            arch = platform.machine()
+            if arch == "arm64":
+                return "macOS (Apple Silicon)", "default-macos-arm64"
+            else:
+                return "macOS (Intel)", "default-macos-x86_64"
         elif system == "Windows":
             return "Windows", "default-windows"
+        elif system == "Linux":
+            return "Linux", "default-linux"
         return system, "default"
     
     def getOpenCommandForPlatform(self, system: str, projectPathStr: str) -> str:
@@ -539,9 +567,17 @@ class JuceProjectGenerator:
         return f"cd {projectPathStr} && cursor ."
     
     def getBuildDirectoryName(self, platformName: str, system: str) -> str:
-        if system == "Windows":
-            return "build-windows"
-        return f"build-{platformName.lower()}"
+        if system == "Darwin":
+            arch = platform.machine()
+            if arch == "arm64":
+                return "Builds/macOS/ARM"
+            else:
+                return "Builds/macOS/Intel"
+        elif system == "Windows":
+            return "Builds/Windows"
+        elif system == "Linux":
+            return "Builds/Linux"
+        return "Builds/macOS/ARM"
     
     def showSuccess(self) -> None:
         system = platform.system()
@@ -563,12 +599,8 @@ class JuceProjectGenerator:
         print(f"     - Select build kit when prompted (CMake Tools will suggest the correct one)")
         print(f"     - Build: {Color.BLUE}Ctrl+Shift+P{Color.RESET} (or {Color.BLUE}Cmd+Shift+P{Color.RESET} on macOS) → \"CMake: Build\"")
         print(f"     - Debug: Press {Color.BLUE}F5{Color.RESET} to start debugging\n")
-        if system == "Windows":
-            print(f"  {Color.YELLOW}Note:{Color.RESET} If you open this project on macOS later, run:")
-            print(f"     {Color.BLUE}python configure-platform.py{Color.RESET}\n")
-        elif system == "Darwin":
-            print(f"  {Color.YELLOW}Note:{Color.RESET} If you open this project on Windows later, run:")
-            print(f"     {Color.BLUE}python configure-platform.py{Color.RESET}\n")
+        print(f"  {Color.YELLOW}Note:{Color.RESET} If you open this project on a different platform (or Mac Intel/Apple Silicon), run:")
+        print(f"     {Color.BLUE}python configure-platform.py{Color.RESET}\n")
         print(f"{Color.GREEN}{'=' * 60}{Color.RESET}\n")
         waitForEnterToExit()
     

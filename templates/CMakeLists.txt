@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.22)
 
 # Platform-specific configuration
 if(APPLE)
-    # Force arm64 for Apple Silicon (macOS only)
-    set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build architectures for macOS")
+    # Architecture is set per-preset in CMakeUserPresets.json (arm64 for Apple Silicon, x86_64 for Intel)
+    if(NOT CMAKE_OSX_ARCHITECTURES)
+        set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build architectures for macOS (arm64 or x86_64)")
+    endif()
     # Use Ninja generator on macOS if not specified
     if(NOT CMAKE_GENERATOR)
         find_program(NINJA_EXE ninja)
