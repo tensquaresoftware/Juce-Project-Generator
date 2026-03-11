@@ -502,6 +502,7 @@ class JuceProjectGenerator:
         templateContent = self.templateLoader.loadTemplate(".vscode/settings.json")
         buildPath = Path(buildDir)
         templateContent = templateContent.replace("{buildDirectory}", buildPath.as_posix())
+        templateContent = templateContent.replace("{configurePreset}", presetName)
         renderedContent = self.renderTemplate(templateContent)
         self.writeFile(".vscode/settings.json", renderedContent)
     

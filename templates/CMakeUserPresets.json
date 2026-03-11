@@ -19,11 +19,9 @@
       "generator": "Ninja",
       "binaryDir": "${{sourceDir}}/Builds/macOS/ARM",
       "condition": {{
-        "type": "all",
-        "conditions": [
-          {{ "type": "equals", "lhs": "${{hostSystemName}}", "rhs": "Darwin" }},
-          {{ "type": "equals", "lhs": "${{hostSystemProcessor}}", "rhs": "arm64" }}
-        ]
+        "type": "equals",
+        "lhs": "${{hostSystemName}}",
+        "rhs": "Darwin"
       }},
       "cacheVariables": {{
         "CMAKE_BUILD_TYPE": "Debug",
@@ -37,11 +35,9 @@
       "generator": "Ninja",
       "binaryDir": "${{sourceDir}}/Builds/macOS/Intel",
       "condition": {{
-        "type": "all",
-        "conditions": [
-          {{ "type": "equals", "lhs": "${{hostSystemName}}", "rhs": "Darwin" }},
-          {{ "type": "equals", "lhs": "${{hostSystemProcessor}}", "rhs": "x86_64" }}
-        ]
+        "type": "equals",
+        "lhs": "${{hostSystemName}}",
+        "rhs": "Darwin"
       }},
       "cacheVariables": {{
         "CMAKE_BUILD_TYPE": "Debug",
