@@ -28,9 +28,9 @@ IMPORTANT: Before sharing this generator with others, make sure to:
 # If set to None, the generated project will require JUCE_DIR environment variable.
 # If set to a path, that path will be used directly in CMakeLists.txt.
 #
-JUCE_DIR_MACOS = "/Applications/JUCE"
 JUCE_DIR_WINDOWS = "C:/Program Files/JUCE"
-JUCE_DIR_LINUX = None  # Set to your JUCE path if needed
+JUCE_DIR_MACOS   = "/Applications/JUCE"
+JUCE_DIR_LINUX   = "/home/guillaume/Dev/JUCE"
 
 # =============================================================================
 # DEFAULT MANUFACTURER INFORMATION
@@ -54,7 +54,7 @@ JUCE_DIR_LINUX = None  # Set to your JUCE path if needed
 #
 DEFAULT_MANUFACTURER_NAME = "Ten Square Software"
 DEFAULT_MANUFACTURER_CODE = "Tssf"
-DEFAULT_PLUGIN_CODE = "Tssp"
+DEFAULT_PLUGIN_CODE       = "Tssp"
 
 # =============================================================================
 # DEFAULT PROJECT DESTINATION
