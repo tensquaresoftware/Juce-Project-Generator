@@ -119,7 +119,7 @@ DEFAULT_PROJECT_DESTINATION = "Default"
 #   cmake .. -DCUSTOM_VST3_FOLDER="your/custom/path"
 #
 CUSTOM_VST3_FOLDER_WINDOWS = "C:/Users/Guillaume/VST3"
-CUSTOM_VST3_FOLDER_MACOS   = "/Users/Guillaume/Plugins/VST3"
+CUSTOM_VST3_FOLDER_MACOS   = "/Volumes/Guillaume/Dev/Plugins/VST3"
 CUSTOM_VST3_FOLDER_LINUX   = "/home/guillaume/Plugins/VST3"
 
 # =============================================================================
