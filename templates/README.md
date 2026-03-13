@@ -113,14 +113,27 @@ The project is **automatically configured** for your platform when generated. Si
 
 #### macOS
 
-- **AU**: Copy `.component` file to `~/Library/Audio/Plug-Ins/Components/`
-- **VST3**: Copy `.vst3` bundle to `~/Library/Audio/Plug-Ins/VST3/`
+- **AU**: Copied automatically to `~/Library/Audio/Plug-Ins/Components/` if `COPY_TO_SYSTEM_FOLDERS` is ON in `project-config.cmake`; or to a custom folder if `CUSTOM_AU_FOLDER_MACOS` is set
+- **VST3**: Copied automatically to `~/Library/Audio/Plug-Ins/VST3/` if `COPY_TO_SYSTEM_FOLDERS` is ON; or to a custom folder if `CUSTOM_VST3_FOLDER_MACOS` is set
 - **Standalone**: Run the `.app` directly
 
 #### Windows
 
-- **VST3**: Copy `.vst3` folder to `C:\Program Files\Common Files\VST3\`
+- **VST3**: Copied automatically to the folder set in `CUSTOM_VST3_FOLDER_WINDOWS` (in `project-config.cmake`), or copy manually to `C:\Program Files\Common Files\VST3\`
 - **Standalone**: Run the `.exe` directly
+
+#### Linux
+
+- **VST3**: Copied automatically to the folder set in `CUSTOM_VST3_FOLDER_LINUX` (in `project-config.cmake`)
+- **Standalone**: Run the binary from the build directory
+
+### Plugin Copy Configuration
+
+Edit `project-config.cmake` to customize where plugins are copied after each build:
+
+- **`COPY_TO_SYSTEM_FOLDERS`**: `ON`/`OFF` — copy AU and VST3 to system folders on macOS
+- **`CUSTOM_VST3_FOLDER_WINDOWS`**, **`CUSTOM_VST3_FOLDER_MACOS`**, **`CUSTOM_VST3_FOLDER_LINUX`**: Path or `""` to disable
+- **`CUSTOM_AU_FOLDER_MACOS`**: Path or `""` to disable (macOS only)
 
 ### Debugging
 

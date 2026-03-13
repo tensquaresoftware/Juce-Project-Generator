@@ -17,9 +17,9 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - ✅ Platform-specific settings (macOS Apple Silicon/Intel, Windows, Linux)
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS path differences)
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
-- ✅ Automatic VST3 plugin installation to custom folder (all platforms)
+- ✅ Configurable plugin copy: system folders (macOS AU/VST3), custom VST3/AU folders (all platforms)
 - ✅ Support for AU, VST3, and Standalone formats
-- ✅ Configurable via `user-config.py` for easy customization
+- ✅ Configurable via `generator-config.py` and `project-config.cmake` for easy customization
 - ✅ Customizable default manufacturer and plugin codes
 - ✅ **Portable workflow**: projects use `JUCE_DIR` from the environment—no machine-specific paths in Git; ideal for GitHub and multi-machine (macOS / Windows / Linux) development
 
@@ -54,7 +54,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 2. **Configure your environment** (optional, for the generator only):
    
-   - Copy `user-config.py` and customize other settings (see Configuration section below). The `JUCE_DIR_*` options in `user-config.py` are only used for **validation** when generating; they are not written into generated projects.
+   - Copy `generator-config.py` and `project-config.cmake` and customize them (see Configuration section below). The `JUCE_DIR_*` options in `generator-config.py` are only used for **validation** when generating; they are not written into generated projects.
 
 3. **Run the generator**:
    
@@ -66,23 +66,26 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 ## Configuration
 
-The generator uses a `user-config.py` file to store user-specific settings. This allows you to:
+The generator uses two configuration files (both in the generator directory):
 
-- Customize default paths without modifying the core generator code
-- Share the generator with others while keeping your personal settings separate
-- Easily adapt the generator to different development environments
+- **`generator-config.py`**: Generator-specific settings (defaults for prompts, JUCE validation)
+- **`project-config.cmake`**: Plugin copy settings used as defaults when creating new projects. Each generated project gets its own copy of this file at the project root, which you can edit afterward to customize VST3/AU copy paths for that project.
 
 ### Setup
 
-1. **Create or Edit `user-config.py`**:
+1. **Create or Edit `generator-config.py`**:
    
-   The `user-config.py` file should be located in the same directory as `generate-new-juce-project.py`.
+   The `generator-config.py` file should be located in the same directory as `generate-new-juce-project.py`.
    
    If the file doesn't exist, the generator will use default values. You can create it by copying the example below.
 
-2. **Configure Your Settings**:
+2. **Create or Edit `project-config.cmake`** (in the generator directory):
    
-   Edit `user-config.py` and modify the constants to match your environment.
+   This file defines default plugin copy paths for new projects. Edit it to match your setup. If it doesn't exist, the generator uses built-in defaults.
+
+3. **Configure Your Settings**:
+   
+   Edit `generator-config.py` and `project-config.cmake` to match your environment.
 
 ### Configuration Options
 
@@ -100,22 +103,25 @@ The generator uses a `user-config.py` file to store user-specific settings. This
 
 **Note**: If set to `None`, the generator skips path validation. **Building** always requires `JUCE_DIR` to be set in your shell/IDE environment on each machine (see [Portable workflow](#portable-workflow-github-multi-machine)).
 
-#### `CUSTOM_VST3_FOLDER_WINDOWS`, `CUSTOM_VST3_FOLDER_MACOS`, `CUSTOM_VST3_FOLDER_LINUX`
+#### `project-config.cmake` (in generator directory)
 
-**Purpose**: Define the default folder where VST3 plugins are automatically copied after each build, on each platform. This allows testing in your DAW without admin privileges (the standard system VST3 folder often requires them).
+**Purpose**: Defines default plugin copy settings for new projects. The generator reads this file and copies its values into each generated project. Edit this file to customize defaults.
 
-**Examples**:
+**Variables** (CMake format):
 
-- Windows: `"C:/Users/YourName/VST3"` or `"D:/MyPlugins/VST3"`
-- macOS: `"/Users/username/Plugins/VST3"`
-- Linux: `"/home/username/Plugins/VST3"`
+- **`COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — copy AU and VST3 to system folders on macOS
+- **`CUSTOM_VST3_FOLDER_WINDOWS`**, **`CUSTOM_VST3_FOLDER_MACOS`**, **`CUSTOM_VST3_FOLDER_LINUX`**: Path or `""` to disable
+- **`CUSTOM_AU_FOLDER_MACOS`**: Path or `""` to disable (macOS only)
 
-**Note**: Each platform uses its own path when building. Configure your DAW to scan the custom folder for VST3 plugins. You can override at configure time: `cmake .. -DCUSTOM_VST3_FOLDER="/your/path"`.
+**Example** (excerpt):
 
-**⚠️ IMPORTANT - Path Restrictions**:
+```cmake
+set(COPY_TO_SYSTEM_FOLDERS ON CACHE BOOL "...")
+set(CUSTOM_VST3_FOLDER_MACOS "/Users/username/Plugins/VST3" CACHE PATH "...")
+set(CUSTOM_AU_FOLDER_MACOS "" CACHE PATH "...")
+```
 
-- **NO ACCENTED CHARACTERS**: Same restrictions as `DEFAULT_PROJECT_DESTINATION` - paths must NOT contain accented or special Unicode characters
-- The generator will validate these paths and **stop immediately** if problematic characters are detected
+**⚠️ IMPORTANT - Path Restrictions**: Same as `DEFAULT_PROJECT_DESTINATION` — paths must NOT contain accented or special Unicode characters.
 
 #### `DEFAULT_PROJECT_DESTINATION`
 
@@ -164,13 +170,13 @@ The generator will **strictly validate** all paths and **stop immediately** with
 - The Plugin Code must be unique for each plugin you create
 - You can still override these values when generating a project
 
-### Example `user-config.py`
+### Example `generator-config.py`
 
 ```python
 #!/usr/bin/env python3
 """
-User Configuration file for JUCE Project Generator
-===================================================
+Generator Configuration file for JUCE Project Generator
+========================================================
 
 Customize the values below to match your development environment.
 """
@@ -179,11 +185,6 @@ Customize the values below to match your development environment.
 JUCE_DIR_MACOS = "/Applications/JUCE"
 JUCE_DIR_WINDOWS = "C:/JUCE"
 JUCE_DIR_LINUX = "/home/username/Dev/JUCE"  # or None to skip; set env JUCE_DIR on each machine for building
-
-# Custom VST3 installation folder (all platforms)
-CUSTOM_VST3_FOLDER_WINDOWS = "C:/Users/YourName/VST3"
-CUSTOM_VST3_FOLDER_MACOS = "/Users/username/Plugins/VST3"
-CUSTOM_VST3_FOLDER_LINUX = "/home/username/Plugins/VST3"
 
 # Default project destination
 # Set to "Default" to use Desktop, or specify a custom path
@@ -196,30 +197,37 @@ DEFAULT_MANUFACTURER_CODE = "Myco"
 DEFAULT_PLUGIN_CODE = "Plg1"
 ```
 
+**Note**: Plugin copy settings are in `project-config.cmake` (same format as in generated projects).
+
 ### How It Works
 
-1. When you run `generate-new-juce-project.py`, it attempts to load `user-config.py`
-2. If `user-config.py` exists and contains the constants, they are used
-3. If `user-config.py` doesn't exist or constants are missing, default values are used
-4. The constants are injected into the generated project templates
+1. When you run `generate-new-juce-project.py`, it loads `generator-config.py` for generator settings
+2. It reads `project-config.cmake` (in the generator directory) for plugin copy defaults
+3. If `generator-config.py` doesn't exist or constants are missing, default values are used
+4. If `project-config.cmake` doesn't exist, built-in defaults are used for plugin copy
+5. The values are injected into the generated project templates
 
 ### Customizing Generated Projects
 
-Even after generating a project, you can customize the VST3 folder:
+**Each generated project includes its own `project-config.cmake`** at the project root. This file controls where plugins (VST3, AU) are copied after each build. You can edit it at any time—no need to regenerate the project.
 
-1. **During CMake configuration**:
-   
-   ```bash
-   cmake .. -DCUSTOM_VST3_FOLDER="your/custom/path"
-   ```
+To change plugin copy options for a specific project, open `project-config.cmake` in that project and edit:
 
-2. **In the generated CMakeLists.txt**:
-   Edit the `CUSTOM_VST3_FOLDER` value directly in the file (around line 108)
+- **`COPY_TO_SYSTEM_FOLDERS`**: Set to `ON` or `OFF` to enable/disable copy to system folders (macOS: `~/Library/Audio/Plug-Ins/Components/` and `~/Library/Audio/Plug-Ins/VST3/`)
+- **`CUSTOM_VST3_FOLDER_WINDOWS`**, **`CUSTOM_VST3_FOLDER_MACOS`**, **`CUSTOM_VST3_FOLDER_LINUX`**: Path or `""` to disable
+- **`CUSTOM_AU_FOLDER_MACOS`**: Path or `""` to disable (macOS only)
+
+You can also override at configure time:
+
+```bash
+cmake .. -DCOPY_TO_SYSTEM_FOLDERS=OFF -DCUSTOM_VST3_FOLDER_MACOS="/your/path"
+```
 
 ## Generated Project Structure
 
 ```
 YourProject/
+├── project-config.cmake   ← Plugin copy settings (edit to customize)
 ├── Source/
 │   ├── PluginProcessor.h
 │   ├── PluginProcessor.cpp
@@ -284,14 +292,14 @@ Build directories are separated by platform and architecture to avoid mixing fil
 
 #### Windows
 
-- **VST3**: Automatically copied to your custom folder (configured in `user-config.py`)
+- **VST3**: Automatically copied to your custom folder (configured in `project-config.cmake`)
   - Configure your DAW to scan this folder
   - Or manually copy to `C:\Program Files\Common Files\VST3\` (requires admin)
 - **Standalone**: Run the `.exe` directly
 
 #### Linux
 
-- **VST3**: Automatically copied to your custom folder (configured in `user-config.py`, e.g. `/home/username/Plugins/VST3`)
+- **VST3**: Automatically copied to your custom folder (configured in `project-config.cmake`, e.g. `/home/username/Plugins/VST3`)
   - Configure your DAW to scan this folder
 - **Standalone**: Run the binary from the build directory
 
@@ -348,19 +356,17 @@ This keeps the repository clean and portable for collaboration and multi-OS deve
 
 ## Customization
 
-### Custom VST3 Folder
+### Plugin Copy Configuration
 
-The generator configures projects to copy VST3 plugins to a custom folder on **all platforms** (Windows, macOS, Linux). This:
+Projects support two types of plugin copy after build:
 
-- Avoids requiring administrator privileges
-- Makes testing faster during development
-- Can be customized per-project or globally via `user-config.py`
+1. **System folders** (macOS): AU → `~/Library/Audio/Plug-Ins/Components/`, VST3 → `~/Library/Audio/Plug-Ins/VST3/`
+   - Controlled by `COPY_TO_SYSTEM_FOLDERS` in `project-config.cmake`
 
-To change the folder for a specific project, edit `CMakeLists.txt` or configure CMake:
+2. **Custom folders**: VST3 (all platforms) and AU (macOS)
+   - Set paths in `project-config.cmake`; use `""` to disable for a given platform
 
-```bash
-cmake .. -DCUSTOM_VST3_FOLDER="your/custom/path"
-```
+Edit `project-config.cmake` in any generated project to customize without modifying `CMakeLists.txt`.
 
 ## Path Restrictions
 
@@ -371,7 +377,8 @@ cmake .. -DCUSTOM_VST3_FOLDER="your/custom/path"
 This includes:
 
 - Project destination paths (`DEFAULT_PROJECT_DESTINATION`)
-- VST3 folder paths (`CUSTOM_VST3_FOLDER_WINDOWS`, `CUSTOM_VST3_FOLDER_MACOS`, `CUSTOM_VST3_FOLDER_LINUX`)
+- VST3 folder paths in `project-config.cmake` (`CUSTOM_VST3_FOLDER_WINDOWS`, `CUSTOM_VST3_FOLDER_MACOS`, `CUSTOM_VST3_FOLDER_LINUX`)
+- AU folder path in `project-config.cmake` (`CUSTOM_AU_FOLDER_MACOS`)
 - Any path entered during interactive prompts
 
 **Why this restriction?**
@@ -409,24 +416,25 @@ CMake and Visual Studio on Windows have known compatibility issues with Unicode 
 - A clear error message will be displayed showing which characters are problematic
 - **The generator will STOP completely** and exit with an error code
 - **NO fallback paths will be used** - this prevents creating projects in unexpected locations
-- You must fix the path in `user-config.py` (or enter a valid path during interactive prompts) before the generator will proceed
+- You must fix the path in `generator-config.py` or `project-config.cmake` (or enter a valid path during interactive prompts) before the generator will proceed
 
 ## Troubleshooting
 
-### Generator uses default values even after creating `user-config.py`
+### Generator uses default values even after creating config files
 
-- Make sure `user-config.py` is in the same directory as `generate-new-juce-project.py`
-- Check for syntax errors in `user-config.py` (Python syntax) - the generator will display a warning if there are errors
+- Make sure `generator-config.py` is in the same directory as `generate-new-juce-project.py`
+- Make sure `project-config.cmake` is in the generator directory for plugin copy defaults
+- Check for syntax errors in `generator-config.py` (Python syntax) - the generator will display a warning if there are errors
 - Verify that constant names match exactly (case-sensitive)
 - If you see a warning about invalid codes, check that:
   - `DEFAULT_MANUFACTURER_CODE` is exactly 4 alphabetic characters
   - `DEFAULT_PLUGIN_CODE` is exactly 4 alphanumeric characters
 
-### What happens if `user-config.py` has errors?
+### What happens if `generator-config.py` has errors?
 
 The generator is designed to be resilient and will handle various error scenarios:
 
-1. **Syntax errors in `user-config.py`**:
+1. **Syntax errors in `generator-config.py`**:
    
    - The generator will display a warning message showing the error
    - Default values will be used instead
@@ -440,7 +448,7 @@ The generator is designed to be resilient and will handle various error scenario
 
 3. **Invalid or missing JUCE path**:
    
-   - If the path doesn't exist in `user-config.py`, a warning is displayed
+   - If the path doesn't exist in `generator-config.py`, a warning is displayed
    - Project generation continues; for building, set the `JUCE_DIR` environment variable on each machine: `export JUCE_DIR=/path/to/JUCE` (see [Portable workflow](#portable-workflow-github-multi-machine))
 
 4. **Missing constants**:
@@ -448,11 +456,12 @@ The generator is designed to be resilient and will handle various error scenario
    - If a constant is not defined, the corresponding default value is used
    - No error is displayed (this is expected behavior)
 
-### VST3 plugin not copying to custom folder
+### VST3/AU plugin not copying to custom folder
 
-- The generator automatically normalizes paths (converts backslashes to forward slashes), so you can use either format in `user-config.py`
+- The generator automatically normalizes paths (converts backslashes to forward slashes), so you can use either format in `generator-config.py` or `project-config.cmake`
 - Ensure the folder path doesn't require admin privileges (unless that's intentional)
-- Verify the path is correct in the generated `CMakeLists.txt`
+- Verify the path is set (not `""`) in `project-config.cmake` for the platform you're building on
+- For system folder copy on macOS, ensure `COPY_TO_SYSTEM_FOLDERS` is `ON` in `project-config.cmake`
 
 ### JUCE not found (any platform)
 
@@ -474,8 +483,8 @@ If you see errors like `MSB8066` or malformed characters in build output:
 
 When sharing this generator:
 
-1. Include `user-config.py` with generic example values (as shown in the Configuration section)
-2. Document that users should customize `user-config.py` for their environment
+1. Include `generator-config.py` and `project-config.cmake` with generic example values (as shown in the Configuration section)
+2. Document that users should customize these files for their environment
 3. Include this README.md in your distribution
 
 ## License

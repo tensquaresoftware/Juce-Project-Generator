@@ -22,6 +22,9 @@ endif()
 
 project({projectName} VERSION {projectVersion})
 
+# Plugin copy configuration (edit project-config.cmake to customize)
+include(project-config.cmake)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -80,9 +83,10 @@ if(NOT APPLE)
     string(STRIP "${{PLUGIN_FORMATS_LIST}}" PLUGIN_FORMATS_LIST)
 endif()
 
-# Platform-specific COPY_PLUGIN_AFTER_BUILD setting
+# COPY_PLUGIN_AFTER_BUILD: copy to system folders on macOS (AU: Components, VST3: VST3)
+# Controlled by COPY_TO_SYSTEM_FOLDERS in project-config.cmake (macOS only)
 if(APPLE)
-    set(COPY_PLUGIN_AFTER_BUILD_VALUE TRUE)
+    set(COPY_PLUGIN_AFTER_BUILD_VALUE ${{COPY_TO_SYSTEM_FOLDERS}})
 else()
     set(COPY_PLUGIN_AFTER_BUILD_VALUE FALSE)
 endif()
@@ -131,13 +135,7 @@ target_compile_definitions({projectName}
 # Copy VST3 plugin to custom folder after build for easy testing
 # =============================================================================
 #
-# CONFIGURATION:
-# ------------
-# To customize the VST3 installation folder, override when configuring CMake:
-#   cmake .. -DCUSTOM_VST3_FOLDER="your/custom/path"
-#
-# Default paths are defined per platform in the blocks below.
-# Configure your DAW to scan the custom folder for VST3 plugins.
+# Paths are defined in project-config.cmake. Set to "" to disable.
 #
 # =============================================================================
 
@@ -145,28 +143,50 @@ set(VST3_TARGET_NAME "{projectName}_VST3")
 set(VST3_SOURCE_DIR "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/VST3/{projectName}.vst3")
 
 if(WIN32)
-    if(NOT DEFINED CUSTOM_VST3_FOLDER)
-        set(CUSTOM_VST3_FOLDER "{customVst3FolderWindows}" CACHE PATH "Custom VST3 installation folder (Windows)")
-    endif()
+    set(CUSTOM_VST3_FOLDER "${{CUSTOM_VST3_FOLDER_WINDOWS}}")
 elseif(APPLE)
-    if(NOT DEFINED CUSTOM_VST3_FOLDER)
-        set(CUSTOM_VST3_FOLDER "{customVst3FolderMacOS}" CACHE PATH "Custom VST3 installation folder (macOS)")
-    endif()
+    set(CUSTOM_VST3_FOLDER "${{CUSTOM_VST3_FOLDER_MACOS}}")
 else()
-    if(NOT DEFINED CUSTOM_VST3_FOLDER)
-        set(CUSTOM_VST3_FOLDER "{customVst3FolderLinux}" CACHE PATH "Custom VST3 installation folder (Linux)")
-    endif()
+    set(CUSTOM_VST3_FOLDER "${{CUSTOM_VST3_FOLDER_LINUX}}")
 endif()
 
-set(VST3_DEST_DIR "${{CUSTOM_VST3_FOLDER}}/{projectName}.vst3")
+if(CUSTOM_VST3_FOLDER)
+    set(VST3_DEST_DIR "${{CUSTOM_VST3_FOLDER}}/{projectName}.vst3")
+    add_custom_command(TARGET ${{VST3_TARGET_NAME}} POST_BUILD
+        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 plugin to custom folder: ${{CUSTOM_VST3_FOLDER}}"
+        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_VST3_FOLDER}}"
+        COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{VST3_DEST_DIR}}"
+        COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{VST3_SOURCE_DIR}}" "${{VST3_DEST_DIR}}"
+        COMMENT "Installing VST3 plugin to custom folder"
+        VERBATIM
+    )
+    message(STATUS "VST3 plugin will be copied to: ${{CUSTOM_VST3_FOLDER}}")
+else()
+    message(STATUS "VST3 custom folder disabled (set in project-config.cmake)")
+endif()
 
-add_custom_command(TARGET ${{VST3_TARGET_NAME}} POST_BUILD
-    COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 plugin to custom folder: ${{CUSTOM_VST3_FOLDER}}"
-    COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_VST3_FOLDER}}"
-    COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{VST3_DEST_DIR}}"
-    COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{VST3_SOURCE_DIR}}" "${{VST3_DEST_DIR}}"
-    COMMENT "Installing VST3 plugin to custom folder"
-    VERBATIM
-)
+# =============================================================================
+# CUSTOM AU INSTALLATION (macOS only)
+# Copy AU plugin to custom folder after build for easy testing
+# =============================================================================
+#
+# Path is defined in project-config.cmake. Set to "" to disable.
+#
+# =============================================================================
 
-message(STATUS "VST3 plugin will be copied to: ${{CUSTOM_VST3_FOLDER}}")
+if(APPLE AND CUSTOM_AU_FOLDER_MACOS)
+    set(AU_TARGET_NAME "{projectName}_AU")
+    set(AU_SOURCE_DIR "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/AU/{projectName}.component")
+    set(AU_DEST_DIR "${{CUSTOM_AU_FOLDER_MACOS}}/{projectName}.component")
+    add_custom_command(TARGET ${{AU_TARGET_NAME}} POST_BUILD
+        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying AU plugin to custom folder: ${{CUSTOM_AU_FOLDER_MACOS}}"
+        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_AU_FOLDER_MACOS}}"
+        COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{AU_DEST_DIR}}"
+        COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{AU_SOURCE_DIR}}" "${{AU_DEST_DIR}}"
+        COMMENT "Installing AU plugin to custom folder"
+        VERBATIM
+    )
+    message(STATUS "AU plugin will be copied to: ${{CUSTOM_AU_FOLDER_MACOS}}")
+elseif(APPLE)
+    message(STATUS "AU custom folder disabled (set in project-config.cmake)")
+endif()

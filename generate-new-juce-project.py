@@ -15,9 +15,9 @@ kConfigLoadError = None
 
 try:
     scriptDir = Path(__file__).parent
-    configPath = scriptDir / "user-config.py"
+    configPath = scriptDir / "generator-config.py"
     if configPath.exists():
-        spec = importlib.util.spec_from_file_location("user_config", configPath)
+        spec = importlib.util.spec_from_file_location("generator_config", configPath)
         kConfigModule = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(kConfigModule)
 except Exception as e:
@@ -108,7 +108,24 @@ def buildPathErrorSolution(pathName: str, configFile: str) -> str:
 def buildPathErrorFooter() -> str:
     return f"{Color.RED}The generator stops now to avoid creating a project in the wrong location.{Color.RESET}\n{Color.RED}{'=' * 70}{Color.RESET}\n"
 
-def validatePathNoProblematicChars(path: str, pathName: str, configFile: str = "user-config.py") -> None:
+def parseProjectConfigCmake(configPath: Path) -> Dict[str, str]:
+    """
+    Parse a project-config.cmake file and return a dict of variable names to values.
+    Handles set(VAR "value") and set(VAR value) for simple values.
+    """
+    result: Dict[str, str] = {}
+    if not configPath.exists():
+        return result
+    content = configPath.read_text(encoding='utf-8')
+    # Match set(VAR "value" ...) or set(VAR value ...) - value can be quoted or unquoted
+    for m in re.finditer(r'set\s*\(\s*(\w+)\s+("(?:[^"\\]|\\.)*"|\S+)', content):
+        var_name, val = m.group(1), m.group(2)
+        if val.startswith('"') and val.endswith('"'):
+            val = val[1:-1].replace('\\"', '"')
+        result[var_name] = val
+    return result
+
+def validatePathNoProblematicChars(path: str, pathName: str, configFile: str = "generator-config.py") -> None:
     hasProblematic, problematicChars = hasProblematicChars(path)
     if not hasProblematic:
         return
@@ -154,9 +171,11 @@ class JuceProjectGenerator:
         self.kDefaultManufacturer = self.loadDefaultManufacturer()
         self.kDefaultManufacturerCode = self.loadDefaultManufacturerCode()
         self.kDefaultPluginCode = self.loadDefaultPluginCode()
+        self.copyToSystemFolders = self.loadCopyToSystemFolders()
         self.customVst3FolderWindows = self.loadCustomVst3FolderWindows()
         self.customVst3FolderMacOS = self.loadCustomVst3FolderMacOS()
         self.customVst3FolderLinux = self.loadCustomVst3FolderLinux()
+        self.customAuFolderMacOS = self.loadCustomAuFolderMacOS()
         self.juceDir = self.loadJuceDir()
         self.initializeProjectFields()
     
@@ -185,7 +204,7 @@ class JuceProjectGenerator:
         return len(code) == 4 and code.isalpha()
     
     def showInvalidManufacturerCodeWarning(self) -> None:
-        print(f"{Color.YELLOW}⚠️  Warning: DEFAULT_MANUFACTURER_CODE in user-config.py is invalid (must be 4 alphabetic chars). Using default.{Color.RESET}")
+        print(f"{Color.YELLOW}⚠️  Warning: DEFAULT_MANUFACTURER_CODE in generator-config.py is invalid (must be 4 alphabetic chars). Using default.{Color.RESET}")
     
     def loadDefaultPluginCode(self) -> str:
         if kConfigModule and hasattr(kConfigModule, 'DEFAULT_PLUGIN_CODE') and kConfigModule.DEFAULT_PLUGIN_CODE:
@@ -199,31 +218,58 @@ class JuceProjectGenerator:
         return len(code) == 4 and code.isalnum()
     
     def showInvalidPluginCodeWarning(self) -> None:
-        print(f"{Color.YELLOW}⚠️  Warning: DEFAULT_PLUGIN_CODE in user-config.py is invalid (must be 4 alphanumeric chars). Using default.{Color.RESET}")
+        print(f"{Color.YELLOW}⚠️  Warning: DEFAULT_PLUGIN_CODE in generator-config.py is invalid (must be 4 alphanumeric chars). Using default.{Color.RESET}")
     
+    def _getProjectConfigPath(self) -> Path:
+        return Path(__file__).parent / "project-config.cmake"
+
+    def _parseProjectConfig(self) -> Dict[str, str]:
+        return parseProjectConfigCmake(self._getProjectConfigPath())
+
+    def _isDisabledPath(self, value: str) -> bool:
+        """Return True if value means 'no copy' (empty or 'None' string)."""
+        if not value:
+            return True
+        if isinstance(value, str) and value.strip().lower() in ('', 'none'):
+            return True
+        return False
+
+    def loadCopyToSystemFolders(self) -> bool:
+        cfg = self._parseProjectConfig()
+        val = cfg.get("COPY_TO_SYSTEM_FOLDERS", "ON").upper()
+        return val in ("ON", "TRUE", "1", "YES")
+
     def loadCustomVst3FolderWindows(self) -> str:
-        if kConfigModule and hasattr(kConfigModule, 'CUSTOM_VST3_FOLDER_WINDOWS'):
-            vst3Path = kConfigModule.CUSTOM_VST3_FOLDER_WINDOWS
-            if vst3Path:
-                validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_WINDOWS")
-                return Path(vst3Path).as_posix()
-        return "C:/Users/YourName/VST3"
+        cfg = self._parseProjectConfig()
+        vst3Path = cfg.get("CUSTOM_VST3_FOLDER_WINDOWS", "C:/Users/YourName/VST3")
+        if self._isDisabledPath(vst3Path):
+            return ""
+        validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_WINDOWS", "project-config.cmake")
+        return Path(vst3Path).as_posix()
 
     def loadCustomVst3FolderMacOS(self) -> str:
-        if kConfigModule and hasattr(kConfigModule, 'CUSTOM_VST3_FOLDER_MACOS'):
-            vst3Path = kConfigModule.CUSTOM_VST3_FOLDER_MACOS
-            if vst3Path:
-                validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_MACOS")
-                return Path(vst3Path).as_posix()
-        return "/Users/username/Plugins/VST3"
+        cfg = self._parseProjectConfig()
+        vst3Path = cfg.get("CUSTOM_VST3_FOLDER_MACOS", "/Users/username/Plugins/VST3")
+        if self._isDisabledPath(vst3Path):
+            return ""
+        validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_MACOS", "project-config.cmake")
+        return Path(vst3Path).as_posix()
 
     def loadCustomVst3FolderLinux(self) -> str:
-        if kConfigModule and hasattr(kConfigModule, 'CUSTOM_VST3_FOLDER_LINUX'):
-            vst3Path = kConfigModule.CUSTOM_VST3_FOLDER_LINUX
-            if vst3Path:
-                validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_LINUX")
-                return Path(vst3Path).as_posix()
-        return "/home/username/Plugins/VST3"
+        cfg = self._parseProjectConfig()
+        vst3Path = cfg.get("CUSTOM_VST3_FOLDER_LINUX", "/home/username/Plugins/VST3")
+        if self._isDisabledPath(vst3Path):
+            return ""
+        validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_LINUX", "project-config.cmake")
+        return Path(vst3Path).as_posix()
+
+    def loadCustomAuFolderMacOS(self) -> str:
+        cfg = self._parseProjectConfig()
+        auPath = cfg.get("CUSTOM_AU_FOLDER_MACOS", "")
+        if self._isDisabledPath(auPath):
+            return ""
+        validatePathNoProblematicChars(auPath, "CUSTOM_AU_FOLDER_MACOS", "project-config.cmake")
+        return Path(auPath).as_posix()
     
     def loadJuceDir(self) -> Optional[str]:
         system = platform.system()
@@ -273,9 +319,9 @@ class JuceProjectGenerator:
             self.showConfigLoadError()
     
     def showConfigLoadError(self) -> None:
-        print(f"{Color.YELLOW}⚠️  Warning: Could not load user-config.py:{Color.RESET}")
+        print(f"{Color.YELLOW}⚠️  Warning: Could not load generator-config.py:{Color.RESET}")
         print(f"{Color.YELLOW}   Error: {kConfigLoadError}{Color.RESET}")
-        print(f"{Color.YELLOW}   Using default values. Please check your user-config.py file.{Color.RESET}\n")
+        print(f"{Color.YELLOW}   Using default values. Please check your generator-config.py file.{Color.RESET}\n")
     
     def getValidBooleanInput(self, prompt: str, default: bool = False) -> bool:
         defaultStr = "Y/n" if default else "y/N"
@@ -445,6 +491,7 @@ class JuceProjectGenerator:
         return "Builds/Linux"
 
     def renderTemplate(self, templateContent: str) -> str:
+        copyToSystemFoldersCmake = "ON" if self.copyToSystemFolders else "OFF"
         return templateContent.format(
             projectName=self.projectName,
             projectDisplayName=self.projectDisplayName,
@@ -460,9 +507,11 @@ class JuceProjectGenerator:
             auMainType=self.auMainType,
             vst3Categories=self.vst3Categories,
             bundleId=self.bundleId,
+            copyToSystemFolders=copyToSystemFoldersCmake,
             customVst3FolderWindows=self.customVst3FolderWindows,
             customVst3FolderMacOS=self.customVst3FolderMacOS,
             customVst3FolderLinux=self.customVst3FolderLinux,
+            customAuFolderMacOS=self.customAuFolderMacOS,
             buildDirMacOS=self.getBuildDirMacOS(),
             buildDirWindows=self.getBuildDirWindows(),
             buildDirLinux=self.getBuildDirLinux()
@@ -473,6 +522,12 @@ class JuceProjectGenerator:
         templateContent = self.templateLoader.loadTemplate("CMakeLists.txt")
         renderedContent = self.renderTemplate(templateContent)
         self.writeFile("CMakeLists.txt", renderedContent)
+
+    def generateProjectConfig(self) -> None:
+        print(f"{Color.GREEN}📝 Generating project-config.cmake...{Color.RESET}")
+        templateContent = self.templateLoader.loadTemplate("project-config.cmake")
+        renderedContent = self.renderTemplate(templateContent)
+        self.writeFile("project-config.cmake", renderedContent)
     
     def generatePluginProcessor(self) -> None:
         print(f"{Color.GREEN}📝 Generating PluginProcessor.h...{Color.RESET}")
@@ -636,6 +691,7 @@ class JuceProjectGenerator:
             sys.exit(0)
         self.createProjectStructure()
         self.generateCMakeLists()
+        self.generateProjectConfig()
         self.generatePluginProcessor()
         self.generatePluginEditor()
         self.generatePluginFactory()
