@@ -1,64 +1,54 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# Build artifacts (platform-specific)
+Builds/
+*.o
+*.obj
 
-# Virtual environments
-venv/
-env/
-ENV/
-.venv
-
-# IDE (root only; templates/.vscode/ is versioned)
-/.vscode/
+# IDE
+.vscode/.cmaketools.json
+.vscode/c_cpp_properties.json
 .idea/
-*.swp
-*.swo
-*~
 .DS_Store
+
+# Cache directories
+.cache/
+
+# Xcode
+*.xcodeproj
+*.xcworkspace
+DerivedData/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.vcxproj.user
+*.sln
 
 # CMake
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
-*.cmake
-!CMakeLists.txt
-!CMakeUserPresets.json
+compile_commands.json
+install_manifest.txt
+Makefile
 
-# Build artifacts
-*.o
-*.a
-*.lib
-*.dll
-*.exe
-*.dylib
-*.so
-
-# JUCE build outputs
-Build/
-build/
+# Binaries
 *.app
 *.component
 *.vst3
-*.vst
+*.exe
+*.dll
+*.dylib
+*.so
+*.a
+*.lib
 
-# OS
-.DS_Store
-Thumbs.db
+# Debug symbols
+*.pdb
+*.dSYM
+
+# Temporary files
+*.log
+*~
+*.bak
+*.swp

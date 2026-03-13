@@ -6,6 +6,7 @@ Builds/
 # IDE
 .vscode/.cmaketools.json
 .vscode/c_cpp_properties.json
+.idea/
 .DS_Store
 
 # Cache directories
@@ -16,10 +17,20 @@ Builds/
 *.xcworkspace
 DerivedData/
 
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.vcxproj.user
+*.sln
+
 # CMake
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
+compile_commands.json
+install_manifest.txt
+Makefile
 
 # Binaries
 *.app
@@ -29,3 +40,15 @@ cmake_install.cmake
 *.dll
 *.dylib
 *.so
+*.a
+*.lib
+
+# Debug symbols
+*.pdb
+*.dSYM
+
+# Temporary files
+*.log
+*~
+*.bak
+*.swp
