@@ -175,6 +175,9 @@ class JuceProjectGenerator:
         self.customVst3FolderWindows = self.loadCustomVst3FolderWindows()
         self.customVst3FolderMacOS = self.loadCustomVst3FolderMacOS()
         self.customVst3FolderLinux = self.loadCustomVst3FolderLinux()
+        self.customStandaloneFolderWindows = self.loadCustomStandaloneFolderWindows()
+        self.customStandaloneFolderMacOS = self.loadCustomStandaloneFolderMacOS()
+        self.customStandaloneFolderLinux = self.loadCustomStandaloneFolderLinux()
         self.customAuFolderMacOS = self.loadCustomAuFolderMacOS()
         self.juceDir = self.loadJuceDir()
         self.initializeProjectFields()
@@ -266,6 +269,30 @@ class JuceProjectGenerator:
             return ""
         validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_LINUX", "project-config.cmake")
         return Path(vst3Path).as_posix()
+
+    def loadCustomStandaloneFolderWindows(self) -> str:
+        cfg = self._parseProjectConfig()
+        path = self._getConfigValue(cfg, "USER_CUSTOM_STANDALONE_FOLDER_WINDOWS", "CUSTOM_STANDALONE_FOLDER_WINDOWS", "NONE")
+        if self._isDisabledPath(path):
+            return ""
+        validatePathNoProblematicChars(path, "CUSTOM_STANDALONE_FOLDER_WINDOWS", "project-config.cmake")
+        return Path(path).as_posix()
+
+    def loadCustomStandaloneFolderMacOS(self) -> str:
+        cfg = self._parseProjectConfig()
+        path = self._getConfigValue(cfg, "USER_CUSTOM_STANDALONE_FOLDER_MACOS", "CUSTOM_STANDALONE_FOLDER_MACOS", "NONE")
+        if self._isDisabledPath(path):
+            return ""
+        validatePathNoProblematicChars(path, "CUSTOM_STANDALONE_FOLDER_MACOS", "project-config.cmake")
+        return Path(path).as_posix()
+
+    def loadCustomStandaloneFolderLinux(self) -> str:
+        cfg = self._parseProjectConfig()
+        path = self._getConfigValue(cfg, "USER_CUSTOM_STANDALONE_FOLDER_LINUX", "CUSTOM_STANDALONE_FOLDER_LINUX", "NONE")
+        if self._isDisabledPath(path):
+            return ""
+        validatePathNoProblematicChars(path, "CUSTOM_STANDALONE_FOLDER_LINUX", "project-config.cmake")
+        return Path(path).as_posix()
 
     def loadCustomAuFolderMacOS(self) -> str:
         cfg = self._parseProjectConfig()
@@ -515,6 +542,9 @@ class JuceProjectGenerator:
             customVst3FolderWindows=self.customVst3FolderWindows or "NONE",
             customVst3FolderMacOS=self.customVst3FolderMacOS or "NONE",
             customVst3FolderLinux=self.customVst3FolderLinux or "NONE",
+            customStandaloneFolderWindows=self.customStandaloneFolderWindows or "NONE",
+            customStandaloneFolderMacOS=self.customStandaloneFolderMacOS or "NONE",
+            customStandaloneFolderLinux=self.customStandaloneFolderLinux or "NONE",
             customAuFolderMacOS=self.customAuFolderMacOS or "NONE",
             buildDirMacOS=self.getBuildDirMacOS(),
             buildDirWindows=self.getBuildDirWindows(),

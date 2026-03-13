@@ -113,26 +113,29 @@ The project is **automatically configured** for your platform when generated. Si
 
 #### macOS
 
-- **AU**: Copied automatically to `~/Library/Audio/Plug-Ins/Components/` if `COPY_TO_SYSTEM_FOLDERS` is ON in `project-config.cmake`; or to a custom folder if `CUSTOM_AU_FOLDER_MACOS` is set
+- **AU**: Copied automatically to `~/Library/Audio/Plug-Ins/Components/` if `COPY_TO_SYSTEM_FOLDERS` is ON; or to a custom folder if `CUSTOM_AU_FOLDER_MACOS` is set
 - **VST3**: Copied automatically to `~/Library/Audio/Plug-Ins/VST3/` if `COPY_TO_SYSTEM_FOLDERS` is ON; or to a custom folder if `CUSTOM_VST3_FOLDER_MACOS` is set
+- **Standalone**: Copied to a custom folder if `CUSTOM_STANDALONE_FOLDER_MACOS` is set
 - **Standalone**: Run the `.app` directly
 
 #### Windows
 
-- **VST3**: Copied automatically to the folder set in `CUSTOM_VST3_FOLDER_WINDOWS` (in `project-config.cmake`), or copy manually to `C:\Program Files\Common Files\VST3\`
+- **VST3**: Copied automatically to the folder set in `CUSTOM_VST3_FOLDER_WINDOWS`, or copy manually to `C:\Program Files\Common Files\VST3\`
+- **Standalone**: Copied to the folder set in `CUSTOM_STANDALONE_FOLDER_WINDOWS` if configured
 - **Standalone**: Run the `.exe` directly
 
 #### Linux
 
-- **VST3**: Copied automatically to the folder set in `CUSTOM_VST3_FOLDER_LINUX` (in `project-config.cmake`)
+- **VST3**: Copied automatically to the folder set in `CUSTOM_VST3_FOLDER_LINUX`
+- **Standalone**: Copied to the folder set in `CUSTOM_STANDALONE_FOLDER_LINUX` if configured
 - **Standalone**: Run the binary from the build directory
 
 ### Plugin Copy Configuration
 
-Edit the **USER OPTIONS** section in `project-config.cmake` to customize where plugins are copied:
+Edit the **USER OPTIONS** section in `project-config.cmake` to customize where plugins and the Standalone app are copied:
 
 - **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON`/`OFF` — copy AU and VST3 to system folders on macOS
-- **`USER_CUSTOM_VST3_FOLDER_*`**, **`USER_CUSTOM_AU_FOLDER_MACOS`**: `"path"` or `NONE`
+- **`USER_CUSTOM_VST3_FOLDER_*`**, **`USER_CUSTOM_STANDALONE_FOLDER_*`**, **`USER_CUSTOM_AU_FOLDER_MACOS`**: `"path"` or `NONE`
 
 ### Debugging
 

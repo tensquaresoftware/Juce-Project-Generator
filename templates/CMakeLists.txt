@@ -166,6 +166,67 @@ else()
 endif()
 
 # =============================================================================
+# CUSTOM STANDALONE INSTALLATION (all platforms)
+# Copy Standalone app to custom folder after build for easy testing
+# =============================================================================
+#
+# Paths are defined in project-config.cmake. Set to NONE or "" to disable.
+#
+# =============================================================================
+
+set(STANDALONE_TARGET_NAME "{projectName}_Standalone")
+if(APPLE)
+    set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}.app")
+    if(CUSTOM_STANDALONE_FOLDER_MACOS AND NOT CUSTOM_STANDALONE_FOLDER_MACOS STREQUAL "NONE")
+        set(CUSTOM_STANDALONE_FOLDER "${{CUSTOM_STANDALONE_FOLDER_MACOS}}")
+        set(STANDALONE_DEST_DIR "${{CUSTOM_STANDALONE_FOLDER}}/{projectName}.app")
+        add_custom_command(TARGET ${{STANDALONE_TARGET_NAME}} POST_BUILD
+            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone app to custom folder: ${{CUSTOM_STANDALONE_FOLDER}}"
+            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_STANDALONE_FOLDER}}"
+            COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{STANDALONE_DEST_DIR}}"
+            COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST_DIR}}"
+            COMMENT "Installing Standalone app to custom folder"
+            VERBATIM
+        )
+        message(STATUS "Standalone app will be copied to: ${{CUSTOM_STANDALONE_FOLDER}}")
+    else()
+        message(STATUS "Standalone custom folder disabled (set in project-config.cmake)")
+    endif()
+elseif(WIN32)
+    set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}.exe")
+    if(CUSTOM_STANDALONE_FOLDER_WINDOWS AND NOT CUSTOM_STANDALONE_FOLDER_WINDOWS STREQUAL "NONE")
+        set(CUSTOM_STANDALONE_FOLDER "${{CUSTOM_STANDALONE_FOLDER_WINDOWS}}")
+        set(STANDALONE_DEST "${{CUSTOM_STANDALONE_FOLDER}}/{projectName}.exe")
+        add_custom_command(TARGET ${{STANDALONE_TARGET_NAME}} POST_BUILD
+            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone app to custom folder: ${{CUSTOM_STANDALONE_FOLDER}}"
+            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_STANDALONE_FOLDER}}"
+            COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}" REPLACE_EXISTING
+            COMMENT "Installing Standalone app to custom folder"
+            VERBATIM
+        )
+        message(STATUS "Standalone app will be copied to: ${{CUSTOM_STANDALONE_FOLDER}}")
+    else()
+        message(STATUS "Standalone custom folder disabled (set in project-config.cmake)")
+    endif()
+else()
+    set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}")
+    if(CUSTOM_STANDALONE_FOLDER_LINUX AND NOT CUSTOM_STANDALONE_FOLDER_LINUX STREQUAL "NONE")
+        set(CUSTOM_STANDALONE_FOLDER "${{CUSTOM_STANDALONE_FOLDER_LINUX}}")
+        set(STANDALONE_DEST "${{CUSTOM_STANDALONE_FOLDER}}/{projectName}")
+        add_custom_command(TARGET ${{STANDALONE_TARGET_NAME}} POST_BUILD
+            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone app to custom folder: ${{CUSTOM_STANDALONE_FOLDER}}"
+            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_STANDALONE_FOLDER}}"
+            COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}" REPLACE_EXISTING
+            COMMENT "Installing Standalone app to custom folder"
+            VERBATIM
+        )
+        message(STATUS "Standalone app will be copied to: ${{CUSTOM_STANDALONE_FOLDER}}")
+    else()
+        message(STATUS "Standalone custom folder disabled (set in project-config.cmake)")
+    endif()
+endif()
+
+# =============================================================================
 # CUSTOM AU INSTALLATION (macOS only)
 # Copy AU plugin to custom folder after build for easy testing
 # =============================================================================

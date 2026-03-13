@@ -117,6 +117,9 @@ set(USER_COPY_TO_SYSTEM_FOLDERS ON)
 set(USER_CUSTOM_VST3_FOLDER_WINDOWS NONE)
 set(USER_CUSTOM_VST3_FOLDER_MACOS "/Users/username/Plugins/VST3")
 set(USER_CUSTOM_VST3_FOLDER_LINUX NONE)
+set(USER_CUSTOM_STANDALONE_FOLDER_WINDOWS NONE)
+set(USER_CUSTOM_STANDALONE_FOLDER_MACOS NONE)
+set(USER_CUSTOM_STANDALONE_FOLDER_LINUX NONE)
 set(USER_CUSTOM_AU_FOLDER_MACOS NONE)
 
 # CODE - Do not edit below
@@ -125,7 +128,7 @@ set(COPY_TO_SYSTEM_FOLDERS ${USER_COPY_TO_SYSTEM_FOLDERS} CACHE BOOL "...")
 ```
 
 - **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — copy AU and VST3 to system folders on macOS
-- **`USER_CUSTOM_VST3_FOLDER_*`**, **`USER_CUSTOM_AU_FOLDER_MACOS`**: `"path"` or `NONE`
+- **`USER_CUSTOM_VST3_FOLDER_*`**, **`USER_CUSTOM_STANDALONE_FOLDER_*`**, **`USER_CUSTOM_AU_FOLDER_MACOS`**: `"path"` or `NONE`
 
 **⚠️ IMPORTANT - Path Restrictions**: Same as `DEFAULT_PROJECT_DESTINATION` — paths must NOT contain accented or special Unicode characters.
 
@@ -215,12 +218,12 @@ DEFAULT_PLUGIN_CODE = "Plg1"
 
 ### Customizing Generated Projects
 
-**Each generated project includes its own `project-config.cmake`** at the project root. This file controls where plugins (VST3, AU) are copied after each build. You can edit it at any time—no need to regenerate the project.
+**Each generated project includes its own `project-config.cmake`** at the project root. This file controls where plugins (VST3, AU) and the Standalone app are copied after each build. You can edit it at any time—no need to regenerate the project.
 
 To change plugin copy options for a specific project, open `project-config.cmake` in that project and edit the **USER OPTIONS** section only:
 
 - **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — copy to system folders (macOS: `~/Library/Audio/Plug-Ins/`)
-- **`USER_CUSTOM_VST3_FOLDER_*`**, **`USER_CUSTOM_AU_FOLDER_MACOS`**: `"path"` or `NONE`
+- **`USER_CUSTOM_VST3_FOLDER_*`**, **`USER_CUSTOM_STANDALONE_FOLDER_*`**, **`USER_CUSTOM_AU_FOLDER_MACOS`**: `"path"` or `NONE`
 
 Override at configure time:
 
@@ -368,7 +371,7 @@ Projects support two types of plugin copy after build:
 1. **System folders** (macOS): AU → `~/Library/Audio/Plug-Ins/Components/`, VST3 → `~/Library/Audio/Plug-Ins/VST3/`
    - Controlled by `COPY_TO_SYSTEM_FOLDERS` in `project-config.cmake`
 
-2. **Custom folders**: VST3 (all platforms) and AU (macOS)
+2. **Custom folders**: VST3, Standalone (all platforms) and AU (macOS)
    - Set paths in `project-config.cmake`; use `NONE` to disable for a given platform
 
 Edit `project-config.cmake` in any generated project to customize without modifying `CMakeLists.txt`.
@@ -382,7 +385,8 @@ Edit `project-config.cmake` in any generated project to customize without modify
 This includes:
 
 - Project destination paths (`DEFAULT_PROJECT_DESTINATION`)
-- VST3 folder paths in `project-config.cmake` (`CUSTOM_VST3_FOLDER_WINDOWS`, `CUSTOM_VST3_FOLDER_MACOS`, `CUSTOM_VST3_FOLDER_LINUX`)
+- VST3 folder paths in `project-config.cmake` (`CUSTOM_VST3_FOLDER_*`)
+- Standalone folder paths in `project-config.cmake` (`CUSTOM_STANDALONE_FOLDER_*`)
 - AU folder path in `project-config.cmake` (`CUSTOM_AU_FOLDER_MACOS`)
 - Any path entered during interactive prompts
 

@@ -6,7 +6,7 @@ Generator Configuration file for JUCE Project Generator
 This file configures the generator itself: default values for interactive
 prompts, JUCE path validation, etc.
 
-Plugin copy settings (COPY_TO_SYSTEM_FOLDERS, CUSTOM_VST3_FOLDER_*, etc.)
+Plugin copy settings (COPY_TO_SYSTEM_FOLDERS, CUSTOM_VST3_FOLDER_*, CUSTOM_STANDALONE_FOLDER_*, CUSTOM_AU_FOLDER_MACOS, etc.)
 are in project-config.cmake in this directory. That file serves as the
 default template when creating new projects.
 
