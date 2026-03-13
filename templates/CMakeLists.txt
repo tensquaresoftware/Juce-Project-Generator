@@ -200,7 +200,7 @@ elseif(WIN32)
         add_custom_command(TARGET ${{STANDALONE_TARGET_NAME}} POST_BUILD
             COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone app to custom folder: ${{CUSTOM_STANDALONE_FOLDER}}"
             COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_STANDALONE_FOLDER}}"
-            COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}" REPLACE_EXISTING
+            COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}"
             COMMENT "Installing Standalone app to custom folder"
             VERBATIM
         )
@@ -216,7 +216,7 @@ else()
         add_custom_command(TARGET ${{STANDALONE_TARGET_NAME}} POST_BUILD
             COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone app to custom folder: ${{CUSTOM_STANDALONE_FOLDER}}"
             COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_STANDALONE_FOLDER}}"
-            COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}" REPLACE_EXISTING
+            COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}"
             COMMENT "Installing Standalone app to custom folder"
             VERBATIM
         )
