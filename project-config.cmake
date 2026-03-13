@@ -10,7 +10,7 @@
 # ==============================================================================
 
 # --- System ---
-set(USER_COPY_TO_SYSTEM_FOLDERS ON)
+set(USER_COPY_TO_SYSTEM_FOLDERS OFF)
 
 # --- VST3 Plugin ---
 set(USER_CUSTOM_VST3_FOLDER_WINDOWS "C:/Users/Guillaume/Dev/Plugins/VST3")
