@@ -6,7 +6,6 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 **Author:** Guillaume DUPONT  
 **Organization:** Ten Square Software  
-**Version:** 1.0.4  
 **Revision date:** 2026-03-12
 
 ---
