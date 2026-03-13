@@ -14,14 +14,24 @@
                 "args": [
                     "-B", "{buildDirWindows}",
                     "-G", "Visual Studio 17 2022",
-                    "-DCMAKE_BUILD_TYPE=Debug"
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                    "-DJUCE_DIR=${{env:JUCE_DIR}}"
                 ]
             }},
             "osx": {{
                 "args": [
                     "-B", "{buildDirMacOS}",
                     "-G", "Ninja",
-                    "-DCMAKE_BUILD_TYPE=Debug"
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                    "-DJUCE_DIR=${{env:JUCE_DIR}}"
+                ]
+            }},
+            "linux": {{
+                "args": [
+                    "-B", "{buildDirLinux}",
+                    "-G", "Ninja",
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                    "-DJUCE_DIR=${{env:JUCE_DIR}}"
                 ]
             }},
             "group": "build",
@@ -46,6 +56,13 @@
             "osx": {{
                 "args": [
                     "--build", "{buildDirMacOS}",
+                    "--target", "{projectName}_Standalone",
+                    "--config", "Debug"
+                ]
+            }},
+            "linux": {{
+                "args": [
+                    "--build", "{buildDirLinux}",
                     "--target", "{projectName}_Standalone",
                     "--config", "Debug"
                 ]
@@ -107,6 +124,13 @@
                     "--config", "Debug"
                 ]
             }},
+            "linux": {{
+                "args": [
+                    "--build", "{buildDirLinux}",
+                    "--target", "{projectName}_VST3",
+                    "--config", "Debug"
+                ]
+            }},
             "group": "build",
             "dependsOn": ["CMake: Configure"],
             "problemMatcher": [
@@ -131,6 +155,12 @@
             "osx": {{
                 "args": [
                     "--build", "{buildDirMacOS}",
+                    "--config", "Debug"
+                ]
+            }},
+            "linux": {{
+                "args": [
+                    "--build", "{buildDirLinux}",
                     "--config", "Debug"
                 ]
             }},

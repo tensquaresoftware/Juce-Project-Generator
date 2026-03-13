@@ -127,48 +127,46 @@ target_compile_definitions({projectName}
 )
 
 # =============================================================================
-# CUSTOM VST3 INSTALLATION (Windows)
+# CUSTOM VST3 INSTALLATION (all platforms)
 # Copy VST3 plugin to custom folder after build for easy testing
 # =============================================================================
 #
 # CONFIGURATION:
 # ------------
-# To customize the VST3 installation folder, modify the default value below
-# or override it when configuring CMake:
+# To customize the VST3 installation folder, override when configuring CMake:
 #   cmake .. -DCUSTOM_VST3_FOLDER="your/custom/path"
 #
-# Examples:
-#   - Personal folder: "C:/Users/YourName/VST3"
-#   - Custom location: "D:/MyPlugins/VST3"
-#   - Standard location (requires admin): "C:/Program Files/Common Files/VST3"
-#
-# Note: Using a personal folder avoids requiring administrator privileges.
-#       Configure your DAW to scan this custom folder for VST3 plugins.
+# Default paths are defined per platform in the blocks below.
+# Configure your DAW to scan the custom folder for VST3 plugins.
 #
 # =============================================================================
 
+set(VST3_TARGET_NAME "{projectName}_VST3")
+set(VST3_SOURCE_DIR "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/VST3/{projectName}.vst3")
+
 if(WIN32)
-    # Define custom VST3 folder (can be overridden via CMake cache)
     if(NOT DEFINED CUSTOM_VST3_FOLDER)
-        set(CUSTOM_VST3_FOLDER "{customVst3Folder}" CACHE PATH "Custom VST3 installation folder")
+        set(CUSTOM_VST3_FOLDER "{customVst3FolderWindows}" CACHE PATH "Custom VST3 installation folder (Windows)")
     endif()
-    
-    # VST3 target name (JUCE appends _VST3)
-    set(VST3_TARGET_NAME "{projectName}_VST3")
-    
-    # Path where JUCE generates the VST3 bundle (using generator expression for CONFIG)
-    set(VST3_SOURCE_DIR "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/VST3/{projectName}.vst3")
-    set(VST3_DEST_DIR "${{CUSTOM_VST3_FOLDER}}/{projectName}.vst3")
-    
-    # Add custom command to copy VST3 plugin after build
-    add_custom_command(TARGET ${{VST3_TARGET_NAME}} POST_BUILD
-        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 plugin to custom folder: ${{CUSTOM_VST3_FOLDER}}"
-        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_VST3_FOLDER}}"
-        COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{VST3_DEST_DIR}}"
-        COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{VST3_SOURCE_DIR}}" "${{VST3_DEST_DIR}}"
-        COMMENT "Installing VST3 plugin to custom folder"
-        VERBATIM
-    )
-    
-    message(STATUS "VST3 plugin will be copied to: ${{CUSTOM_VST3_FOLDER}}")
+elseif(APPLE)
+    if(NOT DEFINED CUSTOM_VST3_FOLDER)
+        set(CUSTOM_VST3_FOLDER "{customVst3FolderMacOS}" CACHE PATH "Custom VST3 installation folder (macOS)")
+    endif()
+else()
+    if(NOT DEFINED CUSTOM_VST3_FOLDER)
+        set(CUSTOM_VST3_FOLDER "{customVst3FolderLinux}" CACHE PATH "Custom VST3 installation folder (Linux)")
+    endif()
 endif()
+
+set(VST3_DEST_DIR "${{CUSTOM_VST3_FOLDER}}/{projectName}.vst3")
+
+add_custom_command(TARGET ${{VST3_TARGET_NAME}} POST_BUILD
+    COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 plugin to custom folder: ${{CUSTOM_VST3_FOLDER}}"
+    COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_VST3_FOLDER}}"
+    COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{VST3_DEST_DIR}}"
+    COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{VST3_SOURCE_DIR}}" "${{VST3_DEST_DIR}}"
+    COMMENT "Installing VST3 plugin to custom folder"
+    VERBATIM
+)
+
+message(STATUS "VST3 plugin will be copied to: ${{CUSTOM_VST3_FOLDER}}")

@@ -154,7 +154,9 @@ class JuceProjectGenerator:
         self.kDefaultManufacturer = self.loadDefaultManufacturer()
         self.kDefaultManufacturerCode = self.loadDefaultManufacturerCode()
         self.kDefaultPluginCode = self.loadDefaultPluginCode()
-        self.customVst3Folder = self.loadCustomVst3Folder()
+        self.customVst3FolderWindows = self.loadCustomVst3FolderWindows()
+        self.customVst3FolderMacOS = self.loadCustomVst3FolderMacOS()
+        self.customVst3FolderLinux = self.loadCustomVst3FolderLinux()
         self.juceDir = self.loadJuceDir()
         self.initializeProjectFields()
     
@@ -199,13 +201,29 @@ class JuceProjectGenerator:
     def showInvalidPluginCodeWarning(self) -> None:
         print(f"{Color.YELLOW}⚠️  Warning: DEFAULT_PLUGIN_CODE in user-config.py is invalid (must be 4 alphanumeric chars). Using default.{Color.RESET}")
     
-    def loadCustomVst3Folder(self) -> str:
+    def loadCustomVst3FolderWindows(self) -> str:
         if kConfigModule and hasattr(kConfigModule, 'CUSTOM_VST3_FOLDER_WINDOWS'):
             vst3Path = kConfigModule.CUSTOM_VST3_FOLDER_WINDOWS
             if vst3Path:
                 validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_WINDOWS")
                 return Path(vst3Path).as_posix()
         return "C:/Users/YourName/VST3"
+
+    def loadCustomVst3FolderMacOS(self) -> str:
+        if kConfigModule and hasattr(kConfigModule, 'CUSTOM_VST3_FOLDER_MACOS'):
+            vst3Path = kConfigModule.CUSTOM_VST3_FOLDER_MACOS
+            if vst3Path:
+                validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_MACOS")
+                return Path(vst3Path).as_posix()
+        return "/Users/username/Plugins/VST3"
+
+    def loadCustomVst3FolderLinux(self) -> str:
+        if kConfigModule and hasattr(kConfigModule, 'CUSTOM_VST3_FOLDER_LINUX'):
+            vst3Path = kConfigModule.CUSTOM_VST3_FOLDER_LINUX
+            if vst3Path:
+                validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_LINUX")
+                return Path(vst3Path).as_posix()
+        return "/home/username/Plugins/VST3"
     
     def loadJuceDir(self) -> Optional[str]:
         system = platform.system()
@@ -427,7 +445,6 @@ class JuceProjectGenerator:
         return "Builds/Linux"
 
     def renderTemplate(self, templateContent: str) -> str:
-        juceDirValue = self.juceDir if self.juceDir else ""
         return templateContent.format(
             projectName=self.projectName,
             projectDisplayName=self.projectDisplayName,
@@ -443,8 +460,9 @@ class JuceProjectGenerator:
             auMainType=self.auMainType,
             vst3Categories=self.vst3Categories,
             bundleId=self.bundleId,
-            customVst3Folder=self.customVst3Folder,
-            juceDir=juceDirValue,
+            customVst3FolderWindows=self.customVst3FolderWindows,
+            customVst3FolderMacOS=self.customVst3FolderMacOS,
+            customVst3FolderLinux=self.customVst3FolderLinux,
             buildDirMacOS=self.getBuildDirMacOS(),
             buildDirWindows=self.getBuildDirWindows(),
             buildDirLinux=self.getBuildDirLinux()

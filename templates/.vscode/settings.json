@@ -2,6 +2,9 @@
     "cmake.configureOnOpen": true,
     "cmake.configurePreset": "{configurePreset}",
     "cmake.buildDirectory": "${{workspaceFolder}}/{buildDirectory}",
+    "cmake.configureSettings": {{
+        "JUCE_DIR": "${{env:JUCE_DIR}}"
+    }},
     "cmake.configureEnvironment": {{
         "JUCE_DIR": "${{env:JUCE_DIR}}"
     }},

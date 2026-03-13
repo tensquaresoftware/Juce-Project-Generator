@@ -17,16 +17,17 @@ IMPORTANT: Before sharing this generator with others, make sure to:
 # =============================================================================
 #
 # Path to your JUCE installation directory.
-# This will be used in generated projects instead of requiring the JUCE_DIR
-# environment variable to be set.
+# Used only for validation when generating (warns if the path does not exist).
+# These values are NOT written into generated projects.
+#
+# Generated projects use the JUCE_DIR environment variable instead. Set it once
+# per machine so the same project can be built on macOS, Windows, and Linux
+# without machine-specific paths in Git.
 #
 # Platform-specific examples:
 #   - macOS: "/Applications/JUCE"
 #   - Windows: "C:/JUCE" or "C:/Program Files/JUCE"
 #   - Linux: "/usr/local/JUCE" or "/opt/JUCE"
-#
-# If set to None, the generated project will require JUCE_DIR environment variable.
-# If set to a path, that path will be used directly in CMakeLists.txt.
 #
 JUCE_DIR_WINDOWS = "C:/Program Files/JUCE"
 JUCE_DIR_MACOS   = "/Applications/JUCE"
@@ -93,33 +94,33 @@ DEFAULT_PLUGIN_CODE       = "Tssp"
 DEFAULT_PROJECT_DESTINATION = "Default"
 
 # =============================================================================
-# CUSTOM VST3 INSTALLATION FOLDER (Windows only)
+# CUSTOM VST3 INSTALLATION FOLDER (all platforms)
 # =============================================================================
-# 
+#
 # ⚠️ IMPORTANT - PATH RESTRICTIONS:
 # -----------------------------------------------------------------------------
 # Same restrictions as DEFAULT_PROJECT_DESTINATION - paths MUST NOT contain
 # accented characters or special Unicode characters. Only ASCII characters
 # (0-127) are allowed.
 #
-# The generator will STRICTLY validate this path and refuse to proceed if
+# The generator will STRICTLY validate these paths and refuse to proceed if
 # problematic characters are detected.
 #
-# Default folder where VST3 plugins will be automatically copied after build
-# on Windows. This allows easy testing in your DAW without requiring admin
-# privileges.
+# Default folder where VST3 plugins will be automatically copied after build.
+# This allows easy testing in your DAW without requiring admin privileges.
+# Each platform uses its own path when building.
 #
 # Examples:
-#   - Personal folder: "C:/Users/YourName/VST3"
-#   - Custom location: "D:/MyPlugins/VST3"
-#   - Standard location (requires admin): "C:/Program Files/Common Files/VST3"
+#   - Windows:  "C:/Users/YourName/VST3"
+#   - macOS:    "/Users/username/Plugins/VST3"
+#   - Linux:    "/home/username/Plugins/VST3"
 #
-# Users can override this value when configuring CMake:
+# Users can override when configuring CMake:
 #   cmake .. -DCUSTOM_VST3_FOLDER="your/custom/path"
 #
-# Or modify it directly in the generated CMakeLists.txt file.
-#
 CUSTOM_VST3_FOLDER_WINDOWS = "C:/Users/Guillaume/VST3"
+CUSTOM_VST3_FOLDER_MACOS   = "/Users/Guillaume/Plugins/VST3"
+CUSTOM_VST3_FOLDER_LINUX   = "/home/guillaume/Plugins/VST3"
 
 # =============================================================================
 # ADDITIONAL CONFIGURATION

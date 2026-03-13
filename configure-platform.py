@@ -174,6 +174,17 @@ def updateTasksJson(tasksFile, buildDir):
                 if idx + 1 < len(winArgs):
                     winArgs[idx + 1] = buildDirWin
             task["windows"]["args"] = winArgs
+        if "linux" in task and system == "Linux":
+            linuxArgs = task["linux"].get("args", [])
+            if "-B" in linuxArgs:
+                idx = linuxArgs.index("-B")
+                if idx + 1 < len(linuxArgs):
+                    linuxArgs[idx + 1] = buildDirLinux
+            if "--build" in linuxArgs:
+                idx = linuxArgs.index("--build")
+                if idx + 1 < len(linuxArgs):
+                    linuxArgs[idx + 1] = buildDirLinux
+            task["linux"]["args"] = linuxArgs
         if "Clean" in task.get("label", ""):
             if "args" in task:
                 if system == "Windows":

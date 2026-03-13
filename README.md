@@ -6,7 +6,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 **Author:** Guillaume DUPONT  
 **Organization:** Ten Square Software  
-**Version:** 1.0.1  
+**Version:** 1.0.4  
 **Revision date:** 2026-03-12
 
 ---
@@ -18,10 +18,11 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - ✅ Platform-specific settings (macOS Apple Silicon/Intel, Windows, Linux)
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS path differences)
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
-- ✅ Automatic VST3 plugin installation to custom folder (Windows)
+- ✅ Automatic VST3 plugin installation to custom folder (all platforms)
 - ✅ Support for AU, VST3, and Standalone formats
 - ✅ Configurable via `user-config.py` for easy customization
 - ✅ Customizable default manufacturer and plugin codes
+- ✅ **Portable workflow**: projects use `JUCE_DIR` from the environment—no machine-specific paths in Git; ideal for GitHub and multi-machine (macOS / Windows / Linux) development
 
 ## Quick Start
 
@@ -30,21 +31,31 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - Python 3.7+
 - JUCE 8 installed
 - CMake 3.22+
+- Ninja (required on Linux; on macOS/Windows, Ninja or platform generator)
 - Cursor or VS Code
+
+### Platform-specific prerequisites (Linux)
+
+- CMake 3.22+ (3.27+ recommended)
+- Ninja (`sudo apt install ninja-build`)
+- GCC, GDB, build-essential
+- **JUCE_DIR**: Must be set in your environment (see [Portable workflow](#portable-workflow-github-multi-machine) below).
 
 ### Setup
 
-1. **Configure JUCE installation path** (recommended):
+1. **Set `JUCE_DIR` in your environment** (required for building):
    
-   Edit `user-config.py` and set the JUCE path for your platform (optional—generated projects auto-detect JUCE at build time):
+   Generated projects use `${env:JUCE_DIR}` everywhere (tasks and CMake Tools). Configure it once per machine so that the same project builds on macOS, Windows, and Linux without any path in Git.
    
-   - **macOS**: `JUCE_DIR_MACOS = "/Applications/JUCE"`
-   - **Windows**: `JUCE_DIR_WINDOWS = "C:/JUCE"`
-   - **Linux**: `JUCE_DIR_LINUX = "/opt/JUCE"`
+   - **macOS** (e.g. `~/.zshrc`): `export JUCE_DIR="/Applications/JUCE"`
+   - **Windows** (cmd): `setx JUCE_DIR "C:\Path\To\JUCE"` then restart the terminal; or set it in System → Environment variables.
+   - **Linux** (e.g. `~/.bashrc`): `export JUCE_DIR="/home/username/Dev/JUCE"`
+   
+   Restart Cursor (or at least the integrated terminal) after changing the environment.
 
-2. **Configure your environment** (optional):
+2. **Configure your environment** (optional, for the generator only):
    
-   - Copy `user-config.py` and customize other settings (see Configuration section below)
+   - Copy `user-config.py` and customize other settings (see Configuration section below). The `JUCE_DIR_*` options in `user-config.py` are only used for **validation** when generating; they are not written into generated projects.
 
 3. **Run the generator**:
    
@@ -78,38 +89,34 @@ The generator uses a `user-config.py` file to store user-specific settings. This
 
 #### `JUCE_DIR_MACOS`, `JUCE_DIR_WINDOWS`, `JUCE_DIR_LINUX`
 
-**Purpose**: Optional. Used for validation when generating (warns if path doesn't exist). Generated projects are **portable**: they auto-detect JUCE at build time based on the platform where they are compiled.
+**Purpose**: Optional. Used **only for validation** when generating (warns if the path doesn't exist). These values are **not** written into generated projects.
 
-**Why**: Projects can be generated on Windows and opened on macOS (or vice versa)—JUCE is detected at standard locations (`/Applications/JUCE`, `C:/Program Files/JUCE`, `/usr/local/JUCE`) or via `JUCE_DIR` env var / `-DJUCE_DIR`.
+**Why**: Generated projects use `${env:JUCE_DIR}` in `.vscode/settings.json` and in the CMake: Configure task. So the same repo can be cloned on macOS, Windows, and Linux; on each machine you set `JUCE_DIR` in the environment once, and the project builds without any machine-specific paths in Git.
 
-**Examples**:
+**Examples** (for validation only):
 
 - macOS: `JUCE_DIR_MACOS = "/Applications/JUCE"`
 - Windows: `JUCE_DIR_WINDOWS = "C:/JUCE"` or `"C:/Program Files/JUCE"`
-- Linux: `JUCE_DIR_LINUX = "/opt/JUCE"` or `"/usr/local/JUCE"`
+- Linux: `JUCE_DIR_LINUX = "/home/username/Dev/JUCE"` or `"/opt/JUCE"`
 
-**Note**: If set to `None`, the generator skips path validation. The generated project will auto-detect JUCE when built.
+**Note**: If set to `None`, the generator skips path validation. **Building** always requires `JUCE_DIR` to be set in your shell/IDE environment on each machine (see [Portable workflow](#portable-workflow-github-multi-machine)).
 
-#### `CUSTOM_VST3_FOLDER_WINDOWS`
+#### `CUSTOM_VST3_FOLDER_WINDOWS`, `CUSTOM_VST3_FOLDER_MACOS`, `CUSTOM_VST3_FOLDER_LINUX`
 
-**Purpose**: Defines the default folder where VST3 plugins will be automatically copied after build on Windows.
-
-**Why**: This allows you to test plugins in your DAW without requiring administrator privileges. The standard VST3 location (`C:\Program Files\Common Files\VST3`) requires admin rights, which can be inconvenient during development.
+**Purpose**: Define the default folder where VST3 plugins are automatically copied after each build, on each platform. This allows testing in your DAW without admin privileges (the standard system VST3 folder often requires them).
 
 **Examples**:
 
-- Personal folder: `"C:/Users/YourName/VST3"` or `"C:\\Users\\YourName\\VST3"` (both formats work)
-- Custom drive: `"D:/MyPlugins/VST3"`
-- Standard location (requires admin): `"C:/Program Files/Common Files/VST3"`
+- Windows: `"C:/Users/YourName/VST3"` or `"D:/MyPlugins/VST3"`
+- macOS: `"/Users/username/Plugins/VST3"`
+- Linux: `"/home/username/Plugins/VST3"`
 
-**Note**: The generator automatically normalizes paths, so you can use either forward slashes (`/`) or backslashes (`\`) on Windows.
-
-**Note**: After setting this, configure your DAW (Ableton Live, Reaper, etc.) to scan this custom folder for VST3 plugins.
+**Note**: Each platform uses its own path when building. Configure your DAW to scan the custom folder for VST3 plugins. You can override at configure time: `cmake .. -DCUSTOM_VST3_FOLDER="/your/path"`.
 
 **⚠️ IMPORTANT - Path Restrictions**:
 
 - **NO ACCENTED CHARACTERS**: Same restrictions as `DEFAULT_PROJECT_DESTINATION` - paths must NOT contain accented or special Unicode characters
-- The generator will validate this path and **stop immediately** with an error message if problematic characters are detected
+- The generator will validate these paths and **stop immediately** if problematic characters are detected
 
 #### `DEFAULT_PROJECT_DESTINATION`
 
@@ -169,14 +176,15 @@ User Configuration file for JUCE Project Generator
 Customize the values below to match your development environment.
 """
 
-# JUCE installation paths (set for your platform)
+# JUCE installation paths (optional: used only for validation when generating, not written into projects)
 JUCE_DIR_MACOS = "/Applications/JUCE"
 JUCE_DIR_WINDOWS = "C:/JUCE"
-JUCE_DIR_LINUX = None  # Set to your JUCE path if needed
+JUCE_DIR_LINUX = "/home/username/Dev/JUCE"  # or None to skip; set env JUCE_DIR on each machine for building
 
-# Custom VST3 installation folder (Windows)
-# Change this to your preferred VST3 folder
+# Custom VST3 installation folder (all platforms)
 CUSTOM_VST3_FOLDER_WINDOWS = "C:/Users/YourName/VST3"
+CUSTOM_VST3_FOLDER_MACOS = "/Users/username/Plugins/VST3"
+CUSTOM_VST3_FOLDER_LINUX = "/home/username/Plugins/VST3"
 
 # Default project destination
 # Set to "Default" to use Desktop, or specify a custom path
@@ -282,6 +290,12 @@ Build directories are separated by platform and architecture to avoid mixing fil
   - Or manually copy to `C:\Program Files\Common Files\VST3\` (requires admin)
 - **Standalone**: Run the `.exe` directly
 
+#### Linux
+
+- **VST3**: Automatically copied to your custom folder (configured in `user-config.py`, e.g. `/home/username/Plugins/VST3`)
+  - Configure your DAW to scan this folder
+- **Standalone**: Run the binary from the build directory
+
 ### Debugging
 
 Press `F5` in Cursor to start debugging. Debug configurations are available for:
@@ -305,11 +319,39 @@ This script automatically detects your operating system and, on macOS, your proc
 
 You can also manually select the appropriate CMake preset: `Ctrl+Shift+P` → "CMake: Select Configure Preset" → Choose the preset for your platform (e.g., `default-macos-arm64`, `default-macos-x86_64`, `default-windows`, `default-linux`).
 
+## Portable workflow (GitHub, multi-machine)
+
+The generator is designed so that **no machine-specific paths** are committed to Git. You can create a plugin on one machine, push to GitHub, then clone and build on your other machines (e.g. one macOS, one Windows, one Linux) without editing any project files.
+
+### How it works
+
+- Generated projects use **`${env:JUCE_DIR}`** in `.vscode/settings.json` and in the "CMake: Configure" task. The path to JUCE is never hardcoded.
+- Each machine defines `JUCE_DIR` once in its environment. The same project then builds everywhere.
+
+### One-time setup per machine
+
+| Platform | Where to set | Example |
+|----------|--------------|---------|
+| **macOS** | `~/.zshrc` (or `~/.bash_profile`) | `export JUCE_DIR="/Applications/JUCE"` |
+| **Linux** | `~/.bashrc` (or `~/.profile`) | `export JUCE_DIR="/home/username/Dev/JUCE"` |
+| **Windows** | System env vars, or `setx`, or PowerShell `$PROFILE` | `setx JUCE_DIR "C:\Path\To\JUCE"` |
+
+After changing the environment, restart Cursor (or at least the integrated terminal).
+
+### Typical workflow
+
+1. **Create** the project on any machine with the generator; push to GitHub.
+2. **Clone** the repo on the other machines.
+3. On each machine: ensure `JUCE_DIR` is set (see above), then run `python configure-platform.py` to adapt `.vscode/settings.json`, `tasks.json`, and `launch.json` to the current OS.
+4. **Build** on each machine; no path edits are needed in the project.
+
+This keeps the repository clean and portable for collaboration and multi-OS development.
+
 ## Customization
 
 ### Custom VST3 Folder
 
-The generator automatically configures projects to copy VST3 plugins to a custom folder on Windows. This:
+The generator configures projects to copy VST3 plugins to a custom folder on **all platforms** (Windows, macOS, Linux). This:
 
 - Avoids requiring administrator privileges
 - Makes testing faster during development
@@ -330,7 +372,7 @@ cmake .. -DCUSTOM_VST3_FOLDER="your/custom/path"
 This includes:
 
 - Project destination paths (`DEFAULT_PROJECT_DESTINATION`)
-- VST3 folder paths (`CUSTOM_VST3_FOLDER_WINDOWS`)
+- VST3 folder paths (`CUSTOM_VST3_FOLDER_WINDOWS`, `CUSTOM_VST3_FOLDER_MACOS`, `CUSTOM_VST3_FOLDER_LINUX`)
 - Any path entered during interactive prompts
 
 **Why this restriction?**
@@ -399,9 +441,8 @@ The generator is designed to be resilient and will handle various error scenario
 
 3. **Invalid or missing JUCE path**:
    
-   - If the path doesn't exist, a warning is displayed
-   - Project generation continues, but CMake configuration may fail later
-   - You can set the `JUCE_DIR` environment variable as a fallback
+   - If the path doesn't exist in `user-config.py`, a warning is displayed
+   - Project generation continues; for building, set the `JUCE_DIR` environment variable on each machine: `export JUCE_DIR=/path/to/JUCE` (see [Portable workflow](#portable-workflow-github-multi-machine))
 
 4. **Missing constants**:
    
@@ -413,6 +454,13 @@ The generator is designed to be resilient and will handle various error scenario
 - The generator automatically normalizes paths (converts backslashes to forward slashes), so you can use either format in `user-config.py`
 - Ensure the folder path doesn't require admin privileges (unless that's intentional)
 - Verify the path is correct in the generated `CMakeLists.txt`
+
+### JUCE not found (any platform)
+
+CMake reports `JUCE not found. Set JUCE_DIR...` when `JUCE_DIR` is not set or not visible to the build.
+
+1. **Set the environment variable** (recommended, portable): Add `export JUCE_DIR=/path/to/JUCE` to your shell profile (`~/.bashrc`, `~/.zshrc`, or Windows system/env vars). Restart Cursor or the terminal.
+2. **On Linux**: Ensure Ninja is installed (`sudo apt install ninja-build`)—the Linux build uses Ninja, not Visual Studio.
 
 ### Build errors with paths containing accents
 
