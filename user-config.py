@@ -118,9 +118,9 @@ DEFAULT_PROJECT_DESTINATION = "Default"
 # Users can override when configuring CMake:
 #   cmake .. -DCUSTOM_VST3_FOLDER="your/custom/path"
 #
-CUSTOM_VST3_FOLDER_WINDOWS = "C:/Users/Guillaume/VST3"
+CUSTOM_VST3_FOLDER_WINDOWS = "C:/Users/Guillaume/Dev/Plugins/VST3"
 CUSTOM_VST3_FOLDER_MACOS   = "/Volumes/Guillaume/Dev/Plugins/VST3"
-CUSTOM_VST3_FOLDER_LINUX   = "/home/guillaume/Plugins/VST3"
+CUSTOM_VST3_FOLDER_LINUX   = "/home/guillaume/Dev/Plugins/VST3"
 
 # =============================================================================
 # ADDITIONAL CONFIGURATION
