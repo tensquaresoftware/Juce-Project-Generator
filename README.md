@@ -105,21 +105,27 @@ The generator uses two configuration files (both in the generator directory):
 
 #### `project-config.cmake` (in generator directory)
 
-**Purpose**: Defines default plugin copy settings for new projects. The generator reads this file and copies its values into each generated project. Edit this file to customize defaults.
+**Purpose**: Defines default plugin copy settings for new projects. The generator reads this file and copies its values into each generated project.
 
-**Variables** (CMake format):
-
-- **`COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — copy AU and VST3 to system folders on macOS
-- **`CUSTOM_VST3_FOLDER_WINDOWS`**, **`CUSTOM_VST3_FOLDER_MACOS`**, **`CUSTOM_VST3_FOLDER_LINUX`**: Path or `""` to disable
-- **`CUSTOM_AU_FOLDER_MACOS`**: Path or `""` to disable (macOS only)
+**Structure**: Edit only the **USER OPTIONS** section at the top. The **CODE** section below must not be modified.
 
 **Example** (excerpt):
 
 ```cmake
-set(COPY_TO_SYSTEM_FOLDERS ON CACHE BOOL "...")
-set(CUSTOM_VST3_FOLDER_MACOS "/Users/username/Plugins/VST3" CACHE PATH "...")
-set(CUSTOM_AU_FOLDER_MACOS "" CACHE PATH "...")
+# USER OPTIONS - Edit these values only
+set(USER_COPY_TO_SYSTEM_FOLDERS ON)
+set(USER_CUSTOM_VST3_FOLDER_WINDOWS NONE)
+set(USER_CUSTOM_VST3_FOLDER_MACOS "/Users/username/Plugins/VST3")
+set(USER_CUSTOM_VST3_FOLDER_LINUX NONE)
+set(USER_CUSTOM_AU_FOLDER_MACOS NONE)
+
+# CODE - Do not edit below
+set(COPY_TO_SYSTEM_FOLDERS ${USER_COPY_TO_SYSTEM_FOLDERS} CACHE BOOL "...")
+...
 ```
+
+- **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — copy AU and VST3 to system folders on macOS
+- **`USER_CUSTOM_VST3_FOLDER_*`**, **`USER_CUSTOM_AU_FOLDER_MACOS`**: `"path"` or `NONE`
 
 **⚠️ IMPORTANT - Path Restrictions**: Same as `DEFAULT_PROJECT_DESTINATION` — paths must NOT contain accented or special Unicode characters.
 
@@ -211,13 +217,12 @@ DEFAULT_PLUGIN_CODE = "Plg1"
 
 **Each generated project includes its own `project-config.cmake`** at the project root. This file controls where plugins (VST3, AU) are copied after each build. You can edit it at any time—no need to regenerate the project.
 
-To change plugin copy options for a specific project, open `project-config.cmake` in that project and edit:
+To change plugin copy options for a specific project, open `project-config.cmake` in that project and edit the **USER OPTIONS** section only:
 
-- **`COPY_TO_SYSTEM_FOLDERS`**: Set to `ON` or `OFF` to enable/disable copy to system folders (macOS: `~/Library/Audio/Plug-Ins/Components/` and `~/Library/Audio/Plug-Ins/VST3/`)
-- **`CUSTOM_VST3_FOLDER_WINDOWS`**, **`CUSTOM_VST3_FOLDER_MACOS`**, **`CUSTOM_VST3_FOLDER_LINUX`**: Path or `""` to disable
-- **`CUSTOM_AU_FOLDER_MACOS`**: Path or `""` to disable (macOS only)
+- **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — copy to system folders (macOS: `~/Library/Audio/Plug-Ins/`)
+- **`USER_CUSTOM_VST3_FOLDER_*`**, **`USER_CUSTOM_AU_FOLDER_MACOS`**: `"path"` or `NONE`
 
-You can also override at configure time:
+Override at configure time:
 
 ```bash
 cmake .. -DCOPY_TO_SYSTEM_FOLDERS=OFF -DCUSTOM_VST3_FOLDER_MACOS="/your/path"
@@ -364,7 +369,7 @@ Projects support two types of plugin copy after build:
    - Controlled by `COPY_TO_SYSTEM_FOLDERS` in `project-config.cmake`
 
 2. **Custom folders**: VST3 (all platforms) and AU (macOS)
-   - Set paths in `project-config.cmake`; use `""` to disable for a given platform
+   - Set paths in `project-config.cmake`; use `NONE` to disable for a given platform
 
 Edit `project-config.cmake` in any generated project to customize without modifying `CMakeLists.txt`.
 
@@ -460,7 +465,7 @@ The generator is designed to be resilient and will handle various error scenario
 
 - The generator automatically normalizes paths (converts backslashes to forward slashes), so you can use either format in `generator-config.py` or `project-config.cmake`
 - Ensure the folder path doesn't require admin privileges (unless that's intentional)
-- Verify the path is set (not `""`) in `project-config.cmake` for the platform you're building on
+- Verify the path is set (not `NONE`) in `project-config.cmake` for the platform you're building on
 - For system folder copy on macOS, ensure `COPY_TO_SYSTEM_FOLDERS` is `ON` in `project-config.cmake`
 
 ### JUCE not found (any platform)

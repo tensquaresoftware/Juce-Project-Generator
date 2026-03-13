@@ -129,11 +129,10 @@ The project is **automatically configured** for your platform when generated. Si
 
 ### Plugin Copy Configuration
 
-Edit `project-config.cmake` to customize where plugins are copied after each build:
+Edit the **USER OPTIONS** section in `project-config.cmake` to customize where plugins are copied:
 
-- **`COPY_TO_SYSTEM_FOLDERS`**: `ON`/`OFF` — copy AU and VST3 to system folders on macOS
-- **`CUSTOM_VST3_FOLDER_WINDOWS`**, **`CUSTOM_VST3_FOLDER_MACOS`**, **`CUSTOM_VST3_FOLDER_LINUX`**: Path or `""` to disable
-- **`CUSTOM_AU_FOLDER_MACOS`**: Path or `""` to disable (macOS only)
+- **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON`/`OFF` — copy AU and VST3 to system folders on macOS
+- **`USER_CUSTOM_VST3_FOLDER_*`**, **`USER_CUSTOM_AU_FOLDER_MACOS`**: `"path"` or `NONE`
 
 ### Debugging
 

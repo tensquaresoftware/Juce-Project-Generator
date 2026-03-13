@@ -135,7 +135,7 @@ target_compile_definitions({projectName}
 # Copy VST3 plugin to custom folder after build for easy testing
 # =============================================================================
 #
-# Paths are defined in project-config.cmake. Set to "" to disable.
+# Paths are defined in project-config.cmake. Set to NONE or "" to disable.
 #
 # =============================================================================
 
@@ -150,7 +150,7 @@ else()
     set(CUSTOM_VST3_FOLDER "${{CUSTOM_VST3_FOLDER_LINUX}}")
 endif()
 
-if(CUSTOM_VST3_FOLDER)
+if(CUSTOM_VST3_FOLDER AND NOT CUSTOM_VST3_FOLDER STREQUAL "NONE")
     set(VST3_DEST_DIR "${{CUSTOM_VST3_FOLDER}}/{projectName}.vst3")
     add_custom_command(TARGET ${{VST3_TARGET_NAME}} POST_BUILD
         COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 plugin to custom folder: ${{CUSTOM_VST3_FOLDER}}"
@@ -170,11 +170,11 @@ endif()
 # Copy AU plugin to custom folder after build for easy testing
 # =============================================================================
 #
-# Path is defined in project-config.cmake. Set to "" to disable.
+# Path is defined in project-config.cmake. Set to NONE or "" to disable.
 #
 # =============================================================================
 
-if(APPLE AND CUSTOM_AU_FOLDER_MACOS)
+if(APPLE AND CUSTOM_AU_FOLDER_MACOS AND NOT CUSTOM_AU_FOLDER_MACOS STREQUAL "NONE")
     set(AU_TARGET_NAME "{projectName}_AU")
     set(AU_SOURCE_DIR "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/AU/{projectName}.component")
     set(AU_DEST_DIR "${{CUSTOM_AU_FOLDER_MACOS}}/{projectName}.component")

@@ -118,7 +118,7 @@ def parseProjectConfigCmake(configPath: Path) -> Dict[str, str]:
         return result
     content = configPath.read_text(encoding='utf-8')
     # Match set(VAR "value" ...) or set(VAR value ...) - value can be quoted or unquoted
-    for m in re.finditer(r'set\s*\(\s*(\w+)\s+("(?:[^"\\]|\\.)*"|\S+)', content):
+    for m in re.finditer(r'set\s*\(\s*(\w+)\s+("(?:[^"\\]|\\.)*"|[^\s)]+)', content):
         var_name, val = m.group(1), m.group(2)
         if val.startswith('"') and val.endswith('"'):
             val = val[1:-1].replace('\\"', '"')
@@ -234,14 +234,18 @@ class JuceProjectGenerator:
             return True
         return False
 
+    def _getConfigValue(self, cfg: Dict[str, str], user_key: str, cache_key: str, default: str) -> str:
+        """Prefer USER_* variable (user options section) over CACHE variable (code section)."""
+        return cfg.get(user_key, cfg.get(cache_key, default))
+
     def loadCopyToSystemFolders(self) -> bool:
         cfg = self._parseProjectConfig()
-        val = cfg.get("COPY_TO_SYSTEM_FOLDERS", "ON").upper()
+        val = self._getConfigValue(cfg, "USER_COPY_TO_SYSTEM_FOLDERS", "COPY_TO_SYSTEM_FOLDERS", "ON").upper()
         return val in ("ON", "TRUE", "1", "YES")
 
     def loadCustomVst3FolderWindows(self) -> str:
         cfg = self._parseProjectConfig()
-        vst3Path = cfg.get("CUSTOM_VST3_FOLDER_WINDOWS", "C:/Users/YourName/VST3")
+        vst3Path = self._getConfigValue(cfg, "USER_CUSTOM_VST3_FOLDER_WINDOWS", "CUSTOM_VST3_FOLDER_WINDOWS", "NONE")
         if self._isDisabledPath(vst3Path):
             return ""
         validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_WINDOWS", "project-config.cmake")
@@ -249,7 +253,7 @@ class JuceProjectGenerator:
 
     def loadCustomVst3FolderMacOS(self) -> str:
         cfg = self._parseProjectConfig()
-        vst3Path = cfg.get("CUSTOM_VST3_FOLDER_MACOS", "/Users/username/Plugins/VST3")
+        vst3Path = self._getConfigValue(cfg, "USER_CUSTOM_VST3_FOLDER_MACOS", "CUSTOM_VST3_FOLDER_MACOS", "NONE")
         if self._isDisabledPath(vst3Path):
             return ""
         validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_MACOS", "project-config.cmake")
@@ -257,7 +261,7 @@ class JuceProjectGenerator:
 
     def loadCustomVst3FolderLinux(self) -> str:
         cfg = self._parseProjectConfig()
-        vst3Path = cfg.get("CUSTOM_VST3_FOLDER_LINUX", "/home/username/Plugins/VST3")
+        vst3Path = self._getConfigValue(cfg, "USER_CUSTOM_VST3_FOLDER_LINUX", "CUSTOM_VST3_FOLDER_LINUX", "NONE")
         if self._isDisabledPath(vst3Path):
             return ""
         validatePathNoProblematicChars(vst3Path, "CUSTOM_VST3_FOLDER_LINUX", "project-config.cmake")
@@ -265,7 +269,7 @@ class JuceProjectGenerator:
 
     def loadCustomAuFolderMacOS(self) -> str:
         cfg = self._parseProjectConfig()
-        auPath = cfg.get("CUSTOM_AU_FOLDER_MACOS", "")
+        auPath = self._getConfigValue(cfg, "USER_CUSTOM_AU_FOLDER_MACOS", "CUSTOM_AU_FOLDER_MACOS", "NONE")
         if self._isDisabledPath(auPath):
             return ""
         validatePathNoProblematicChars(auPath, "CUSTOM_AU_FOLDER_MACOS", "project-config.cmake")
@@ -508,10 +512,10 @@ class JuceProjectGenerator:
             vst3Categories=self.vst3Categories,
             bundleId=self.bundleId,
             copyToSystemFolders=copyToSystemFoldersCmake,
-            customVst3FolderWindows=self.customVst3FolderWindows,
-            customVst3FolderMacOS=self.customVst3FolderMacOS,
-            customVst3FolderLinux=self.customVst3FolderLinux,
-            customAuFolderMacOS=self.customAuFolderMacOS,
+            customVst3FolderWindows=self.customVst3FolderWindows or "NONE",
+            customVst3FolderMacOS=self.customVst3FolderMacOS or "NONE",
+            customVst3FolderLinux=self.customVst3FolderLinux or "NONE",
+            customAuFolderMacOS=self.customAuFolderMacOS or "NONE",
             buildDirMacOS=self.getBuildDirMacOS(),
             buildDirWindows=self.getBuildDirWindows(),
             buildDirLinux=self.getBuildDirLinux()
