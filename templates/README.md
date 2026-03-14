@@ -135,31 +135,21 @@ The project is **automatically configured** for your platform when generated (Ap
 
 ### Plugin Installation
 
-#### macOS
+When `COPY_TO_PROJECT_FOLDERS` is ON (default), plugins and Standalone are copied to `Plugins/{{OS}}/{{arch}}/{{format}}/`:
+- **macOS**: `Plugins/macOS/ARM/`, `Plugins/macOS/Intel/`, or `Plugins/macOS/Universal/` (depending on build preset) — each contains `AU/`, `VST3/`, `Standalone/`
+- **Windows**: `Plugins/Windows/VST3/`, `Plugins/Windows/Standalone/`
+- **Linux**: `Plugins/Linux/VST3/`, `Plugins/Linux/Standalone/`
 
-- **AU**: Copied automatically to `~/Library/Audio/Plug-Ins/Components/` if `COPY_TO_SYSTEM_FOLDERS` is ON; or to a custom folder if `CUSTOM_AU_FOLDER_MACOS` is set
-- **VST3**: Copied automatically to `~/Library/Audio/Plug-Ins/VST3/` if `COPY_TO_SYSTEM_FOLDERS` is ON; or to a custom folder if `CUSTOM_VST3_FOLDER_MACOS` is set
-- **Standalone**: Copied to a custom folder if `CUSTOM_STANDALONE_FOLDER_MACOS` is set
-- **Standalone**: Run the `.app` directly
+Add the appropriate folder to your DAW's plugin search path. Run Standalone directly from its folder.
 
-#### Windows
-
-- **VST3**: Copied automatically to the folder set in `CUSTOM_VST3_FOLDER_WINDOWS`, or copy manually to `C:\Program Files\Common Files\VST3\`
-- **Standalone**: Copied to the folder set in `CUSTOM_STANDALONE_FOLDER_WINDOWS` if configured
-- **Standalone**: Run the `.exe` directly
-
-#### Linux
-
-- **VST3**: Copied automatically to the folder set in `CUSTOM_VST3_FOLDER_LINUX`
-- **Standalone**: Copied to the folder set in `CUSTOM_STANDALONE_FOLDER_LINUX` if configured
-- **Standalone**: Run the binary from the build directory
+When `COPY_TO_SYSTEM_FOLDERS` is ON (macOS only), AU and VST3 are copied to `~/Library/Audio/Plug-Ins/` — your DAW will find them automatically.
 
 ### Plugin Copy Configuration
 
-Edit the **USER OPTIONS** section in `project-config.cmake` to customize where plugins and the Standalone app are copied:
+Edit the **USER OPTIONS** section in `project-config.cmake`:
 
-- **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON`/`OFF` — copy AU and VST3 to system folders on macOS
-- **`USER_CUSTOM_VST3_FOLDER_*`**, **`USER_CUSTOM_STANDALONE_FOLDER_*`**, **`USER_CUSTOM_AU_FOLDER_MACOS`**: `"path"` or `NONE`
+- **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON`/`OFF` — copy AU and VST3 to system folders on macOS (`~/Library/Audio/Plug-Ins/`)
+- **`USER_COPY_TO_PROJECT_FOLDERS`**: `ON`/`OFF` — copy to project `Plugins/` folder (organized by platform and architecture). No path to configure.
 
 ### Debugging
 

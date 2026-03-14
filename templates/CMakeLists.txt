@@ -131,123 +131,98 @@ target_compile_definitions({projectName}
 )
 
 # =============================================================================
-# CUSTOM VST3 INSTALLATION (all platforms)
-# Copy VST3 plugin to custom folder after build for easy testing
-# =============================================================================
-#
-# Paths are defined in project-config.cmake. Set to NONE or "" to disable.
-#
+# COPY TO PROJECT FOLDERS (Plugins/ at project root)
+# When COPY_TO_PROJECT_FOLDERS is ON, copies to Plugins/{OS}/{arch}/{format}/
+# Structure: Plugins/macOS/ARM/, Plugins/macOS/Intel/, Plugins/macOS/Universal/,
+#            Plugins/Windows/, Plugins/Linux/
+# Only copies formats selected for the project (AU, VST3, Standalone).
 # =============================================================================
 
+set(PROJECT_PLUGINS_BASE "${{CMAKE_SOURCE_DIR}}/Plugins")
+
+if(COPY_TO_PROJECT_FOLDERS)
+    if(APPLE)
+        if(CMAKE_OSX_ARCHITECTURES MATCHES "arm64;x86_64")
+            set(PLUGIN_ARCH_SUBFOLDER "Universal")
+        elseif(CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
+            set(PLUGIN_ARCH_SUBFOLDER "ARM")
+        elseif(CMAKE_OSX_ARCHITECTURES MATCHES "x86_64")
+            set(PLUGIN_ARCH_SUBFOLDER "Intel")
+        else()
+            set(PLUGIN_ARCH_SUBFOLDER "ARM")
+        endif()
+        set(PROJECT_PLUGINS_PLATFORM "${{PROJECT_PLUGINS_BASE}}/macOS/${{PLUGIN_ARCH_SUBFOLDER}}")
+    elseif(WIN32)
+        set(PROJECT_PLUGINS_PLATFORM "${{PROJECT_PLUGINS_BASE}}/Windows")
+    else()
+        set(PROJECT_PLUGINS_PLATFORM "${{PROJECT_PLUGINS_BASE}}/Linux")
+    endif()
+    message(STATUS "Plugins will be copied to: ${{PROJECT_PLUGINS_PLATFORM}}")
+endif()
+
+# --- VST3 ---
 set(VST3_TARGET_NAME "{projectName}_VST3")
 set(VST3_SOURCE_DIR "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/VST3/{projectName}.vst3")
-
-if(WIN32)
-    set(CUSTOM_VST3_FOLDER "${{CUSTOM_VST3_FOLDER_WINDOWS}}")
-elseif(APPLE)
-    set(CUSTOM_VST3_FOLDER "${{CUSTOM_VST3_FOLDER_MACOS}}")
-else()
-    set(CUSTOM_VST3_FOLDER "${{CUSTOM_VST3_FOLDER_LINUX}}")
-endif()
-
-if(CUSTOM_VST3_FOLDER AND NOT CUSTOM_VST3_FOLDER STREQUAL "NONE")
-    set(VST3_DEST_DIR "${{CUSTOM_VST3_FOLDER}}/{projectName}.vst3")
+if(COPY_TO_PROJECT_FOLDERS AND PLUGIN_FORMATS_LIST MATCHES "VST3")
+    set(VST3_DEST_DIR "${{PROJECT_PLUGINS_PLATFORM}}/VST3/{projectName}.vst3")
     add_custom_command(TARGET ${{VST3_TARGET_NAME}} POST_BUILD
-        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 plugin to custom folder: ${{CUSTOM_VST3_FOLDER}}"
-        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_VST3_FOLDER}}"
+        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 to ${{PROJECT_PLUGINS_PLATFORM}}/VST3/"
+        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_PLUGINS_PLATFORM}}/VST3"
         COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{VST3_DEST_DIR}}"
         COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{VST3_SOURCE_DIR}}" "${{VST3_DEST_DIR}}"
-        COMMENT "Installing VST3 plugin to custom folder"
+        COMMENT "Installing VST3 to project Plugins folder"
         VERBATIM
     )
-    message(STATUS "VST3 plugin will be copied to: ${{CUSTOM_VST3_FOLDER}}")
-else()
-    message(STATUS "VST3 custom folder disabled (set in project-config.cmake)")
 endif()
 
-# =============================================================================
-# CUSTOM STANDALONE INSTALLATION (all platforms)
-# Copy Standalone app to custom folder after build for easy testing
-# =============================================================================
-#
-# Paths are defined in project-config.cmake. Set to NONE or "" to disable.
-#
-# =============================================================================
-
+# --- Standalone ---
 set(STANDALONE_TARGET_NAME "{projectName}_Standalone")
-if(APPLE)
-    set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}.app")
-    if(CUSTOM_STANDALONE_FOLDER_MACOS AND NOT CUSTOM_STANDALONE_FOLDER_MACOS STREQUAL "NONE")
-        set(CUSTOM_STANDALONE_FOLDER "${{CUSTOM_STANDALONE_FOLDER_MACOS}}")
-        set(STANDALONE_DEST_DIR "${{CUSTOM_STANDALONE_FOLDER}}/{projectName}.app")
+if(COPY_TO_PROJECT_FOLDERS AND PLUGIN_FORMATS_LIST MATCHES "Standalone")
+    if(APPLE)
+        set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}.app")
+        set(STANDALONE_DEST_DIR "${{PROJECT_PLUGINS_PLATFORM}}/Standalone/{projectName}.app")
         add_custom_command(TARGET ${{STANDALONE_TARGET_NAME}} POST_BUILD
-            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone app to custom folder: ${{CUSTOM_STANDALONE_FOLDER}}"
-            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_STANDALONE_FOLDER}}"
+            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_PLUGINS_PLATFORM}}/Standalone/"
+            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_PLUGINS_PLATFORM}}/Standalone"
             COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{STANDALONE_DEST_DIR}}"
             COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST_DIR}}"
-            COMMENT "Installing Standalone app to custom folder"
+            COMMENT "Installing Standalone to project Plugins folder"
             VERBATIM
         )
-        message(STATUS "Standalone app will be copied to: ${{CUSTOM_STANDALONE_FOLDER}}")
-    else()
-        message(STATUS "Standalone custom folder disabled (set in project-config.cmake)")
-    endif()
-elseif(WIN32)
-    set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}.exe")
-    if(CUSTOM_STANDALONE_FOLDER_WINDOWS AND NOT CUSTOM_STANDALONE_FOLDER_WINDOWS STREQUAL "NONE")
-        set(CUSTOM_STANDALONE_FOLDER "${{CUSTOM_STANDALONE_FOLDER_WINDOWS}}")
-        set(STANDALONE_DEST "${{CUSTOM_STANDALONE_FOLDER}}/{projectName}.exe")
+    elseif(WIN32)
+        set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}.exe")
+        set(STANDALONE_DEST "${{PROJECT_PLUGINS_PLATFORM}}/Standalone/{projectName}.exe")
         add_custom_command(TARGET ${{STANDALONE_TARGET_NAME}} POST_BUILD
-            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone app to custom folder: ${{CUSTOM_STANDALONE_FOLDER}}"
-            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_STANDALONE_FOLDER}}"
+            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_PLUGINS_PLATFORM}}/Standalone/"
+            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_PLUGINS_PLATFORM}}/Standalone"
             COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}"
-            COMMENT "Installing Standalone app to custom folder"
+            COMMENT "Installing Standalone to project Plugins folder"
             VERBATIM
         )
-        message(STATUS "Standalone app will be copied to: ${{CUSTOM_STANDALONE_FOLDER}}")
     else()
-        message(STATUS "Standalone custom folder disabled (set in project-config.cmake)")
-    endif()
-else()
-    set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}")
-    if(CUSTOM_STANDALONE_FOLDER_LINUX AND NOT CUSTOM_STANDALONE_FOLDER_LINUX STREQUAL "NONE")
-        set(CUSTOM_STANDALONE_FOLDER "${{CUSTOM_STANDALONE_FOLDER_LINUX}}")
-        set(STANDALONE_DEST "${{CUSTOM_STANDALONE_FOLDER}}/{projectName}")
+        set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}")
+        set(STANDALONE_DEST "${{PROJECT_PLUGINS_PLATFORM}}/Standalone/{projectName}")
         add_custom_command(TARGET ${{STANDALONE_TARGET_NAME}} POST_BUILD
-            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone app to custom folder: ${{CUSTOM_STANDALONE_FOLDER}}"
-            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_STANDALONE_FOLDER}}"
+            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_PLUGINS_PLATFORM}}/Standalone/"
+            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_PLUGINS_PLATFORM}}/Standalone"
             COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}"
-            COMMENT "Installing Standalone app to custom folder"
+            COMMENT "Installing Standalone to project Plugins folder"
             VERBATIM
         )
-        message(STATUS "Standalone app will be copied to: ${{CUSTOM_STANDALONE_FOLDER}}")
-    else()
-        message(STATUS "Standalone custom folder disabled (set in project-config.cmake)")
     endif()
 endif()
 
-# =============================================================================
-# CUSTOM AU INSTALLATION (macOS only)
-# Copy AU plugin to custom folder after build for easy testing
-# =============================================================================
-#
-# Path is defined in project-config.cmake. Set to NONE or "" to disable.
-#
-# =============================================================================
-
-if(APPLE AND CUSTOM_AU_FOLDER_MACOS AND NOT CUSTOM_AU_FOLDER_MACOS STREQUAL "NONE")
+# --- AU (macOS only) ---
+if(APPLE AND COPY_TO_PROJECT_FOLDERS AND PLUGIN_FORMATS_LIST MATCHES "AU")
     set(AU_TARGET_NAME "{projectName}_AU")
     set(AU_SOURCE_DIR "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/AU/{projectName}.component")
-    set(AU_DEST_DIR "${{CUSTOM_AU_FOLDER_MACOS}}/{projectName}.component")
+    set(AU_DEST_DIR "${{PROJECT_PLUGINS_PLATFORM}}/AU/{projectName}.component")
     add_custom_command(TARGET ${{AU_TARGET_NAME}} POST_BUILD
-        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying AU plugin to custom folder: ${{CUSTOM_AU_FOLDER_MACOS}}"
-        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{CUSTOM_AU_FOLDER_MACOS}}"
+        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying AU to ${{PROJECT_PLUGINS_PLATFORM}}/AU/"
+        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_PLUGINS_PLATFORM}}/AU"
         COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{AU_DEST_DIR}}"
         COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{AU_SOURCE_DIR}}" "${{AU_DEST_DIR}}"
-        COMMENT "Installing AU plugin to custom folder"
+        COMMENT "Installing AU to project Plugins folder"
         VERBATIM
     )
-    message(STATUS "AU plugin will be copied to: ${{CUSTOM_AU_FOLDER_MACOS}}")
-elseif(APPLE)
-    message(STATUS "AU custom folder disabled (set in project-config.cmake)")
 endif()

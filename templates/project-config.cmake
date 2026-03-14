@@ -3,38 +3,28 @@
 # =============================================================================
 #
 # Edit the USER OPTIONS section below. Do not modify the CODE section.
-# Override at configure: cmake .. -DUSER_CUSTOM_VST3_FOLDER_MACOS="/path"
+# Override at configure: cmake .. -DUSER_COPY_TO_PROJECT_FOLDERS=ON
 #
 # =============================================================================
 # USER OPTIONS - Edit these values only
 # =============================================================================
 #
-# Paths: "path" or NONE
+# COPY_TO_SYSTEM_FOLDERS: ON/OFF
+#   When ON (macOS only): copies AU to ~/Library/Audio/Plug-Ins/Components/,
+#   VST3 to ~/Library/Audio/Plug-Ins/VST3/. No effect on Windows/Linux.
 #
-# --- System ---
+# COPY_TO_PROJECT_FOLDERS: ON/OFF
+#   When ON: copies plugins and Standalone to project_root/Plugins/, organized
+#   automatically by platform and architecture (macOS: ARM/Intel/Universal,
+#   Windows, Linux). No path to configure.
+#
+# =============================================================================
+
 set(USER_COPY_TO_SYSTEM_FOLDERS {copyToSystemFolders})
-
-# --- VST3 ---
-set(USER_CUSTOM_VST3_FOLDER_WINDOWS "{customVst3FolderWindows}")
-set(USER_CUSTOM_VST3_FOLDER_MACOS "{customVst3FolderMacOS}")
-set(USER_CUSTOM_VST3_FOLDER_LINUX "{customVst3FolderLinux}")
-
-# --- Standalone ---
-set(USER_CUSTOM_STANDALONE_FOLDER_WINDOWS "{customStandaloneFolderWindows}")
-set(USER_CUSTOM_STANDALONE_FOLDER_MACOS "{customStandaloneFolderMacOS}")
-set(USER_CUSTOM_STANDALONE_FOLDER_LINUX "{customStandaloneFolderLinux}")
-
-# --- AU (macOS only) ---
-set(USER_CUSTOM_AU_FOLDER_MACOS "{customAuFolderMacOS}")
+set(USER_COPY_TO_PROJECT_FOLDERS {copyToProjectFolders})
 
 # =============================================================================
 # CODE - Do not edit below
 # =============================================================================
-set(COPY_TO_SYSTEM_FOLDERS ${{USER_COPY_TO_SYSTEM_FOLDERS}} CACHE BOOL "Copy plugins to system folders after build")
-set(CUSTOM_VST3_FOLDER_WINDOWS ${{USER_CUSTOM_VST3_FOLDER_WINDOWS}} CACHE STRING "Custom VST3 folder (Windows)")
-set(CUSTOM_VST3_FOLDER_MACOS ${{USER_CUSTOM_VST3_FOLDER_MACOS}} CACHE STRING "Custom VST3 folder (macOS)")
-set(CUSTOM_VST3_FOLDER_LINUX ${{USER_CUSTOM_VST3_FOLDER_LINUX}} CACHE STRING "Custom VST3 folder (Linux)")
-set(CUSTOM_STANDALONE_FOLDER_WINDOWS ${{USER_CUSTOM_STANDALONE_FOLDER_WINDOWS}} CACHE STRING "Custom Standalone folder (Windows)")
-set(CUSTOM_STANDALONE_FOLDER_MACOS ${{USER_CUSTOM_STANDALONE_FOLDER_MACOS}} CACHE STRING "Custom Standalone folder (macOS)")
-set(CUSTOM_STANDALONE_FOLDER_LINUX ${{USER_CUSTOM_STANDALONE_FOLDER_LINUX}} CACHE STRING "Custom Standalone folder (Linux)")
-set(CUSTOM_AU_FOLDER_MACOS ${{USER_CUSTOM_AU_FOLDER_MACOS}} CACHE STRING "Custom AU folder (macOS)")
+set(COPY_TO_SYSTEM_FOLDERS ${{USER_COPY_TO_SYSTEM_FOLDERS}} CACHE BOOL "Copy plugins to system folders after build (macOS only)")
+set(COPY_TO_PROJECT_FOLDERS ${{USER_COPY_TO_PROJECT_FOLDERS}} CACHE BOOL "Copy plugins to project Plugins/ folder (organized by platform/architecture)")

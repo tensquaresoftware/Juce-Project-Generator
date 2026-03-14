@@ -6,42 +6,26 @@
 # new projects. Each generated project gets its own copy that you can edit.
 
 # ==============================================================================
-# USER OPTIONS - Edit these values only (Paths: "path" or NONE)
+# USER OPTIONS - Edit these values only
+# ==============================================================================
+#
+# COPY_TO_SYSTEM_FOLDERS: ON/OFF
+#   When ON (macOS only): copies AU to ~/Library/Audio/Plug-Ins/Components/,
+#   VST3 to ~/Library/Audio/Plug-Ins/VST3/. No effect on Windows/Linux.
+#
+# COPY_TO_PROJECT_FOLDERS: ON/OFF
+#   When ON: copies plugins and Standalone to project_root/Plugins/, organized
+#   automatically by platform and architecture (macOS: ARM/Intel/Universal,
+#   Windows, Linux). No path to configure.
+#
 # ==============================================================================
 
-# --- System ---
 set(USER_COPY_TO_SYSTEM_FOLDERS OFF)
-
-# --- VST3 Plugin ---
-set(USER_CUSTOM_VST3_FOLDER_WINDOWS "C:/Users/Guillaume/Dev/Plugins/VST3")
-set(USER_CUSTOM_VST3_FOLDER_MACOS "/Volumes/Guillaume/Dev/Plugins/VST3")
-set(USER_CUSTOM_VST3_FOLDER_LINUX "/home/guillaume/Dev/Plugins/VST3")
-
-# --- AU Plugin (macOS only) ---
-set(USER_CUSTOM_AU_FOLDER_MACOS "/Volumes/Guillaume/Dev/Plugins/AU")
-
-# --- Standalone Application ---
-set(USER_CUSTOM_STANDALONE_FOLDER_WINDOWS "C:/Users/Guillaume/Dev/Plugins/Standalone")
-set(USER_CUSTOM_STANDALONE_FOLDER_MACOS "/Volumes/Guillaume/Dev/Plugins/Standalone")
-set(USER_CUSTOM_STANDALONE_FOLDER_LINUX "/home/guillaume/Dev/Plugins/Standalone")
-
+set(USER_COPY_TO_PROJECT_FOLDERS ON)
 
 # ==============================================================================
 # CODE - Do not edit below
 # ==============================================================================
 
-# --- System ---
-set(COPY_TO_SYSTEM_FOLDERS ${USER_COPY_TO_SYSTEM_FOLDERS} CACHE BOOL "Copy plugins to system folders after build")
-
-# --- VST3 Plugin ---
-set(CUSTOM_VST3_FOLDER_WINDOWS ${USER_CUSTOM_VST3_FOLDER_WINDOWS} CACHE STRING "Custom VST3 folder (Windows)")
-set(CUSTOM_VST3_FOLDER_MACOS ${USER_CUSTOM_VST3_FOLDER_MACOS} CACHE STRING "Custom VST3 folder (macOS)")
-set(CUSTOM_VST3_FOLDER_LINUX ${USER_CUSTOM_VST3_FOLDER_LINUX} CACHE STRING "Custom VST3 folder (Linux)")
-
-# --- AU Plugin (macOS only) ---
-set(CUSTOM_AU_FOLDER_MACOS ${USER_CUSTOM_AU_FOLDER_MACOS} CACHE STRING "Custom AU folder (macOS)")
-
-# --- Standalone Application ---
-set(CUSTOM_STANDALONE_FOLDER_WINDOWS ${USER_CUSTOM_STANDALONE_FOLDER_WINDOWS} CACHE STRING "Custom Standalone folder (Windows)")
-set(CUSTOM_STANDALONE_FOLDER_MACOS ${USER_CUSTOM_STANDALONE_FOLDER_MACOS} CACHE STRING "Custom Standalone folder (macOS)")
-set(CUSTOM_STANDALONE_FOLDER_LINUX ${USER_CUSTOM_STANDALONE_FOLDER_LINUX} CACHE STRING "Custom Standalone folder (Linux)")
+set(COPY_TO_SYSTEM_FOLDERS ${USER_COPY_TO_SYSTEM_FOLDERS} CACHE BOOL "Copy plugins to system folders after build (macOS only)")
+set(COPY_TO_PROJECT_FOLDERS ${USER_COPY_TO_PROJECT_FOLDERS} CACHE BOOL "Copy plugins to project Plugins/ folder (organized by platform/architecture)")

@@ -1,5 +1,6 @@
 # Build artifacts (platform-specific)
 Builds/
+Plugins/
 *.o
 *.obj
 
