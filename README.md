@@ -246,7 +246,7 @@ YourProject/
 │   ├── macOS/
 │   │   ├── ARM/       ← Apple Silicon (M1/M2/M3)
 │   │   ├── Intel/     ← Mac Intel
-│   │   └── Universal/ ← Universal Binary (ARM + Intel, for distribution)
+│   │   └── Universal/ ← Universal Binary (Apple Silicon + Intel, for distribution)
 │   ├── Windows/
 │   └── Linux/
 ├── .vscode/
@@ -282,7 +282,7 @@ Build directories are separated by platform and architecture to avoid mixing fil
    cmake --preset default-macos-x86_64
    cmake --build --preset default-macos-x86_64
    
-   # macOS Universal (ARM + Intel, for distribution)
+   # macOS Universal (Apple Silicon + Intel, for distribution)
    cmake --preset default-macos-universal
    cmake --build --preset default-macos-universal
    

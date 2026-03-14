@@ -3,18 +3,18 @@
 **Date :** 2026-03-14  
 **Auteur :** Guillaume DUPONT  
 **Projet :** Juce-Project-Generator  
-**Objectif :** Document de passation pour l’agent IA — ajout du preset Universal Binary (arm64 + x86_64) pour la distribution macOS.
+**Objectif :** Document de passation pour l’agent IA — ajout du preset Universal Binary (Apple Silicon + Intel) pour la distribution macOS.
 
 ---
 
 ## 1. Contexte
 
-Un plugin JUCE compilé pour ARM (Apple Silicon) ne tourne pas sur Intel et vice versa. Actuellement, le générateur propose deux presets macOS distincts :
+Un plugin JUCE compilé pour Apple Silicon ne tourne pas sur Intel et vice versa. Actuellement, le générateur propose deux presets macOS distincts :
 
 - `default-macos-arm64` → `Builds/macOS/ARM`
 - `default-macos-x86_64` → `Builds/macOS/Intel`
 
-Pour la **distribution**, un **Universal Binary** (arm64 + x86_64 dans un seul fichier `.vst3` / `.component` / `.app`) est souvent préférable :
+Pour la **distribution**, un **Universal Binary** (Apple Silicon + Intel dans un seul fichier `.vst3` / `.component` / `.app`) est souvent préférable :
 
 - Un seul fichier pour tous les Mac
 - Moins de confusion pour l’utilisateur
@@ -40,7 +40,7 @@ Pour la **distribution**, un **Universal Binary** (arm64 + x86_64 dans un seul f
 ### Logique actuelle
 
 - Sur macOS : `platform.machine()` → `arm64` ou `x86_64` → choix du preset et du `binaryDir`
-- Pas de notion « Universal » : uniquement ARM ou Intel, jamais les deux en un seul build
+- Pas de notion « Universal » : uniquement Apple Silicon ou Intel, jamais les deux en un seul build
 
 ---
 
@@ -51,7 +51,7 @@ Pour la **distribution**, un **Universal Binary** (arm64 + x86_64 dans un seul f
 Ajouter un **configure preset** et un **build preset** pour `default-macos-universal` :
 
 - **name :** `default-macos-universal`
-- **displayName :** `macOS Universal (ARM + Intel)`
+- **displayName :** `macOS Universal (Apple Silicon + Intel)`
 - **binaryDir :** `"${sourceDir}/Builds/macOS/Universal"`
 - **cacheVariables :** `"CMAKE_OSX_ARCHITECTURES": "arm64;x86_64"`
 - **condition :** `hostSystemName == "Darwin"` (comme les autres presets macOS)
@@ -62,8 +62,8 @@ Le preset doit être inséré entre `default-macos-x86_64` et `default-windows` 
 
 Fonctions à modifier :
 
-- **`getBuildDirMacOS()`** — actuellement retourne ARM ou Intel selon la machine. Pour Universal : retourner `Builds/macOS/Universal` si on souhaite que le preset par défaut soit Universal.  
-  **Décision :** garder le comportement actuel (ARM sur M5, Intel sur Intel) pour le **développement** ; Universal sera un preset sélectionnable manuellement ou via un choix explicite si on ajoute une option.
+- **`getBuildDirMacOS()`** — actuellement retourne Apple Silicon ou Intel selon la machine. Pour Universal : retourner `Builds/macOS/Universal` si on souhaite que le preset par défaut soit Universal.  
+  **Décision :** garder le comportement actuel (Apple Silicon sur M5, Intel sur Intel) pour le **développement** ; Universal sera un preset sélectionnable manuellement ou via un choix explicite si on ajoute une option.
 
 - **`getPlatformBuildConfig()`** — retourne `(buildDir, presetName)` pour `.vscode/settings.json`.  
   **Décision :** ne pas changer par défaut. L’utilisateur pourra choisir `default-macos-universal` via CMake: Select Configure Preset.
@@ -76,7 +76,7 @@ Fonctions à modifier :
 
 ### 3.3 Adapter `configure-platform.py`
 
-- **`detectCurrentPlatform()`** — retourne uniquement ARM ou Intel.  
+- **`detectCurrentPlatform()`** — retourne uniquement Apple Silicon ou Intel.  
   **Option :** ajouter une détection « Universal » si demandé. Pour l’instant, on peut garder `detectCurrentPlatform()` inchangé ; on pourrait plus tard ajouter un argument `--universal` pour forcer le preset Universal.
 
 **Recommandation :** ne pas modifier `configure-platform.py` dans la première version. L’utilisateur pourra choisir le preset Universal manuellement dans Cursor.
@@ -109,7 +109,7 @@ Fonctions à modifier :
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 ```
 
-CMake génère alors un binaire « fat » contenant les deux architectures. Un seul `.vst3` / `.component` / `.app` fonctionne sur ARM et Intel.
+CMake génère alors un binaire « fat » contenant les deux architectures. Un seul `.vst3` / `.component` / `.app` fonctionne sur Apple Silicon et Intel.
 
 ### Structure des presets
 
@@ -136,7 +136,7 @@ Le nouveau preset doit être inséré entre `default-macos-x86_64` et `default-w
 
 ## 5. Points d’attention
 
-1. **Pas de `buildDirectory` dynamique pour Universal** — le générateur utilise `getBuildDirMacOS()` qui retourne ARM ou Intel. Universal a son propre `Builds/macOS/Universal`. Pas besoin de modifier cette logique si on ne change pas le preset par défaut.
+1. **Pas de `buildDirectory` dynamique pour Universal** — le générateur utilise `getBuildDirMacOS()` qui retourne Apple Silicon ou Intel. Universal a son propre `Builds/macOS/Universal`. Pas besoin de modifier cette logique si on ne change pas le preset par défaut.
 
 2. **`.vscode/tasks.json`** — les tasks peuvent contenir des chemins `Builds/macOS/ARM` ou `Builds/macOS/Intel` (via `osx`). Si on veut une task dédiée Universal, il faudrait l’ajouter. Pour l’instant, l’utilisateur peut utiliser CMake: Build avec le preset Universal sélectionné.
 

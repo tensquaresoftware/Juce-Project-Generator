@@ -47,7 +47,7 @@
     }},
     {{
       "name": "default-macos-universal",
-      "displayName": "macOS Universal (ARM + Intel)",
+      "displayName": "macOS Universal (Apple Silicon + Intel)",
       "generator": "Ninja",
       "binaryDir": "${{sourceDir}}/Builds/macOS/Universal",
       "condition": {{

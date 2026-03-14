@@ -76,7 +76,7 @@ cmake --build Builds/macOS/Intel --target {projectName}_VST3 --config Debug
 
 #### macOS (Universal)
 
-For **distribution**, build a Universal Binary (arm64 + x86_64 in a single `.vst3` / `.component` / `.app`). One file works on both Apple Silicon and Intel Macs. Note: binaries are ~2× larger and builds take longer than single-architecture builds.
+For **distribution**, build a Universal Binary (Apple Silicon + Intel in a single `.vst3` / `.component` / `.app`). One file works on both Apple Silicon and Intel Macs. Note: binaries are ~2× larger and builds take longer than single-architecture builds.
 
 ```bash
 # Configure (using preset)
@@ -115,7 +115,7 @@ cmake --build Builds/Windows --target {projectName}_VST3 --config Debug
 
 ### Using Cursor IDE
 
-The project is **automatically configured** for your platform when generated (ARM or Intel for development). For distribution builds, select the Universal preset manually. Simply:
+The project is **automatically configured** for your platform when generated (Apple Silicon or Intel for development). For distribution builds, select the Universal preset manually. Simply:
 
 1. Open the project folder in Cursor
 2. CMake Tools extension will automatically detect the project and use the correct preset
