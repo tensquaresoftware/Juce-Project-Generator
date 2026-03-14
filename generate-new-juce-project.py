@@ -44,11 +44,8 @@ def exitWithError(message: str = "") -> None:
     waitForEnterToExit()
     sys.exit(1)
 
-# Characters forbidden in plugin display name (used in PLUGIN_NAME, affects paths on macOS/Windows)
-# : = macOS legacy path separator (converted to / by Finder, breaks Ableton detection)
-# \ / * ? " < > | = Windows filename restrictions
-# ; = path separator in some contexts
-kForbiddenDisplayNameChars = r'\/:*?"<>|;'
+# Display name whitelist: letters, digits, spaces, hyphens, underscores only (safe on macOS/Windows/Linux)
+kAllowedDisplayNameChars = set('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_')
 
 
 def isPathSeparator(char: str) -> bool:
@@ -325,11 +322,11 @@ class JuceProjectGenerator:
     def isValidProjectName(self, name: str) -> bool:
         return bool(re.match(r'^[a-zA-Z][a-zA-Z0-9_-]*$', name))
     
-    def findForbiddenCharsInDisplayName(self, name: str) -> List[str]:
-        return [c for c in name if c in kForbiddenDisplayNameChars]
+    def findInvalidCharsInDisplayName(self, name: str) -> List[str]:
+        return [c for c in name if c not in kAllowedDisplayNameChars]
     
     def isValidDisplayName(self, name: str) -> bool:
-        return len(self.findForbiddenCharsInDisplayName(name)) == 0
+        return len(self.findInvalidCharsInDisplayName(name)) == 0
     
     def inputProjectName(self) -> tuple:
         while True:
@@ -341,17 +338,16 @@ class JuceProjectGenerator:
             if projectDir.exists():
                 if not self.handleExistingProject(techName):
                     continue
-            displayName = input(f"  Display name (optional, can include spaces) [{techName}]: ").strip() or techName
+            displayName = input(f"  Display name (optional) [{techName}]: ").strip() or techName
             if not self.isValidDisplayName(displayName):
                 self.showInvalidDisplayNameError(displayName)
                 continue
             return techName, displayName
     
     def showInvalidDisplayNameError(self, name: str) -> None:
-        forbidden = self.findForbiddenCharsInDisplayName(name)
-        charsStr = formatProblematicCharsString(forbidden)
+        invalid = self.findInvalidCharsInDisplayName(name)
+        charsStr = formatProblematicCharsString(invalid)
         print(f"{Color.RED}❌ Display name contains invalid characters: {charsStr}{Color.RESET}")
-        print(f"{Color.YELLOW}   These characters break plugin detection (e.g. Ableton Live on macOS).{Color.RESET}")
         print(f"{Color.YELLOW}   Use letters, numbers, spaces, hyphens, underscores only.{Color.RESET}")
     
     def showInvalidProjectNameError(self) -> None:
