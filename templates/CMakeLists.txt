@@ -131,14 +131,15 @@ target_compile_definitions({projectName}
 )
 
 # =============================================================================
-# COPY TO PROJECT FOLDERS (Plugins/ at project root)
-# When COPY_TO_PROJECT_FOLDERS is ON, copies to Plugins/{{OS}}/{{arch}}/{{format}}/
-# Structure: Plugins/macOS/ARM/, Plugins/macOS/Intel/, Plugins/macOS/Universal/,
-#            Plugins/Windows/, Plugins/Linux/
+# COPY TO ARTEFACTS FOLDER (Artefacts/ at project root)
+# When COPY_TO_PROJECT_FOLDERS is ON, copies build outputs to Artefacts/{{OS}}/{{arch}}/{{format}}/
+# Structure: Artefacts/macOS/ARM/, Artefacts/macOS/Intel/, Artefacts/macOS/Intel-Rosetta/,
+#            Artefacts/macOS/Universal/, Artefacts/Windows/, Artefacts/Linux/
+# Intel = x86_64 native (Mac Intel). Intel-Rosetta = x86_64 cross-compiled on Apple Silicon.
 # Only copies formats selected for the project (AU, VST3, Standalone).
 # =============================================================================
 
-set(PROJECT_PLUGINS_BASE "${{CMAKE_SOURCE_DIR}}/Plugins")
+set(PROJECT_ARTEFACTS_BASE "${{CMAKE_SOURCE_DIR}}/Artefacts")
 
 if(COPY_TO_PROJECT_FOLDERS)
     if(APPLE)
@@ -147,30 +148,34 @@ if(COPY_TO_PROJECT_FOLDERS)
         elseif(CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
             set(PLUGIN_ARCH_SUBFOLDER "ARM")
         elseif(CMAKE_OSX_ARCHITECTURES MATCHES "x86_64")
-            set(PLUGIN_ARCH_SUBFOLDER "Intel")
+            if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64")
+                set(PLUGIN_ARCH_SUBFOLDER "Intel-Rosetta")
+            else()
+                set(PLUGIN_ARCH_SUBFOLDER "Intel")
+            endif()
         else()
             set(PLUGIN_ARCH_SUBFOLDER "ARM")
         endif()
-        set(PROJECT_PLUGINS_PLATFORM "${{PROJECT_PLUGINS_BASE}}/macOS/${{PLUGIN_ARCH_SUBFOLDER}}")
+        set(PROJECT_ARTEFACTS_PLATFORM "${{PROJECT_ARTEFACTS_BASE}}/macOS/${{PLUGIN_ARCH_SUBFOLDER}}")
     elseif(WIN32)
-        set(PROJECT_PLUGINS_PLATFORM "${{PROJECT_PLUGINS_BASE}}/Windows")
+        set(PROJECT_ARTEFACTS_PLATFORM "${{PROJECT_ARTEFACTS_BASE}}/Windows")
     else()
-        set(PROJECT_PLUGINS_PLATFORM "${{PROJECT_PLUGINS_BASE}}/Linux")
+        set(PROJECT_ARTEFACTS_PLATFORM "${{PROJECT_ARTEFACTS_BASE}}/Linux")
     endif()
-    message(STATUS "Plugins will be copied to: ${{PROJECT_PLUGINS_PLATFORM}}")
+    message(STATUS "Build artefacts will be copied to: ${{PROJECT_ARTEFACTS_PLATFORM}}")
 endif()
 
 # --- VST3 ---
 set(VST3_TARGET_NAME "{projectName}_VST3")
 set(VST3_SOURCE_DIR "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/VST3/{projectName}.vst3")
 if(COPY_TO_PROJECT_FOLDERS AND PLUGIN_FORMATS_LIST MATCHES "VST3")
-    set(VST3_DEST_DIR "${{PROJECT_PLUGINS_PLATFORM}}/VST3/{projectName}.vst3")
+    set(VST3_DEST_DIR "${{PROJECT_ARTEFACTS_PLATFORM}}/VST3/{projectName}.vst3")
     add_custom_command(TARGET ${{VST3_TARGET_NAME}} POST_BUILD
-        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 to ${{PROJECT_PLUGINS_PLATFORM}}/VST3/"
-        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_PLUGINS_PLATFORM}}/VST3"
+        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 to ${{PROJECT_ARTEFACTS_PLATFORM}}/VST3/"
+        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_ARTEFACTS_PLATFORM}}/VST3"
         COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{VST3_DEST_DIR}}"
         COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{VST3_SOURCE_DIR}}" "${{VST3_DEST_DIR}}"
-        COMMENT "Installing VST3 to project Plugins folder"
+        COMMENT "Installing VST3 to project Artefacts folder"
         VERBATIM
     )
 endif()
@@ -180,33 +185,33 @@ set(STANDALONE_TARGET_NAME "{projectName}_Standalone")
 if(COPY_TO_PROJECT_FOLDERS AND PLUGIN_FORMATS_LIST MATCHES "Standalone")
     if(APPLE)
         set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}.app")
-        set(STANDALONE_DEST_DIR "${{PROJECT_PLUGINS_PLATFORM}}/Standalone/{projectName}.app")
+        set(STANDALONE_DEST_DIR "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/{projectName}.app")
         add_custom_command(TARGET ${{STANDALONE_TARGET_NAME}} POST_BUILD
-            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_PLUGINS_PLATFORM}}/Standalone/"
-            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_PLUGINS_PLATFORM}}/Standalone"
+            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/"
+            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone"
             COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{STANDALONE_DEST_DIR}}"
             COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST_DIR}}"
-            COMMENT "Installing Standalone to project Plugins folder"
+            COMMENT "Installing Standalone to project Artefacts folder"
             VERBATIM
         )
     elseif(WIN32)
         set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}.exe")
-        set(STANDALONE_DEST "${{PROJECT_PLUGINS_PLATFORM}}/Standalone/{projectName}.exe")
+        set(STANDALONE_DEST "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/{projectName}.exe")
         add_custom_command(TARGET ${{STANDALONE_TARGET_NAME}} POST_BUILD
-            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_PLUGINS_PLATFORM}}/Standalone/"
-            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_PLUGINS_PLATFORM}}/Standalone"
+            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/"
+            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone"
             COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}"
-            COMMENT "Installing Standalone to project Plugins folder"
+            COMMENT "Installing Standalone to project Artefacts folder"
             VERBATIM
         )
     else()
         set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}")
-        set(STANDALONE_DEST "${{PROJECT_PLUGINS_PLATFORM}}/Standalone/{projectName}")
+        set(STANDALONE_DEST "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/{projectName}")
         add_custom_command(TARGET ${{STANDALONE_TARGET_NAME}} POST_BUILD
-            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_PLUGINS_PLATFORM}}/Standalone/"
-            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_PLUGINS_PLATFORM}}/Standalone"
+            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/"
+            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone"
             COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}"
-            COMMENT "Installing Standalone to project Plugins folder"
+            COMMENT "Installing Standalone to project Artefacts folder"
             VERBATIM
         )
     endif()
@@ -216,13 +221,13 @@ endif()
 if(APPLE AND COPY_TO_PROJECT_FOLDERS AND PLUGIN_FORMATS_LIST MATCHES "AU")
     set(AU_TARGET_NAME "{projectName}_AU")
     set(AU_SOURCE_DIR "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/AU/{projectName}.component")
-    set(AU_DEST_DIR "${{PROJECT_PLUGINS_PLATFORM}}/AU/{projectName}.component")
+    set(AU_DEST_DIR "${{PROJECT_ARTEFACTS_PLATFORM}}/AU/{projectName}.component")
     add_custom_command(TARGET ${{AU_TARGET_NAME}} POST_BUILD
-        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying AU to ${{PROJECT_PLUGINS_PLATFORM}}/AU/"
-        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_PLUGINS_PLATFORM}}/AU"
+        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying AU to ${{PROJECT_ARTEFACTS_PLATFORM}}/AU/"
+        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_ARTEFACTS_PLATFORM}}/AU"
         COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{AU_DEST_DIR}}"
         COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{AU_SOURCE_DIR}}" "${{AU_DEST_DIR}}"
-        COMMENT "Installing AU to project Plugins folder"
+        COMMENT "Installing AU to project Artefacts folder"
         VERBATIM
     )
 endif()

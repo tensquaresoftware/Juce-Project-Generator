@@ -14,13 +14,13 @@
 #   VST3 to ~/Library/Audio/Plug-Ins/VST3/. No effect on Windows/Linux.
 #
 # COPY_TO_PROJECT_FOLDERS: ON/OFF
-#   When ON: copies plugins and Standalone to project_root/Plugins/, organized
-#   automatically by platform and architecture (macOS: ARM/Intel/Universal,
+#   When ON: copies build outputs (AU, VST3, Standalone) to project_root/Artefacts/,
+#   organized by platform and architecture (macOS: ARM/Intel/Intel-Rosetta/Universal,
 #   Windows, Linux). No path to configure.
 #
 # ==============================================================================
 
-set(USER_COPY_TO_SYSTEM_FOLDERS OFF)
+set(USER_COPY_TO_SYSTEM_FOLDERS ON)
 set(USER_COPY_TO_PROJECT_FOLDERS ON)
 
 # ==============================================================================
@@ -28,4 +28,4 @@ set(USER_COPY_TO_PROJECT_FOLDERS ON)
 # ==============================================================================
 
 set(COPY_TO_SYSTEM_FOLDERS ${USER_COPY_TO_SYSTEM_FOLDERS} CACHE BOOL "Copy plugins to system folders after build (macOS only)")
-set(COPY_TO_PROJECT_FOLDERS ${USER_COPY_TO_PROJECT_FOLDERS} CACHE BOOL "Copy plugins to project Plugins/ folder (organized by platform/architecture)")
+set(COPY_TO_PROJECT_FOLDERS ${USER_COPY_TO_PROJECT_FOLDERS} CACHE BOOL "Copy build outputs to project Artefacts/ folder (organized by platform/architecture)")

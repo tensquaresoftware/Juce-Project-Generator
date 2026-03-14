@@ -44,6 +44,13 @@ def exitWithError(message: str = "") -> None:
     waitForEnterToExit()
     sys.exit(1)
 
+# Characters forbidden in plugin display name (used in PLUGIN_NAME, affects paths on macOS/Windows)
+# : = macOS legacy path separator (converted to / by Finder, breaks Ableton detection)
+# \ / * ? " < > | = Windows filename restrictions
+# ; = path separator in some contexts
+kForbiddenDisplayNameChars = r'\/:*?"<>|;'
+
+
 def isPathSeparator(char: str) -> bool:
     return char in ['/', '\\', ':', ' ']
 
@@ -318,6 +325,12 @@ class JuceProjectGenerator:
     def isValidProjectName(self, name: str) -> bool:
         return bool(re.match(r'^[a-zA-Z][a-zA-Z0-9_-]*$', name))
     
+    def findForbiddenCharsInDisplayName(self, name: str) -> List[str]:
+        return [c for c in name if c in kForbiddenDisplayNameChars]
+    
+    def isValidDisplayName(self, name: str) -> bool:
+        return len(self.findForbiddenCharsInDisplayName(name)) == 0
+    
     def inputProjectName(self) -> tuple:
         while True:
             techName = input(f"  Technical project name [{self.kDefaultPluginName}]: ").strip() or self.kDefaultPluginName
@@ -329,7 +342,17 @@ class JuceProjectGenerator:
                 if not self.handleExistingProject(techName):
                     continue
             displayName = input(f"  Display name (optional, can include spaces) [{techName}]: ").strip() or techName
+            if not self.isValidDisplayName(displayName):
+                self.showInvalidDisplayNameError(displayName)
+                continue
             return techName, displayName
+    
+    def showInvalidDisplayNameError(self, name: str) -> None:
+        forbidden = self.findForbiddenCharsInDisplayName(name)
+        charsStr = formatProblematicCharsString(forbidden)
+        print(f"{Color.RED}❌ Display name contains invalid characters: {charsStr}{Color.RESET}")
+        print(f"{Color.YELLOW}   These characters break plugin detection (e.g. Ableton Live on macOS).{Color.RESET}")
+        print(f"{Color.YELLOW}   Use letters, numbers, spaces, hyphens, underscores only.{Color.RESET}")
     
     def showInvalidProjectNameError(self) -> None:
         print(f"{Color.RED}❌ Technical name must start with a letter and contain only letters, numbers, and underscores{Color.RESET}")
@@ -647,7 +670,7 @@ class JuceProjectGenerator:
         print(f"     - Debug: Press {Color.BLUE}F5{Color.RESET} to start debugging\n")
         print(f"  {Color.YELLOW}Note:{Color.RESET} If you open this project on a different platform (or Mac Intel/Apple Silicon), run:")
         print(f"     {Color.BLUE}python configure-platform.py{Color.RESET}")
-        print(f"     (On macOS: interactive menu to choose ARM/Intel/Universal)\n")
+        print(f"     (On macOS: interactive menu to choose ARM/Intel/Intel-Rosetta/Universal)\n")
         print(f"{Color.GREEN}{'=' * 60}{Color.RESET}\n")
         waitForEnterToExit()
     

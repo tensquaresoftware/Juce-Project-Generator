@@ -6,7 +6,7 @@ Generator Configuration file for JUCE Project Generator
 This file configures the generator itself: default values for interactive
 prompts, JUCE path validation, etc.
 
-Plugin copy settings (COPY_TO_SYSTEM_FOLDERS, COPY_TO_PROJECT_FOLDERS) are in
+Build artefact copy settings (COPY_TO_SYSTEM_FOLDERS, COPY_TO_PROJECT_FOLDERS) are in
 project-config.cmake in this directory. That file serves as the default
 template when creating new projects.
 

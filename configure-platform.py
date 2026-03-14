@@ -4,8 +4,8 @@ Platform Configuration Script for JUCE Projects
 Automatically configures .vscode/settings.json based on the current platform.
 Run this script if you open the project on a different platform than where it was generated.
 
-On macOS: interactive menu to choose ARM, Intel, or Universal. Use --arm, --intel, --universal
-to skip the prompt. On Windows/Linux: direct execution, no prompt.
+On macOS: interactive menu to choose ARM, Intel, or Universal. Use --arm, --intel, --intel-rosetta,
+--universal to skip the prompt. Intel on Apple Silicon routes to Intel-Rosetta automatically.
 """
 
 import sys
@@ -16,6 +16,7 @@ from pathlib import Path
 # macOS configuration options
 MACOS_ARM = ("Builds/macOS/ARM", "default-macos-arm64", "macOS (Apple Silicon)")
 MACOS_INTEL = ("Builds/macOS/Intel", "default-macos-x86_64", "macOS (Intel)")
+MACOS_INTEL_ROSETTA = ("Builds/macOS/Intel-Rosetta", "default-macos-x86_64-rosetta", "macOS (Intel-Rosetta)")
 MACOS_UNIVERSAL = ("Builds/macOS/Universal", "default-macos-universal", "macOS (Universal)")
 
 
@@ -44,14 +45,27 @@ def ensureSettingsFileExists(settingsFile):
 
 def parseMacOSConfigFromArgs():
     """Return (buildDir, presetName, platformName) or None if no macOS preset arg."""
+    arch = platform.machine()
     for arg in sys.argv[1:]:
         if arg in ("--arm", "-a"):
             return MACOS_ARM
         if arg in ("--intel", "-i"):
-            return MACOS_INTEL
+            return _resolveIntelConfig(arch)
+        if arg in ("--intel-rosetta",):
+            if arch != "arm64":
+                print("⚠️  Warning: --intel-rosetta is for Apple Silicon only. You are on Mac Intel.")
+                print("   Configuring for Intel (native) instead.")
+            return MACOS_INTEL_ROSETTA if arch == "arm64" else MACOS_INTEL
         if arg in ("--universal", "-u"):
             return MACOS_UNIVERSAL
     return None
+
+
+def _resolveIntelConfig(arch):
+    """Intel on arm64 → Intel-Rosetta; Intel on x86_64 → Intel (native)."""
+    if arch == "arm64":
+        return MACOS_INTEL_ROSETTA
+    return MACOS_INTEL
 
 
 def promptMacOSConfig():
@@ -59,9 +73,12 @@ def promptMacOSConfig():
     arch = platform.machine()
     default_choice = "1" if arch == "arm64" else "2"
     print("\nConfigure platform for this project:\n")
-    print("  [1] ARM (Apple Silicon)  - Builds/macOS/ARM")
-    print("  [2] Intel                - Builds/macOS/Intel")
-    print("  [3] Universal (ARM+Intel) - Builds/macOS/Universal\n")
+    print("  [1] ARM       > Builds/macOS/ARM (Apple Silicon native)")
+    if arch == "arm64":
+        print("  [2] Intel     > Builds/macOS/Intel-Rosetta (x86_64 on Apple Silicon)")
+    else:
+        print("  [2] Intel     > Builds/macOS/Intel (Mac Intel native)")
+    print("  [3] Universal > Builds/macOS/Universal (Apple Silicon + Intel)\n")
     while True:
         try:
             choice = input(f"Choice [{default_choice}]: ").strip() or default_choice
@@ -71,7 +88,7 @@ def promptMacOSConfig():
         if choice == "1":
             return MACOS_ARM
         if choice == "2":
-            return MACOS_INTEL
+            return _resolveIntelConfig(arch)
         if choice == "3":
             return MACOS_UNIVERSAL
         print("❌ Invalid choice. Enter 1, 2, or 3.")
@@ -261,6 +278,10 @@ def displaySuccessMessage(platformName, buildDir, presetName):
     print(f"✅ Successfully configured for {platformName}")
     print(f"   Build directory: {buildDir}")
     print(f"   CMake preset: {presetName}")
+    if "Intel-Rosetta" in platformName:
+        print(f"   (x86_64 cross-compiled on Apple Silicon)")
+    elif platformName == "macOS (Intel)":
+        print(f"   (x86_64 native on Mac Intel)")
     print(f"\n   You can now open the project in Cursor and build directly!")
 
 

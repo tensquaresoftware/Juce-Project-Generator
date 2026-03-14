@@ -14,10 +14,10 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 - ✅ Complete JUCE plugin project structure
 - ✅ CMake build system configuration
-- ✅ Platform-specific settings (macOS Apple Silicon/Intel/Universal Binary, Windows, Linux)
+- ✅ Platform-specific settings (macOS Apple Silicon/Intel/Intel-Rosetta/Universal Binary, Windows, Linux)
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS path differences)
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
-- ✅ Configurable plugin copy: system folders (macOS AU/VST3), custom VST3/AU folders (all platforms)
+- ✅ Configurable build artefact copy: system folders (macOS AU/VST3), project Artefacts/ folder (all platforms)
 - ✅ Support for AU, VST3, and Standalone formats
 - ✅ Configurable via `generator-config.py` and `project-config.cmake` for easy customization
 - ✅ Customizable default manufacturer and plugin codes
@@ -69,7 +69,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 The generator uses two configuration files (both in the generator directory):
 
 - **`generator-config.py`**: Generator-specific settings (defaults for prompts, JUCE validation)
-- **`project-config.cmake`**: Plugin copy settings used as defaults when creating new projects. Each generated project gets its own copy of this file at the project root, which you can edit afterward to customize where plugins are copied after each build.
+- **`project-config.cmake`**: Build artefact copy settings used as defaults when creating new projects. Each generated project gets its own copy of this file at the project root, which you can edit afterward to customize where AU, VST3, and Standalone are copied after each build.
 
 ### Setup
 
@@ -81,7 +81,7 @@ The generator uses two configuration files (both in the generator directory):
 
 2. **Create or Edit `project-config.cmake`** (in the generator directory):
    
-   This file defines default plugin copy options for new projects (system folders, project folder). Edit it to match your workflow. If it doesn't exist, the generator uses built-in defaults.
+   This file defines default build artefact copy options for new projects (system folders, project Artefacts/ folder). Edit it to match your workflow. If it doesn't exist, the generator uses built-in defaults.
 
 3. **Configure Your Settings**:
    
@@ -105,7 +105,7 @@ The generator uses two configuration files (both in the generator directory):
 
 #### `project-config.cmake` (in generator directory)
 
-**Purpose**: Defines default plugin copy settings for new projects. The generator reads this file and copies its values into each generated project.
+**Purpose**: Defines default build artefact copy settings for new projects. The generator reads this file and copies its values into each generated project.
 
 **Structure**: Edit only the **USER OPTIONS** section at the top. The **CODE** section below must not be modified.
 
@@ -122,7 +122,7 @@ set(COPY_TO_PROJECT_FOLDERS ${USER_COPY_TO_PROJECT_FOLDERS} CACHE BOOL "...")
 ```
 
 - **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — when ON (macOS only), copies AU to `~/Library/Audio/Plug-Ins/Components/` and VST3 to `~/Library/Audio/Plug-Ins/VST3/`. No effect on Windows/Linux.
-- **`USER_COPY_TO_PROJECT_FOLDERS`**: `ON` or `OFF` — when ON, copies plugins and Standalone to `{project_root}/Plugins/`, organized automatically by platform and architecture (macOS: ARM/Intel/Universal, Windows, Linux). No path to configure.
+- **`USER_COPY_TO_PROJECT_FOLDERS`**: `ON` or `OFF` — when ON, copies build outputs (AU, VST3, Standalone) to `{project_root}/Artefacts/`, organized by platform and architecture (macOS: ARM/Intel/Intel-Rosetta/Universal, Windows, Linux). No path to configure.
 
 #### `DEFAULT_PROJECT_DESTINATION`
 
@@ -198,24 +198,24 @@ DEFAULT_MANUFACTURER_CODE = "Myco"
 DEFAULT_PLUGIN_CODE = "Plg1"
 ```
 
-**Note**: Plugin copy settings are in `project-config.cmake` (same format as in generated projects).
+**Note**: Build artefact copy settings are in `project-config.cmake` (same format as in generated projects).
 
 ### How It Works
 
 1. When you run `generate-new-juce-project.py`, it loads `generator-config.py` for generator settings
-2. It reads `project-config.cmake` (in the generator directory) for plugin copy defaults
+2. It reads `project-config.cmake` (in the generator directory) for build artefact copy defaults
 3. If `generator-config.py` doesn't exist or constants are missing, default values are used
-4. If `project-config.cmake` doesn't exist, built-in defaults are used for plugin copy
+4. If `project-config.cmake` doesn't exist, built-in defaults are used for build artefact copy
 5. The values are injected into the generated project templates
 
 ### Customizing Generated Projects
 
-**Each generated project includes its own `project-config.cmake`** at the project root. This file controls where plugins (VST3, AU) and the Standalone app are copied after each build. You can edit it at any time—no need to regenerate the project.
+**Each generated project includes its own `project-config.cmake`** at the project root. This file controls where build outputs (AU, VST3, Standalone) are copied after each build. You can edit it at any time—no need to regenerate the project.
 
-To change plugin copy options for a specific project, open `project-config.cmake` in that project and edit the **USER OPTIONS** section only:
+To change build artefact copy options for a specific project, open `project-config.cmake` in that project and edit the **USER OPTIONS** section only:
 
 - **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — copy to system folders (macOS only)
-- **`USER_COPY_TO_PROJECT_FOLDERS`**: `ON` or `OFF` — copy to project `Plugins/` folder (organized by platform/architecture)
+- **`USER_COPY_TO_PROJECT_FOLDERS`**: `ON` or `OFF` — copy to project `Artefacts/` folder (organized by platform/architecture)
 
 Override at configure time:
 
@@ -227,7 +227,7 @@ cmake .. -DUSER_COPY_TO_PROJECT_FOLDERS=ON
 
 ```
 YourProject/
-├── project-config.cmake   ← Plugin copy settings (edit to customize)
+├── project-config.cmake   ← Build artefact copy settings (edit to customize)
 ├── Source/
 │   ├── PluginProcessor.h
 │   ├── PluginProcessor.cpp
@@ -236,12 +236,13 @@ YourProject/
 │   └── PluginFactory.cpp
 ├── Builds/
 │   ├── macOS/
-│   │   ├── ARM/       ← Apple Silicon (M1/M2/M3)
-│   │   ├── Intel/     ← Mac Intel
-│   │   └── Universal/ ← Universal Binary (Apple Silicon + Intel, for distribution)
+│   │   ├── ARM/           ← Apple Silicon native
+│   │   ├── Intel/         ← Mac Intel native (x86_64)
+│   │   ├── Intel-Rosetta/ ← x86_64 on Apple Silicon (cross-compiled)
+│   │   └── Universal/     ← Universal Binary (Apple Silicon + Intel, for distribution)
 │   ├── Windows/
 │   └── Linux/
-├── Plugins/            ← Created when COPY_TO_PROJECT_FOLDERS=ON (AU, VST3, Standalone by platform/arch)
+├── Artefacts/         ← Created when COPY_TO_PROJECT_FOLDERS=ON (mirrors Builds/ structure)
 ├── .vscode/
 │   ├── settings.json
 │   ├── tasks.json
@@ -271,9 +272,13 @@ Build directories are separated by platform and architecture to avoid mixing fil
    cmake --preset default-macos-arm64
    cmake --build --preset default-macos-arm64
    
-   # macOS Intel
+   # macOS Intel (native on Mac Intel)
    cmake --preset default-macos-x86_64
    cmake --build --preset default-macos-x86_64
+   
+   # macOS Intel-Rosetta (x86_64 on Apple Silicon)
+   cmake --preset default-macos-x86_64-rosetta
+   cmake --build --preset default-macos-x86_64-rosetta
    
    # macOS Universal (Apple Silicon + Intel, for distribution)
    cmake --preset default-macos-universal
@@ -290,25 +295,30 @@ Build directories are separated by platform and architecture to avoid mixing fil
 
 ### Testing Plugins
 
-When `COPY_TO_PROJECT_FOLDERS` is ON, plugins and Standalone are copied to `Plugins/{OS}/{arch}/{format}/` (e.g. `Plugins/macOS/ARM/VST3/`, `Plugins/Windows/Standalone/`). Add this folder to your DAW's plugin search path.
+When `COPY_TO_PROJECT_FOLDERS` is ON, build outputs (AU, VST3, Standalone) are copied to `Artefacts/{OS}/{arch}/{format}/` (e.g. `Artefacts/macOS/ARM/VST3/`, `Artefacts/Windows/Standalone/`). Add the appropriate folder to your DAW's plugin search path.
 
 When `COPY_TO_SYSTEM_FOLDERS` is ON (macOS only), AU and VST3 are copied to `~/Library/Audio/Plug-Ins/` — your DAW will find them automatically.
 
 #### macOS
 
-- **AU**: `Plugins/macOS/{ARM|Intel|Universal}/AU/` or `~/Library/Audio/Plug-Ins/Components/` (if system folders ON)
-- **VST3**: `Plugins/macOS/{ARM|Intel|Universal}/VST3/` or `~/Library/Audio/Plug-Ins/VST3/` (if system folders ON)
-- **Standalone**: `Plugins/macOS/{ARM|Intel|Universal}/Standalone/` — run the `.app` directly
+| Build preset | Artefacts destination |
+|--------------|------------------------|
+| ARM (Apple Silicon) | `Artefacts/macOS/ARM/` |
+| Intel (Mac Intel native) | `Artefacts/macOS/Intel/` |
+| Intel-Rosetta (x86_64 on Apple Silicon) | `Artefacts/macOS/Intel-Rosetta/` |
+| Universal | `Artefacts/macOS/Universal/` |
+
+Each folder contains `AU/`, `VST3/`, `Standalone/`. Or use `~/Library/Audio/Plug-Ins/` when system folders are ON.
 
 #### Windows
 
-- **VST3**: `Plugins/Windows/VST3/` — add to your DAW's plugin path, or copy to `C:\Program Files\Common Files\VST3\` (requires admin)
-- **Standalone**: `Plugins/Windows/Standalone/` — run the `.exe` directly
+- **VST3**: `Artefacts/Windows/VST3/` — add to your DAW's plugin path, or copy to `C:\Program Files\Common Files\VST3\` (requires admin)
+- **Standalone**: `Artefacts/Windows/Standalone/` — run the `.exe` directly
 
 #### Linux
 
-- **VST3**: `Plugins/Linux/VST3/` — add to your DAW's plugin path
-- **Standalone**: `Plugins/Linux/Standalone/` — run the binary from this folder
+- **VST3**: `Artefacts/Linux/VST3/` — add to your DAW's plugin path
+- **Standalone**: `Artefacts/Linux/Standalone/` — run the binary from this folder
 
 ### Debugging
 
@@ -325,7 +335,7 @@ If you open a project on a different platform than where it was generated (or on
 python configure-platform.py
 ```
 
-**On macOS**: An interactive menu lets you choose ARM, Intel, or Universal. You can also run with `--arm`, `--intel`, or `--universal` to skip the prompt. Double-clicking the script opens a terminal with the same menu.
+**On macOS**: An interactive menu lets you choose ARM, Intel, or Universal. Selecting Intel on Apple Silicon automatically configures Intel-Rosetta (x86_64 cross-compiled). Use `--arm`, `--intel`, `--intel-rosetta`, or `--universal` to skip the prompt. Double-clicking the script opens a terminal with the same menu.
 
 **On Windows/Linux**: Direct execution, no prompt.
 
@@ -335,7 +345,7 @@ The script updates:
 - `.vscode/launch.json` (debug executable paths)
 - `.vscode/tasks.json` (build paths)
 
-You can also manually select the appropriate CMake preset: `Ctrl+Shift+P` → "CMake: Select Configure Preset" → Choose the preset for your platform (e.g., `default-macos-arm64`, `default-macos-x86_64`, `default-macos-universal`, `default-windows`, `default-linux`).
+You can also manually select the appropriate CMake preset: `Ctrl+Shift+P` → "CMake: Select Configure Preset" → Choose the preset for your platform (e.g. `default-macos-arm64`, `default-macos-x86_64`, `default-macos-x86_64-rosetta`, `default-macos-universal`, `default-windows`, `default-linux`).
 
 ## Portable workflow (GitHub, multi-machine)
 
@@ -360,21 +370,21 @@ After changing the environment, restart Cursor (or at least the integrated termi
 
 1. **Create** the project on any machine with the generator; push to GitHub.
 2. **Clone** the repo on the other machines.
-3. On each machine: ensure `JUCE_DIR` is set (see above), then run `python configure-platform.py` to adapt `.vscode/settings.json`, `tasks.json`, and `launch.json` to the current OS (on macOS: interactive menu to choose ARM/Intel/Universal).
+3. On each machine: ensure `JUCE_DIR` is set (see above), then run `python configure-platform.py` to adapt `.vscode/settings.json`, `tasks.json`, and `launch.json` to the current OS (on macOS: interactive menu to choose ARM/Intel/Intel-Rosetta/Universal).
 4. **Build** on each machine; no path edits are needed in the project.
 
 This keeps the repository clean and portable for collaboration and multi-OS development.
 
 ## Customization
 
-### Plugin Copy Configuration
+### Build Artefact Copy Configuration
 
-Projects support two types of plugin copy after build:
+Projects support two types of build artefact copy after build:
 
 1. **System folders** (macOS only): AU → `~/Library/Audio/Plug-Ins/Components/`, VST3 → `~/Library/Audio/Plug-Ins/VST3/`
    - Controlled by `COPY_TO_SYSTEM_FOLDERS` in `project-config.cmake`
 
-2. **Project folder**: Copies to `{project_root}/Plugins/`, organized automatically by platform and architecture (macOS: ARM/Intel/Universal, Windows, Linux). Each format (AU, VST3, Standalone) goes to its own subfolder. No path to configure.
+2. **Project Artefacts folder**: Copies to `{project_root}/Artefacts/`, organized by platform and architecture (macOS: ARM/Intel/Intel-Rosetta/Universal, Windows, Linux). Each format (AU, VST3, Standalone) goes to its own subfolder. Structure mirrors `Builds/` for clarity.
    - Controlled by `COPY_TO_PROJECT_FOLDERS` in `project-config.cmake`
 
 Edit `project-config.cmake` in any generated project to customize without modifying `CMakeLists.txt`.
@@ -390,7 +400,7 @@ This includes:
 - Project destination paths (`DEFAULT_PROJECT_DESTINATION`)
 - Any path entered during interactive prompts
 
-**Note**: Plugin copy now uses the project `Plugins/` folder (relative path) when `COPY_TO_PROJECT_FOLDERS` is ON — no custom paths to configure.
+**Note**: Build artefact copy uses the project `Artefacts/` folder (relative path) when `COPY_TO_PROJECT_FOLDERS` is ON — no custom paths to configure.
 
 **Why this restriction?**
 
@@ -434,7 +444,7 @@ CMake and Visual Studio on Windows have known compatibility issues with Unicode 
 ### Generator uses default values even after creating config files
 
 - Make sure `generator-config.py` is in the same directory as `generate-new-juce-project.py`
-- Make sure `project-config.cmake` is in the generator directory for plugin copy defaults
+- Make sure `project-config.cmake` is in the generator directory for build artefact copy defaults
 - Check for syntax errors in `generator-config.py` (Python syntax) - the generator will display a warning if there are errors
 - Verify that constant names match exactly (case-sensitive)
 - If you see a warning about invalid codes, check that:
@@ -470,7 +480,7 @@ The generator is designed to be resilient and will handle various error scenario
 ### VST3/AU plugin not copying after build
 
 - Ensure `COPY_TO_PROJECT_FOLDERS` or `COPY_TO_SYSTEM_FOLDERS` is `ON` in `project-config.cmake`
-- When `COPY_TO_PROJECT_FOLDERS` is ON, plugins go to `Plugins/{OS}/{arch}/{format}/` (e.g. `Plugins/macOS/ARM/VST3/`)
+- When `COPY_TO_PROJECT_FOLDERS` is ON, build outputs go to `Artefacts/{OS}/{arch}/{format}/` (e.g. `Artefacts/macOS/ARM/VST3/`)
 - For system folder copy on macOS, ensure `COPY_TO_SYSTEM_FOLDERS` is `ON` — AU and VST3 will go to `~/Library/Audio/Plug-Ins/`
 
 ### JUCE not found (any platform)

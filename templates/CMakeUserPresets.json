@@ -31,9 +31,25 @@
     }},
     {{
       "name": "default-macos-x86_64",
-      "displayName": "macOS Intel (Ninja)",
+      "displayName": "macOS Intel (Ninja) - Native on Mac Intel",
       "generator": "Ninja",
       "binaryDir": "${{sourceDir}}/Builds/macOS/Intel",
+      "condition": {{
+        "type": "equals",
+        "lhs": "${{hostSystemName}}",
+        "rhs": "Darwin"
+      }},
+      "cacheVariables": {{
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_OSX_ARCHITECTURES": "x86_64",
+        "JUCE_DIR": "${{env:JUCE_DIR}}"
+      }}
+    }},
+    {{
+      "name": "default-macos-x86_64-rosetta",
+      "displayName": "macOS Intel-Rosetta (Ninja) - x86_64 on Apple Silicon",
+      "generator": "Ninja",
+      "binaryDir": "${{sourceDir}}/Builds/macOS/Intel-Rosetta",
       "condition": {{
         "type": "equals",
         "lhs": "${{hostSystemName}}",
@@ -110,6 +126,11 @@
     {{
       "name": "default-macos-x86_64",
       "configurePreset": "default-macos-x86_64",
+      "configuration": "Debug"
+    }},
+    {{
+      "name": "default-macos-x86_64-rosetta",
+      "configurePreset": "default-macos-x86_64-rosetta",
       "configuration": "Debug"
     }},
     {{
