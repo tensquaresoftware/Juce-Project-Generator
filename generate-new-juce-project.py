@@ -646,7 +646,8 @@ class JuceProjectGenerator:
         print(f"     - Build: {Color.BLUE}Ctrl+Shift+P{Color.RESET} (or {Color.BLUE}Cmd+Shift+P{Color.RESET} on macOS) → \"CMake: Build\"")
         print(f"     - Debug: Press {Color.BLUE}F5{Color.RESET} to start debugging\n")
         print(f"  {Color.YELLOW}Note:{Color.RESET} If you open this project on a different platform (or Mac Intel/Apple Silicon), run:")
-        print(f"     {Color.BLUE}python configure-platform.py{Color.RESET}\n")
+        print(f"     {Color.BLUE}python configure-platform.py{Color.RESET}")
+        print(f"     (On macOS: interactive menu to choose ARM/Intel/Universal)\n")
         print(f"{Color.GREEN}{'=' * 60}{Color.RESET}\n")
         waitForEnterToExit()
     

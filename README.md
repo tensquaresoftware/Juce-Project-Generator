@@ -325,7 +325,11 @@ If you open a project on a different platform than where it was generated (or on
 python configure-platform.py
 ```
 
-This script automatically detects your operating system and, on macOS, your processor architecture (Intel or Apple Silicon). It updates:
+**On macOS**: An interactive menu lets you choose ARM, Intel, or Universal. You can also run with `--arm`, `--intel`, or `--universal` to skip the prompt. Double-clicking the script opens a terminal with the same menu.
+
+**On Windows/Linux**: Direct execution, no prompt.
+
+The script updates:
 
 - `.vscode/settings.json` (CMake build directory and preset)
 - `.vscode/launch.json` (debug executable paths)
@@ -356,7 +360,7 @@ After changing the environment, restart Cursor (or at least the integrated termi
 
 1. **Create** the project on any machine with the generator; push to GitHub.
 2. **Clone** the repo on the other machines.
-3. On each machine: ensure `JUCE_DIR` is set (see above), then run `python configure-platform.py` to adapt `.vscode/settings.json`, `tasks.json`, and `launch.json` to the current OS.
+3. On each machine: ensure `JUCE_DIR` is set (see above), then run `python configure-platform.py` to adapt `.vscode/settings.json`, `tasks.json`, and `launch.json` to the current OS (on macOS: interactive menu to choose ARM/Intel/Universal).
 4. **Build** on each machine; no path edits are needed in the project.
 
 This keeps the repository clean and portable for collaboration and multi-OS development.

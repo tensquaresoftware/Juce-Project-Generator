@@ -3,25 +3,37 @@
 Platform Configuration Script for JUCE Projects
 Automatically configures .vscode/settings.json based on the current platform.
 Run this script if you open the project on a different platform than where it was generated.
+
+On macOS: interactive menu to choose ARM, Intel, or Universal. Use --arm, --intel, --universal
+to skip the prompt. On Windows/Linux: direct execution, no prompt.
 """
 
-import os
 import sys
 import json
 import platform
 from pathlib import Path
 
+# macOS configuration options
+MACOS_ARM = ("Builds/macOS/ARM", "default-macos-arm64", "macOS (Apple Silicon)")
+MACOS_INTEL = ("Builds/macOS/Intel", "default-macos-x86_64", "macOS (Intel)")
+MACOS_UNIVERSAL = ("Builds/macOS/Universal", "default-macos-universal", "macOS (Universal)")
+
+
 def getScriptDirectory():
     return Path(__file__).parent
+
 
 def getSettingsFilePath(scriptDir):
     return scriptDir / ".vscode" / "settings.json"
 
+
 def getLaunchFilePath(scriptDir):
     return scriptDir / ".vscode" / "launch.json"
 
+
 def getTasksFilePath(scriptDir):
     return scriptDir / ".vscode" / "tasks.json"
+
 
 def ensureSettingsFileExists(settingsFile):
     if not settingsFile.exists():
@@ -29,19 +41,59 @@ def ensureSettingsFileExists(settingsFile):
         print("   Make sure you run this script from the project root directory.")
         sys.exit(1)
 
-def detectCurrentPlatform():
+
+def parseMacOSConfigFromArgs():
+    """Return (buildDir, presetName, platformName) or None if no macOS preset arg."""
+    for arg in sys.argv[1:]:
+        if arg in ("--arm", "-a"):
+            return MACOS_ARM
+        if arg in ("--intel", "-i"):
+            return MACOS_INTEL
+        if arg in ("--universal", "-u"):
+            return MACOS_UNIVERSAL
+    return None
+
+
+def promptMacOSConfig():
+    """Interactive prompt for macOS. Returns (buildDir, presetName, platformName)."""
+    arch = platform.machine()
+    default_choice = "1" if arch == "arm64" else "2"
+    print("\nConfigure platform for this project:\n")
+    print("  [1] ARM (Apple Silicon)  - Builds/macOS/ARM")
+    print("  [2] Intel                - Builds/macOS/Intel")
+    print("  [3] Universal (ARM+Intel) - Builds/macOS/Universal\n")
+    while True:
+        try:
+            choice = input(f"Choice [{default_choice}]: ").strip() or default_choice
+        except (EOFError, KeyboardInterrupt):
+            print()
+            sys.exit(0)
+        if choice == "1":
+            return MACOS_ARM
+        if choice == "2":
+            return MACOS_INTEL
+        if choice == "3":
+            return MACOS_UNIVERSAL
+        print("❌ Invalid choice. Enter 1, 2, or 3.")
+
+
+def getPlatformConfig(interactive_macos):
+    """Return (buildDir, presetName, platformName). On macOS with interactive_macos, show prompt."""
     system = platform.system()
     if system == "Darwin":
+        config = parseMacOSConfigFromArgs()
+        if config is not None:
+            return config
+        if interactive_macos:
+            return promptMacOSConfig()
         arch = platform.machine()
-        if arch == "arm64":
-            return "Builds/macOS/ARM", "default-macos-arm64", "macOS (Apple Silicon)"
-        else:
-            return "Builds/macOS/Intel", "default-macos-x86_64", "macOS (Intel)"
-    elif system == "Windows":
+        return MACOS_ARM if arch == "arm64" else MACOS_INTEL
+    if system == "Windows":
         return "Builds/Windows", "default-windows", "Windows"
-    elif system == "Linux":
+    if system == "Linux":
         return "Builds/Linux", "default-linux", "Linux"
-    return "Builds/macOS/ARM", "default", system
+    return MACOS_ARM[0], "default", system
+
 
 def loadSettingsFromFile(settingsFile):
     try:
@@ -51,15 +103,18 @@ def loadSettingsFromFile(settingsFile):
         print(f"❌ Error: Invalid JSON in {settingsFile}: {e}")
         sys.exit(1)
 
+
 def normalizeBuildDirectoryPath(buildDir):
     buildPath = Path(buildDir)
     return buildPath.as_posix()
+
 
 def updateSettingsForPlatform(settings, buildDir, presetName):
     normalizedBuildDir = normalizeBuildDirectoryPath(buildDir)
     settings["cmake.buildDirectory"] = f"${{workspaceFolder}}/{normalizedBuildDir}"
     if "cmake.configurePreset" in settings:
         settings["cmake.configurePreset"] = presetName
+
 
 def writeSettingsToFile(settingsFile, settings):
     try:
@@ -69,13 +124,13 @@ def writeSettingsToFile(settingsFile, settings):
         print(f"❌ Error writing settings file: {e}")
         sys.exit(1)
 
+
 def extractProjectNameFromLaunch(launch):
     """Extract project name from launch.json paths."""
     for config in launch.get("configurations", []):
         prog = config.get("program", "")
         if "_artefacts" in prog:
             try:
-                # Format: ${workspaceFolder}/Builds/.../ProjectName_artefacts/...
                 parts = prog.split("/")
                 for p in parts:
                     if "_artefacts" in p:
@@ -83,6 +138,7 @@ def extractProjectNameFromLaunch(launch):
             except Exception:
                 pass
     return None
+
 
 def updateLaunchJson(launchFile, buildDir, projectName):
     """Update launch.json with the correct build directory paths."""
@@ -122,6 +178,7 @@ def updateLaunchJson(launchFile, buildDir, projectName):
                 json.dump(launch, f, indent=4, ensure_ascii=False)
         except Exception:
             pass
+
 
 def updateTasksJson(tasksFile, buildDir):
     """Update tasks.json with the correct build directory paths."""
@@ -199,23 +256,37 @@ def updateTasksJson(tasksFile, buildDir):
     except Exception:
         pass
 
+
 def displaySuccessMessage(platformName, buildDir, presetName):
     print(f"✅ Successfully configured for {platformName}")
     print(f"   Build directory: {buildDir}")
     print(f"   CMake preset: {presetName}")
     print(f"\n   You can now open the project in Cursor and build directly!")
 
+
+def waitForEnterToExit():
+    """Keep terminal open when script is double-clicked."""
+    print("\nPress [Enter] to exit...")
+    try:
+        input()
+    except (EOFError, KeyboardInterrupt):
+        pass
+
+
 def configurePlatform():
     scriptDir = getScriptDirectory()
     settingsFile = getSettingsFilePath(scriptDir)
     ensureSettingsFileExists(settingsFile)
-    
-    buildDir, presetName, platformName = detectCurrentPlatform()
+
+    system = platform.system()
+    interactive_macos = system == "Darwin" and parseMacOSConfigFromArgs() is None
+
+    buildDir, presetName, platformName = getPlatformConfig(interactive_macos)
+
     settings = loadSettingsFromFile(settingsFile)
     updateSettingsForPlatform(settings, buildDir, presetName)
     writeSettingsToFile(settingsFile, settings)
-    
-    # Update launch.json and tasks.json
+
     launchFile = getLaunchFilePath(scriptDir)
     tasksFile = getTasksFilePath(scriptDir)
     if launchFile.exists():
@@ -228,8 +299,12 @@ def configurePlatform():
         except Exception:
             pass
     updateTasksJson(tasksFile, buildDir)
-    
+
     displaySuccessMessage(platformName, buildDir, presetName)
+
+    if interactive_macos:
+        waitForEnterToExit()
+
 
 if __name__ == "__main__":
     configurePlatform()

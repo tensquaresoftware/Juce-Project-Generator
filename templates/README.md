@@ -130,7 +130,7 @@ The project is **automatically configured** for your platform when generated (Ap
    - **Note**: "Build: AU" task is only available on macOS
 
 **If you open the project on a different platform** than where it was generated:
-- Run the configuration script: `python configure-platform.py` (or `python3 configure-platform.py` on macOS)
+- Run the configuration script: `python configure-platform.py` (or `python3 configure-platform.py` on macOS). On macOS, an interactive menu lets you choose ARM, Intel, or Universal; use `--arm`, `--intel`, or `--universal` to skip the prompt.
 - Or manually select the CMake preset: `Ctrl+Shift+P` → "CMake: Select Configure Preset" → Choose the appropriate preset (`default-macos-arm64`, `default-macos-x86_64`, `default-macos-universal`, `default-windows`, `default-linux`)
 
 ### Plugin Installation
@@ -164,5 +164,5 @@ Press `F5` in Cursor to start debugging. The debugger will automatically use the
 
 The project generator automatically configures `.vscode/settings.json` for the platform where it's run. If you need to switch platforms:
 
-- **Automatic**: Run `python configure-platform.py` from the project root (detects OS and Mac architecture automatically)
+- **Automatic**: Run `python configure-platform.py` from the project root. On macOS, an interactive menu lets you choose ARM, Intel, or Universal; on Windows/Linux, direct execution.
 - **Manual**: Select the appropriate CMake preset in Cursor (CMake Tools will handle the rest)

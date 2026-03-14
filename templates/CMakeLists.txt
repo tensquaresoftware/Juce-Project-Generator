@@ -132,7 +132,7 @@ target_compile_definitions({projectName}
 
 # =============================================================================
 # COPY TO PROJECT FOLDERS (Plugins/ at project root)
-# When COPY_TO_PROJECT_FOLDERS is ON, copies to Plugins/{OS}/{arch}/{format}/
+# When COPY_TO_PROJECT_FOLDERS is ON, copies to Plugins/{{OS}}/{{arch}}/{{format}}/
 # Structure: Plugins/macOS/ARM/, Plugins/macOS/Intel/, Plugins/macOS/Universal/,
 #            Plugins/Windows/, Plugins/Linux/
 # Only copies formats selected for the project (AU, VST3, Standalone).
