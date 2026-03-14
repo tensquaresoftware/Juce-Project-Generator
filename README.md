@@ -6,7 +6,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 **Author:** Guillaume DUPONT  
 **Organization:** Ten Square Software  
-**Revision date:** 2026-03-12
+**Revision date:** 2026-03-14
 
 ---
 
@@ -14,7 +14,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 - ✅ Complete JUCE plugin project structure
 - ✅ CMake build system configuration
-- ✅ Platform-specific settings (macOS Apple Silicon/Intel, Windows, Linux)
+- ✅ Platform-specific settings (macOS Apple Silicon/Intel/Universal Binary, Windows, Linux)
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS path differences)
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
 - ✅ Configurable plugin copy: system folders (macOS AU/VST3), custom VST3/AU folders (all platforms)
@@ -244,8 +244,9 @@ YourProject/
 │   └── PluginFactory.cpp
 ├── Builds/
 │   ├── macOS/
-│   │   ├── ARM/      ← Apple Silicon (M1/M2/M3)
-│   │   └── Intel/    ← Mac Intel
+│   │   ├── ARM/       ← Apple Silicon (M1/M2/M3)
+│   │   ├── Intel/     ← Mac Intel
+│   │   └── Universal/ ← Universal Binary (ARM + Intel, for distribution)
 │   ├── Windows/
 │   └── Linux/
 ├── .vscode/
@@ -280,6 +281,10 @@ Build directories are separated by platform and architecture to avoid mixing fil
    # macOS Intel
    cmake --preset default-macos-x86_64
    cmake --build --preset default-macos-x86_64
+   
+   # macOS Universal (ARM + Intel, for distribution)
+   cmake --preset default-macos-universal
+   cmake --build --preset default-macos-universal
    
    # Windows
    cmake --preset default-windows
@@ -332,7 +337,7 @@ This script automatically detects your operating system and, on macOS, your proc
 - `.vscode/launch.json` (debug executable paths)
 - `.vscode/tasks.json` (build paths)
 
-You can also manually select the appropriate CMake preset: `Ctrl+Shift+P` → "CMake: Select Configure Preset" → Choose the preset for your platform (e.g., `default-macos-arm64`, `default-macos-x86_64`, `default-windows`, `default-linux`).
+You can also manually select the appropriate CMake preset: `Ctrl+Shift+P` → "CMake: Select Configure Preset" → Choose the preset for your platform (e.g., `default-macos-arm64`, `default-macos-x86_64`, `default-macos-universal`, `default-windows`, `default-linux`).
 
 ## Portable workflow (GitHub, multi-machine)
 

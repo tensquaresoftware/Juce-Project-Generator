@@ -46,6 +46,22 @@
       }}
     }},
     {{
+      "name": "default-macos-universal",
+      "displayName": "macOS Universal (ARM + Intel)",
+      "generator": "Ninja",
+      "binaryDir": "${{sourceDir}}/Builds/macOS/Universal",
+      "condition": {{
+        "type": "equals",
+        "lhs": "${{hostSystemName}}",
+        "rhs": "Darwin"
+      }},
+      "cacheVariables": {{
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
+        "JUCE_DIR": "${{env:JUCE_DIR}}"
+      }}
+    }},
+    {{
       "name": "default-windows",
       "displayName": "Windows (Visual Studio 2022)",
       "generator": "Visual Studio 17 2022",
@@ -94,6 +110,11 @@
     {{
       "name": "default-macos-x86_64",
       "configurePreset": "default-macos-x86_64",
+      "configuration": "Debug"
+    }},
+    {{
+      "name": "default-macos-universal",
+      "configurePreset": "default-macos-universal",
       "configuration": "Debug"
     }},
     {{
