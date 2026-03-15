@@ -5,17 +5,17 @@
             "name": "Debug: Standalone",
             "type": "lldb",
             "request": "launch",
-            "program": "${{workspaceFolder}}/{buildDirMacOS}/{projectName}_artefacts/Debug/Standalone/{projectName}.app/Contents/MacOS/{projectName}",
+            "program": "${{workspaceFolder}}/${{command:cmake.buildDirectory}}/{projectName}_artefacts/${{command:cmake.buildType}}/Standalone/{projectName}.app/Contents/MacOS/{projectName}",
             "args": [],
             "cwd": "${{workspaceFolder}}",
             "preLaunchTask": "Build: Standalone",
             "osx": {{
                 "type": "lldb",
-                "program": "${{workspaceFolder}}/{buildDirMacOS}/{projectName}_artefacts/Debug/Standalone/{projectName}.app/Contents/MacOS/{projectName}"
+                "program": "${{workspaceFolder}}/${{command:cmake.buildDirectory}}/{projectName}_artefacts/${{command:cmake.buildType}}/Standalone/{projectName}.app/Contents/MacOS/{projectName}"
             }},
             "windows": {{
                 "type": "cppvsdbg",
-                "program": "${{workspaceFolder}}/{buildDirWindows}/{projectName}_artefacts/Debug/Standalone/{projectName}.exe",
+                "program": "${{workspaceFolder}}/${{command:cmake.buildDirectory}}/{projectName}_artefacts/${{command:cmake.buildType}}/Standalone/{projectName}.exe",
                 "MIMode": "windows"
             }}
         }},

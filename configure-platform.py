@@ -13,11 +13,32 @@ import json
 import platform
 from pathlib import Path
 
-# macOS configuration options
-MACOS_ARM = ("Builds/macOS/ARM", "default-macos-arm64", "macOS (Apple Silicon)")
-MACOS_INTEL = ("Builds/macOS/Intel", "default-macos-x86_64", "macOS (Intel)")
-MACOS_INTEL_ROSETTA = ("Builds/macOS/Intel-Rosetta", "default-macos-x86_64-rosetta", "macOS (Intel-Rosetta)")
-MACOS_UNIVERSAL = ("Builds/macOS/Universal", "default-macos-universal", "macOS (Universal)")
+BUILD_DIR_MACOS_ARM = "Builds/macOS/ARM"
+BUILD_DIR_MACOS_INTEL = "Builds/macOS/Intel"
+BUILD_DIR_MACOS_INTEL_ROSETTA = "Builds/macOS/Intel-Rosetta"
+BUILD_DIR_MACOS_UNIVERSAL = "Builds/macOS/Universal"
+BUILD_DIR_WINDOWS = "Builds/Windows"
+BUILD_DIR_LINUX = "Builds/Linux"
+
+PRESET_MACOS_ARM = "default-macos-arm64"
+PRESET_MACOS_INTEL = "default-macos-x86_64"
+PRESET_MACOS_INTEL_ROSETTA = "default-macos-x86_64-rosetta"
+PRESET_MACOS_UNIVERSAL = "default-macos-universal"
+PRESET_WINDOWS = "default-windows"
+PRESET_LINUX = "default-linux"
+
+VSCODE_DIR = ".vscode"
+VSCODE_SETTINGS_PATH = ".vscode/settings.json"
+VSCODE_LAUNCH_PATH = ".vscode/launch.json"
+VSCODE_TASKS_PATH = ".vscode/tasks.json"
+WORKSPACE_FOLDER_PLACEHOLDER = "${workspaceFolder}"
+STANDALONE_ARTEFACTS_SUFFIX = "_artefacts/Debug/Standalone"
+CONFIG_DEBUG = "Debug"
+
+MACOS_ARM = (BUILD_DIR_MACOS_ARM, PRESET_MACOS_ARM, "macOS (Apple Silicon)")
+MACOS_INTEL = (BUILD_DIR_MACOS_INTEL, PRESET_MACOS_INTEL, "macOS (Intel)")
+MACOS_INTEL_ROSETTA = (BUILD_DIR_MACOS_INTEL_ROSETTA, PRESET_MACOS_INTEL_ROSETTA, "macOS (Intel-Rosetta)")
+MACOS_UNIVERSAL = (BUILD_DIR_MACOS_UNIVERSAL, PRESET_MACOS_UNIVERSAL, "macOS (Universal)")
 
 
 def getScriptDirectory():
@@ -25,15 +46,15 @@ def getScriptDirectory():
 
 
 def getSettingsFilePath(scriptDir):
-    return scriptDir / ".vscode" / "settings.json"
+    return scriptDir / VSCODE_SETTINGS_PATH
 
 
 def getLaunchFilePath(scriptDir):
-    return scriptDir / ".vscode" / "launch.json"
+    return scriptDir / VSCODE_LAUNCH_PATH
 
 
 def getTasksFilePath(scriptDir):
-    return scriptDir / ".vscode" / "tasks.json"
+    return scriptDir / VSCODE_TASKS_PATH
 
 
 def ensureSettingsFileExists(settingsFile):
@@ -41,6 +62,50 @@ def ensureSettingsFileExists(settingsFile):
         print("❌ Error: .vscode/settings.json not found.")
         print("   Make sure you run this script from the project root directory.")
         sys.exit(1)
+
+
+def _loadJsonFile(path: Path) -> dict:
+    """Load and parse JSON file. Exit on error."""
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"❌ Error: Invalid JSON in {path}: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error reading {path}: {e}")
+        sys.exit(1)
+
+
+def _loadJsonFileSafe(path: Path) -> dict | None:
+    """Load and parse JSON file. Return None on error."""
+    if not path.exists():
+        return None
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (json.JSONDecodeError, Exception):
+        return None
+
+
+def _writeJsonFile(path: Path, data: dict) -> None:
+    """Write JSON file with indent 4. Exit on error."""
+    try:
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"❌ Error writing {path}: {e}")
+        sys.exit(1)
+
+
+def _writeJsonFileSafe(path: Path, data: dict) -> bool:
+    """Write JSON file with indent 4. Return False on error."""
+    try:
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+        return True
+    except Exception:
+        return False
 
 
 def parseMacOSConfigFromArgs():
@@ -71,7 +136,7 @@ def _resolveIntelConfig(arch):
 def promptMacOSConfig():
     """Interactive prompt for macOS. Returns (buildDir, presetName, platformName)."""
     arch = platform.machine()
-    default_choice = "1" if arch == "arm64" else "2"
+    defaultChoice = "1" if arch == "arm64" else "2"
     print("\nConfigure platform for this project:\n")
     print("  [1] ARM       > Builds/macOS/ARM (Apple Silicon native)")
     if arch == "arm64":
@@ -81,7 +146,7 @@ def promptMacOSConfig():
     print("  [3] Universal > Builds/macOS/Universal (Apple Silicon + Intel)\n")
     while True:
         try:
-            choice = input(f"Choice [{default_choice}]: ").strip() or default_choice
+            choice = input(f"Choice [{defaultChoice}]: ").strip() or defaultChoice
         except (EOFError, KeyboardInterrupt):
             print()
             sys.exit(0)
@@ -94,31 +159,26 @@ def promptMacOSConfig():
         print("❌ Invalid choice. Enter 1, 2, or 3.")
 
 
-def getPlatformConfig(interactive_macos):
-    """Return (buildDir, presetName, platformName). On macOS with interactive_macos, show prompt."""
+def getPlatformConfig(interactiveMacos):
+    """Return (buildDir, presetName, platformName). On macOS with interactiveMacos, show prompt."""
     system = platform.system()
     if system == "Darwin":
         config = parseMacOSConfigFromArgs()
         if config is not None:
             return config
-        if interactive_macos:
+        if interactiveMacos:
             return promptMacOSConfig()
         arch = platform.machine()
         return MACOS_ARM if arch == "arm64" else MACOS_INTEL
     if system == "Windows":
-        return "Builds/Windows", "default-windows", "Windows"
+        return BUILD_DIR_WINDOWS, PRESET_WINDOWS, "Windows"
     if system == "Linux":
-        return "Builds/Linux", "default-linux", "Linux"
+        return BUILD_DIR_LINUX, PRESET_LINUX, "Linux"
     return MACOS_ARM[0], "default", system
 
 
 def loadSettingsFromFile(settingsFile):
-    try:
-        with open(settingsFile, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except json.JSONDecodeError as e:
-        print(f"❌ Error: Invalid JSON in {settingsFile}: {e}")
-        sys.exit(1)
+    return _loadJsonFile(settingsFile)
 
 
 def normalizeBuildDirectoryPath(buildDir):
@@ -128,150 +188,151 @@ def normalizeBuildDirectoryPath(buildDir):
 
 def updateSettingsForPlatform(settings, buildDir, presetName):
     normalizedBuildDir = normalizeBuildDirectoryPath(buildDir)
-    settings["cmake.buildDirectory"] = f"${{workspaceFolder}}/{normalizedBuildDir}"
+    settings["cmake.buildDirectory"] = f"{WORKSPACE_FOLDER_PLACEHOLDER}/{normalizedBuildDir}"
     if "cmake.configurePreset" in settings:
         settings["cmake.configurePreset"] = presetName
 
 
 def writeSettingsToFile(settingsFile, settings):
-    try:
-        with open(settingsFile, 'w', encoding='utf-8') as f:
-            json.dump(settings, f, indent=4, ensure_ascii=False)
-    except Exception as e:
-        print(f"❌ Error writing settings file: {e}")
-        sys.exit(1)
+    _writeJsonFile(settingsFile, settings)
+
+
+def _buildStandalonePathMacos(workspacePrefix: str, buildDir: str, projectName: str) -> str:
+    """Build macOS standalone path for launch.json."""
+    normalizedBuildDir = normalizeBuildDirectoryPath(buildDir)
+    return f"{workspacePrefix}/{normalizedBuildDir}/{projectName}{STANDALONE_ARTEFACTS_SUFFIX}/{projectName}.app/Contents/MacOS/{projectName}"
+
+
+def _buildStandalonePathWindows(workspacePrefix: str, buildDir: str, projectName: str) -> str:
+    """Build Windows standalone path for launch.json."""
+    normalizedBuildDir = normalizeBuildDirectoryPath(buildDir)
+    return f"{workspacePrefix}/{normalizedBuildDir}/{projectName}{STANDALONE_ARTEFACTS_SUFFIX}/{projectName}.exe"
 
 
 def extractProjectNameFromLaunch(launch):
     """Extract project name from launch.json paths."""
     for config in launch.get("configurations", []):
         prog = config.get("program", "")
-        if "_artefacts" in prog:
-            try:
-                parts = prog.split("/")
-                for p in parts:
-                    if "_artefacts" in p:
-                        return p.replace("_artefacts", "")
-            except Exception:
-                pass
+        if STANDALONE_ARTEFACTS_SUFFIX not in prog:
+            continue
+        normalized = Path(prog).as_posix()
+        parts = normalized.split("/")
+        for part in parts:
+            if STANDALONE_ARTEFACTS_SUFFIX in part:
+                return part.replace(STANDALONE_ARTEFACTS_SUFFIX, "")
     return None
+
+
+def _isStandaloneConfig(config: dict) -> bool:
+    """Check if config is for Standalone build."""
+    if "Standalone" in config.get("program", ""):
+        return True
+    if "osx" in config and "Standalone" in config["osx"].get("program", ""):
+        return True
+    return False
+
+
+def _updateStandaloneConfigPaths(config: dict, system: str, normalizedBuildDir: str, projectName: str) -> None:
+    """Update program paths in a Standalone config for current platform."""
+    if system == "Darwin":
+        newMacPath = _buildStandalonePathMacos(WORKSPACE_FOLDER_PLACEHOLDER, normalizedBuildDir, projectName)
+        config["program"] = newMacPath
+        if "osx" in config:
+            config["osx"]["program"] = newMacPath
+        if "windows" in config:
+            config["windows"]["program"] = _buildStandalonePathWindows(WORKSPACE_FOLDER_PLACEHOLDER, BUILD_DIR_WINDOWS, projectName)
+    elif system == "Windows":
+        newWinPath = _buildStandalonePathWindows(WORKSPACE_FOLDER_PLACEHOLDER, BUILD_DIR_WINDOWS, projectName)
+        config["program"] = newWinPath
+        if "windows" in config:
+            config["windows"]["program"] = newWinPath
+        if "osx" in config:
+            config["osx"]["program"] = _buildStandalonePathMacos(WORKSPACE_FOLDER_PLACEHOLDER, BUILD_DIR_MACOS_ARM, projectName)
 
 
 def updateLaunchJson(launchFile, buildDir, projectName):
     """Update launch.json with the correct build directory paths."""
-    if not launchFile.exists():
-        return
-    try:
-        with open(launchFile, 'r', encoding='utf-8') as f:
-            launch = json.load(f)
-    except json.JSONDecodeError:
+    launch = _loadJsonFileSafe(launchFile)
+    if launch is None:
         return
     normalizedBuildDir = normalizeBuildDirectoryPath(buildDir)
-    buildDirWin = "Builds/Windows"
-    buildDirMacArm = "Builds/macOS/ARM"
     system = platform.system()
     modified = False
     for config in launch.get("configurations", []):
-        if "Standalone" not in config.get("program", "") and "Standalone" not in config.get("osx", {}).get("program", ""):
+        if not _isStandaloneConfig(config):
             continue
-        if system == "Darwin":
-            newMacPath = f"${{workspaceFolder}}/{normalizedBuildDir}/{projectName}_artefacts/Debug/Standalone/{projectName}.app/Contents/MacOS/{projectName}"
-            config["program"] = newMacPath
-            if "osx" in config:
-                config["osx"]["program"] = newMacPath
-            if "windows" in config:
-                config["windows"]["program"] = f"${{workspaceFolder}}/{buildDirWin}/{projectName}_artefacts/Debug/Standalone/{projectName}.exe"
-        elif system == "Windows":
-            newWinPath = f"${{workspaceFolder}}/{buildDirWin}/{projectName}_artefacts/Debug/Standalone/{projectName}.exe"
-            config["program"] = newWinPath
-            if "windows" in config:
-                config["windows"]["program"] = newWinPath
-            if "osx" in config:
-                config["osx"]["program"] = f"${{workspaceFolder}}/{buildDirMacArm}/{projectName}_artefacts/Debug/Standalone/{projectName}.app/Contents/MacOS/{projectName}"
+        _updateStandaloneConfigPaths(config, system, normalizedBuildDir, projectName)
         modified = True
     if modified:
-        try:
-            with open(launchFile, 'w', encoding='utf-8') as f:
-                json.dump(launch, f, indent=4, ensure_ascii=False)
-        except Exception:
-            pass
+        _writeJsonFileSafe(launchFile, launch)
+
+
+def _updateArgsBuildDir(args, targetDir):
+    """Update -B and --build in args list in-place."""
+    for flag in ("-B", "--build"):
+        if flag in args:
+            idx = args.index(flag)
+            if idx + 1 < len(args):
+                args[idx + 1] = targetDir
+
+
+def _getTargetDirForSystem(system, normalizedBuildDir):
+    """Return the build directory path for the current platform."""
+    if system == "Darwin":
+        return normalizedBuildDir
+    if system == "Windows":
+        return BUILD_DIR_WINDOWS
+    return BUILD_DIR_LINUX
+
+
+def _getCleanTaskArgs(system):
+    """Return args for the Clean task based on platform."""
+    if system == "Windows":
+        return ["-Command", "Remove-Item -Recurse -Force Builds -ErrorAction SilentlyContinue"]
+    return ["-rf", "Builds"]
+
+
+def _updateTaskBuildDirs(task, system, normalizedBuildDir):
+    """Update build dirs in a single task's args and platform-specific args."""
+    targetDir = _getTargetDirForSystem(system, normalizedBuildDir)
+    args = task.get("args", [])
+    _updateArgsBuildDir(args, targetDir)
+    if "osx" in task and system == "Darwin":
+        osxArgs = task["osx"].get("args", [])
+        _updateArgsBuildDir(osxArgs, normalizedBuildDir)
+        task["osx"]["args"] = osxArgs
+    if "windows" in task and system == "Windows":
+        winArgs = task["windows"].get("args", [])
+        _updateArgsBuildDir(winArgs, BUILD_DIR_WINDOWS)
+        task["windows"]["args"] = winArgs
+    if "linux" in task and system == "Linux":
+        linuxArgs = task["linux"].get("args", [])
+        _updateArgsBuildDir(linuxArgs, BUILD_DIR_LINUX)
+        task["linux"]["args"] = linuxArgs
+
+
+def _updateCleanTask(task, system):
+    """Update Clean task args for the current platform."""
+    if "Clean" not in task.get("label", ""):
+        return
+    cleanArgs = _getCleanTaskArgs(system)
+    if "args" in task:
+        task["args"] = cleanArgs
+    if "windows" in task:
+        task["windows"]["args"] = _getCleanTaskArgs("Windows")
 
 
 def updateTasksJson(tasksFile, buildDir):
     """Update tasks.json with the correct build directory paths."""
-    if not tasksFile.exists():
-        return
-    try:
-        with open(tasksFile, 'r', encoding='utf-8') as f:
-            tasks = json.load(f)
-    except json.JSONDecodeError:
+    tasks = _loadJsonFileSafe(tasksFile)
+    if tasks is None:
         return
     normalizedBuildDir = normalizeBuildDirectoryPath(buildDir)
-    buildDirWin = "Builds/Windows"
-    buildDirLinux = "Builds/Linux"
     system = platform.system()
     for task in tasks.get("tasks", []):
-        if system == "Darwin":
-            targetDir = normalizedBuildDir
-        elif system == "Windows":
-            targetDir = buildDirWin
-        else:
-            targetDir = buildDirLinux
-        args = task.get("args", [])
-        if "-B" in args:
-            idx = args.index("-B")
-            if idx + 1 < len(args):
-                args[idx + 1] = targetDir
-        if "--build" in args:
-            idx = args.index("--build")
-            if idx + 1 < len(args):
-                args[idx + 1] = targetDir
-        if "osx" in task and system == "Darwin":
-            osxArgs = task["osx"].get("args", [])
-            if "-B" in osxArgs:
-                idx = osxArgs.index("-B")
-                if idx + 1 < len(osxArgs):
-                    osxArgs[idx + 1] = normalizedBuildDir
-            if "--build" in osxArgs:
-                idx = osxArgs.index("--build")
-                if idx + 1 < len(osxArgs):
-                    osxArgs[idx + 1] = normalizedBuildDir
-            task["osx"]["args"] = osxArgs
-        if "windows" in task and system == "Windows":
-            winArgs = task["windows"].get("args", [])
-            if "-B" in winArgs:
-                idx = winArgs.index("-B")
-                if idx + 1 < len(winArgs):
-                    winArgs[idx + 1] = buildDirWin
-            if "--build" in winArgs:
-                idx = winArgs.index("--build")
-                if idx + 1 < len(winArgs):
-                    winArgs[idx + 1] = buildDirWin
-            task["windows"]["args"] = winArgs
-        if "linux" in task and system == "Linux":
-            linuxArgs = task["linux"].get("args", [])
-            if "-B" in linuxArgs:
-                idx = linuxArgs.index("-B")
-                if idx + 1 < len(linuxArgs):
-                    linuxArgs[idx + 1] = buildDirLinux
-            if "--build" in linuxArgs:
-                idx = linuxArgs.index("--build")
-                if idx + 1 < len(linuxArgs):
-                    linuxArgs[idx + 1] = buildDirLinux
-            task["linux"]["args"] = linuxArgs
-        if "Clean" in task.get("label", ""):
-            if "args" in task:
-                if system == "Windows":
-                    task["args"] = ["-Command", "Remove-Item -Recurse -Force Builds -ErrorAction SilentlyContinue"]
-                else:
-                    task["args"] = ["-rf", "Builds"]
-            if "windows" in task:
-                task["windows"]["args"] = ["-Command", "Remove-Item -Recurse -Force Builds -ErrorAction SilentlyContinue"]
-    try:
-        with open(tasksFile, 'w', encoding='utf-8') as f:
-            json.dump(tasks, f, indent=4, ensure_ascii=False)
-    except Exception:
-        pass
+        _updateTaskBuildDirs(task, system, normalizedBuildDir)
+        _updateCleanTask(task, system)
+    _writeJsonFileSafe(tasksFile, tasks)
 
 
 def displaySuccessMessage(platformName, buildDir, presetName):
@@ -300,9 +361,9 @@ def configurePlatform():
     ensureSettingsFileExists(settingsFile)
 
     system = platform.system()
-    interactive_macos = system == "Darwin" and parseMacOSConfigFromArgs() is None
+    interactiveMacos = system == "Darwin" and parseMacOSConfigFromArgs() is None
 
-    buildDir, presetName, platformName = getPlatformConfig(interactive_macos)
+    buildDir, presetName, platformName = getPlatformConfig(interactiveMacos)
 
     settings = loadSettingsFromFile(settingsFile)
     updateSettingsForPlatform(settings, buildDir, presetName)
@@ -310,20 +371,18 @@ def configurePlatform():
 
     launchFile = getLaunchFilePath(scriptDir)
     tasksFile = getTasksFilePath(scriptDir)
-    if launchFile.exists():
-        try:
-            with open(launchFile, 'r', encoding='utf-8') as f:
-                launch = json.load(f)
-            projectName = extractProjectNameFromLaunch(launch)
-            if projectName:
-                updateLaunchJson(launchFile, buildDir, projectName)
-        except Exception:
-            pass
+    
+    launch = _loadJsonFileSafe(launchFile)
+    if launch:
+        projectName = extractProjectNameFromLaunch(launch)
+        if projectName:
+            updateLaunchJson(launchFile, buildDir, projectName)
+    
     updateTasksJson(tasksFile, buildDir)
 
     displaySuccessMessage(platformName, buildDir, presetName)
 
-    if interactive_macos:
+    if interactiveMacos:
         waitForEnterToExit()
 
 

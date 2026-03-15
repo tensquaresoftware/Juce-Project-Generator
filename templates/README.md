@@ -61,6 +61,8 @@ cmake --build Builds/macOS/ARM --target {projectName}_VST3 --config Debug
 
 #### macOS (Intel) — native on Mac Intel
 
+**Note:** On Apple Silicon, this preset is rejected at configure; use "macOS Intel-Rosetta" instead.
+
 ```bash
 # Configure (using Ninja)
 cmake -B Builds/macOS/Intel -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_OSX_ARCHITECTURES=x86_64
@@ -76,7 +78,7 @@ cmake --build Builds/macOS/Intel --target {projectName}_VST3 --config Debug
 
 #### macOS (Intel-Rosetta) — x86_64 on Apple Silicon
 
-When building for Intel compatibility on an Apple Silicon Mac, use the Intel-Rosetta preset. Build outputs go to `Artefacts/macOS/Intel-Rosetta/`.
+When building for Intel compatibility on an Apple Silicon Mac, use the Intel-Rosetta preset. Build outputs go to `Artefacts/macOS/Intel-Rosetta/`. On Mac Intel, this preset is rejected at configure; use "macOS Intel" instead.
 
 ```bash
 # Configure (using preset)
@@ -131,55 +133,65 @@ cmake --build Builds/Windows --target {projectName}_VST3 --config Debug
 
 ### Using Cursor IDE
 
-The project is **automatically configured** for your platform when generated (Apple Silicon or Intel for development). For distribution builds, select the Universal preset manually. Simply:
+The project uses **CMake Presets** for flexible configuration. Simply:
 
 1. Open the project folder in Cursor
-2. CMake Tools extension will automatically detect the project and use the correct preset
-3. Select your build kit when prompted (CMake Tools will suggest the correct one):
-   - **macOS Apple Silicon**: Ninja generator, preset `default-macos-arm64`
-   - **macOS Intel** (native on Mac Intel): Ninja generator, preset `default-macos-x86_64`
-   - **macOS Intel-Rosetta** (x86_64 on Apple Silicon): Ninja generator, preset `default-macos-x86_64-rosetta`
-   - **macOS Universal** (distribution): Ninja generator, preset `default-macos-universal`
-   - **Windows**: Visual Studio 2022 generator
-4. Build the project:
-   - Use the command palette: `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) → "CMake: Build"
-   - Or use tasks: `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) → "Tasks: Run Task" → Select "Build: All"
-   - **Note**: "Build: AU" task is only available on macOS
+2. Select your preferred CMake preset when prompted:
+   - **macOS Apple Silicon (Native)**: `default-macos-arm64` → builds to `Builds/macOS/ARM`
+   - **macOS Intel (Native on Mac Intel)**: `default-macos-x86_64` → builds to `Builds/macOS/Intel`
+   - **macOS Intel-Rosetta (x86_64 on Apple Silicon)**: `default-macos-x86_64-rosetta` → builds to `Builds/macOS/Intel-Rosetta`
+   - **macOS Universal (Distribution)**: `default-macos-universal` → builds to `Builds/macOS/Universal`
+   - **Windows**: `default-windows` → builds to `Builds/Windows`
+   - **Linux**: `default-linux` → builds to `Builds/Linux`
 
-**If you open the project on a different platform** than where it was generated:
-- Run the configuration script: `python configure-platform.py` (or `python3 configure-platform.py` on macOS). On macOS, an interactive menu lets you choose ARM, Intel, or Universal (Intel on Apple Silicon routes to Intel-Rosetta); use `--arm`, `--intel`, `--intel-rosetta`, or `--universal` to skip the prompt.
-- Or manually select the CMake preset: `Ctrl+Shift+P` → "CMake: Select Configure Preset" → Choose the appropriate preset (`default-macos-arm64`, `default-macos-x86_64`, `default-macos-x86_64-rosetta`, `default-macos-universal`, `default-windows`, `default-linux`)
+3. Build the project:
+   - **Recommended**: Press `Cmd+Shift+B` (macOS) or `Ctrl+Shift+B` (Windows/Linux) to build
+   - **Or** use command palette: `Cmd+Shift+P` → "CMake: Build"
+   - **Or** run specific tasks: `Cmd+Shift+P` → "Tasks: Run Task" → Choose task
+
+**Switching presets**: Click the preset name in the status bar (bottom of Cursor window) or use `Cmd+Shift+P` → "CMake: Select Configure Preset". All paths automatically adapt to the selected preset.
 
 ### Build Artefacts
 
-When `COPY_TO_PROJECT_FOLDERS` is ON (default), build outputs (AU, VST3, Standalone) are copied to `Artefacts/{{OS}}/{{arch}}/{{format}}/`:
-- **macOS**: `Artefacts/macOS/ARM/`, `Artefacts/macOS/Intel/`, `Artefacts/macOS/Intel-Rosetta/`, or `Artefacts/macOS/Universal/` (depending on build preset and host) — each contains `AU/`, `VST3/`, `Standalone/`. Intel-Rosetta = x86_64 built on Apple Silicon.
+When `COPY_TO_PROJECT_FOLDERS` is ON (default), build outputs are copied to `Artefacts/{{OS}}/{{arch}}/`:
+- **macOS**: `Artefacts/macOS/ARM/`, `Intel/`, `Intel-Rosetta/`, or `Universal/` (each contains `AU/`, `VST3/`, `Standalone/`)
 - **Windows**: `Artefacts/Windows/VST3/`, `Artefacts/Windows/Standalone/`
 - **Linux**: `Artefacts/Linux/VST3/`, `Artefacts/Linux/Standalone/`
 
-Add the appropriate folder to your DAW's plugin search path. Run Standalone directly from its folder.
+The artefact folder **automatically matches your selected preset**. No manual configuration needed.
 
-When `COPY_TO_SYSTEM_FOLDERS` is ON (macOS only), AU and VST3 are copied to `~/Library/Audio/Plug-Ins/` — your DAW will find them automatically.
+When `COPY_TO_SYSTEM_FOLDERS` is ON (macOS only), AU and VST3 are also copied to `~/Library/Audio/Plug-Ins/`.
 
 ### Build Artefact Copy Configuration
 
 Edit the **USER OPTIONS** section in `project-config.cmake`:
 
 - **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON`/`OFF` — copy AU and VST3 to system folders on macOS (`~/Library/Audio/Plug-Ins/`)
-- **`USER_COPY_TO_PROJECT_FOLDERS`**: `ON`/`OFF` — copy to project `Artefacts/` folder (organized by platform and architecture). No path to configure.
+- **`USER_COPY_TO_PROJECT_FOLDERS`**: `ON`/`OFF` — copy to project `Artefacts/` folder (organized by platform and architecture)
 
 ### Debugging
 
-Debug configurations are available in `.vscode/launch.json`:
+Debug configurations automatically use the active preset's build directory. Press `F5` to start debugging:
 
 - **macOS**: Standalone, AU in Logic Pro, VST3 in Reaper, AU in Ableton Live
 - **Windows**: Standalone, VST3 in Reaper
 
-Press `F5` in Cursor to start debugging. The debugger will automatically use the correct build directory (`Builds/macOS/ARM`, `Builds/macOS/Intel`, `Builds/macOS/Intel-Rosetta`, `Builds/Windows`, or `Builds/Linux`) based on your platform.
+All paths adapt automatically when you switch presets.
 
-### Cross-Platform Configuration
+### Command Line Usage (Advanced)
 
-The project generator automatically configures `.vscode/settings.json` for the platform where it's run. If you need to switch platforms:
+For advanced users or CI/CD:
 
-- **Automatic**: Run `python configure-platform.py` from the project root. On macOS, an interactive menu lets you choose ARM, Intel, or Universal (Intel on Apple Silicon → Intel-Rosetta); on Windows/Linux, direct execution.
-- **Manual**: Select the appropriate CMake preset in Cursor (CMake Tools will handle the rest)
+```bash
+# List available presets
+cmake --list-presets
+
+# Configure with a specific preset
+cmake --preset default-macos-universal
+
+# Build with the preset
+cmake --build --preset default-macos-universal
+
+# Or chain them
+cmake --preset default-macos-universal && cmake --build --preset default-macos-universal
+```

@@ -1,0 +1,4 @@
+{
+    "cmake.sourceDirectory": "/Volumes/Guillaume/Dev/Tools/JUCE/Scripts/Juce-Project-Generator/Templates",
+    "cmake.buildDirectory": "${workspaceFolder}/Builds/macOS/ARM"
+}

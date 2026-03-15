@@ -19,7 +19,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
 - ✅ Configurable build artefact copy: system folders (macOS AU/VST3), project Artefacts/ folder (all platforms)
 - ✅ Support for AU, VST3, and Standalone formats
-- ✅ Configurable via `generator-config.py` and `project-config.cmake` for easy customization
+- ✅ Configurable via `generator-configuration.py` and `project-config.cmake` for easy customization
 - ✅ Customizable default manufacturer and plugin codes
 - ✅ **Portable workflow**: projects use `JUCE_DIR` from the environment—no machine-specific paths in Git; ideal for GitHub and multi-machine (macOS / Windows / Linux) development
 
@@ -54,28 +54,115 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 2. **Configure your environment** (optional, for the generator only):
    
-   - Copy `generator-config.py` and `project-config.cmake` and customize them (see Configuration section below). The `JUCE_DIR_*` options in `generator-config.py` are only used for **validation** when generating; they are not written into generated projects.
+   - Copy `generator-configuration.py` and `project-config.cmake` and customize them (see Configuration section below). The `JUCE_DIR_*` options in `generator-configuration.py` are only used for **validation** when generating; they are not written into generated projects.
 
-3. **Run the generator**:
-   
+3. **Run the generator** (see [Using the generator](#using-the-generator) below for detailed examples).
+
+4. **Follow the interactive prompts** to create your project.
+
+---
+
+## Using the generator
+
+You can run the generator in two ways: from an **IDE** (Cursor, Visual Studio, CLion, etc.) or from the **Terminal**. Both produce the same result. Choose what you are most comfortable with.
+
+### Option A: From Cursor (IDE) — for beginners
+
+If you prefer to work entirely in Cursor and avoid the command line:
+
+1. **Open the generator folder in Cursor**
+   - File → Open Folder (or `Cmd+O` on macOS, `Ctrl+O` on Windows/Linux)
+   - Select the folder that contains `generate-new-project.py` (e.g. `Juce-Project-Generator`)
+
+2. **Open the integrated terminal**
+   - View → Terminal (or `` Ctrl+` `` / `` Cmd+` ``)
+   - You should see a prompt in the generator folder.
+
+3. **Run the generator**
+   - Type: `python3 generate-new-project.py` (or `python generate-new-project.py` on Windows)
+   - Press **Enter**.
+
+4. **Answer the questions**
+   - The generator will ask you for: project name, display name, version, manufacturer, plugin codes, formats (AU, VST3, Standalone), and destination folder.
+   - You can press **Enter** to accept the value in square brackets (e.g. `[Y/n]` → Enter = Yes).
+   - At the end, confirm with **Y** to create the project.
+
+5. **Open the new project**
+   - The generator prints a command like: `cd /path/to/YourProject && cursor .`
+   - Copy that line into the terminal and press Enter, or use File → Open Folder and select the project folder.
+
+6. **Choose your build configuration**
+   - Cursor will ask you to select a **CMake preset** (e.g. "macOS Apple Silicon", "macOS Universal", "Windows x64").
+   - Choose the one that matches your machine and what you want to build.
+   - Then press **Cmd+Shift+B** (macOS) or **Ctrl+Shift+B** (Windows/Linux) to build.
+
+That’s it. No need to run any other script or edit config files for a normal workflow.
+
+---
+
+### Option B: From the Terminal — for command-line users
+
+If you prefer the command line or want to automate things (e.g. scripts, CI):
+
+1. **Open a terminal** (Terminal.app on macOS, PowerShell or Command Prompt on Windows, or your usual terminal on Linux).
+
+2. **Go to the generator folder**
    ```bash
-   python generate-new-juce-project.py
+   cd /path/to/Juce-Project-Generator
+   ```
+   (Replace `/path/to/Juce-Project-Generator` with the real path, e.g. `~/Dev/Tools/JUCE/Scripts/Juce-Project-Generator`.)
+
+3. **Run the generator**
+   ```bash
+   python3 generate-new-project.py
+   ```
+   On Windows you can use:
+   ```bash
+   python generate-new-project.py
    ```
 
-4. **Follow the interactive prompts** to create your project
+4. **Answer the prompts**
+   - Same questions as in the IDE: project name, display name, version, manufacturer, plugin codes, formats, destination.
+   - Use **Enter** to accept defaults where applicable.
+   - Type **y** and Enter at the end to create the project.
+
+5. **Build the generated project from the terminal** (optional)
+   - Go to the project folder:
+     ```bash
+     cd /path/to/YourProject
+     ```
+   - Configure with a preset (example for macOS Universal):
+     ```bash
+     cmake --preset default-macos-universal
+     ```
+   - Build:
+     ```bash
+     cmake --build --preset default-macos-universal
+     ```
+   - Other examples:
+     - **macOS Apple Silicon:** `cmake --preset default-macos-arm64` then `cmake --build --preset default-macos-arm64`
+     - **Windows:** `cmake --preset default-windows` then `cmake --build --preset default-windows`
+     - **Linux:** `cmake --preset default-linux` then `cmake --build --preset default-linux`
+
+To see all presets available on your machine:
+```bash
+cmake --list-presets
+```
+
+---
 
 ## Configuration
 
 The generator uses two configuration files (both in the generator directory):
 
-- **`generator-config.py`**: Generator-specific settings (defaults for prompts, JUCE validation)
+- **`generator-configuration.py`**: Generator-specific settings (defaults for prompts, JUCE validation)
 - **`project-config.cmake`**: Build artefact copy settings used as defaults when creating new projects. Each generated project gets its own copy of this file at the project root, which you can edit afterward to customize where AU, VST3, and Standalone are copied after each build.
 
 ### Setup
 
-1. **Create or Edit `generator-config.py`**:
+1. **Create or Edit `generator-configuration.py`**:
    
-   The `generator-config.py` file should be located in the same directory as `generate-new-juce-project.py`.
+   The `generator-configuration.py` file should be located in the same directory as `generate-new-project.py`.
    
    If the file doesn't exist, the generator will use default values. You can create it by copying the example below.
 
@@ -85,7 +172,7 @@ The generator uses two configuration files (both in the generator directory):
 
 3. **Configure Your Settings**:
    
-   Edit `generator-config.py` and `project-config.cmake` to match your environment.
+   Edit `generator-configuration.py` and `project-config.cmake` to match your environment.
 
 ### Configuration Options
 
@@ -171,7 +258,7 @@ The generator will **strictly validate** all paths and **stop immediately** with
 - The Plugin Code must be unique for each plugin you create
 - You can still override these values when generating a project
 
-### Example `generator-config.py`
+### Example `generator-configuration.py`
 
 ```python
 #!/usr/bin/env python3
@@ -202,9 +289,9 @@ DEFAULT_PLUGIN_CODE = "Plg1"
 
 ### How It Works
 
-1. When you run `generate-new-juce-project.py`, it loads `generator-config.py` for generator settings
+1. When you run `generate-new-project.py`, it loads `generator-configuration.py` for generator settings
 2. It reads `project-config.cmake` (in the generator directory) for build artefact copy defaults
-3. If `generator-config.py` doesn't exist or constants are missing, default values are used
+3. If `generator-configuration.py` doesn't exist or constants are missing, default values are used
 4. If `project-config.cmake` doesn't exist, built-in defaults are used for build artefact copy
 5. The values are injected into the generated project templates
 
@@ -249,7 +336,6 @@ YourProject/
 │   └── launch.json
 ├── CMakeLists.txt
 ├── CMakeUserPresets.json
-├── configure-platform.py
 └── README.md
 ```
 
@@ -257,41 +343,53 @@ Build directories are separated by platform and architecture to avoid mixing fil
 
 ## Usage
 
-### Building
+### Building a generated project
 
-1. Open the project in Cursor
+**In Cursor (recommended for beginners):**
 
-2. Select the CMake kit when prompted (the project is auto-configured for your platform and, on macOS, for your processor architecture—Intel or Apple Silicon)
+1. Open the project folder in Cursor (File → Open Folder).
+2. When Cursor asks, **select a CMake preset** (e.g. "macOS Apple Silicon", "macOS Universal", "Windows x64"). Only presets for your current operating system are shown.
+3. Build: press **Cmd+Shift+B** (macOS) or **Ctrl+Shift+B** (Windows/Linux), or use the command palette: **Cmd+Shift+P** → "CMake: Build".
+4. To switch to another configuration (e.g. from ARM to Universal on macOS), click the preset name in the status bar at the bottom of Cursor, or use **Cmd+Shift+P** → "CMake: Select Configure Preset". Paths and tasks update automatically.
 
-3. Build the project:
-   - Use the command palette: `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) → "CMake: Build"
-   - Or use the terminal:
-   
-   ```bash
-   # macOS Apple Silicon
-   cmake --preset default-macos-arm64
-   cmake --build --preset default-macos-arm64
-   
-   # macOS Intel (native on Mac Intel)
-   cmake --preset default-macos-x86_64
-   cmake --build --preset default-macos-x86_64
-   
-   # macOS Intel-Rosetta (x86_64 on Apple Silicon)
-   cmake --preset default-macos-x86_64-rosetta
-   cmake --build --preset default-macos-x86_64-rosetta
-   
-   # macOS Universal (Apple Silicon + Intel, for distribution)
-   cmake --preset default-macos-universal
-   cmake --build --preset default-macos-universal
-   
-   # Windows
-   cmake --preset default-windows
-   cmake --build --preset default-windows
-   
-   # Linux
-   cmake --preset default-linux
-   cmake --build --preset default-linux
-   ```
+**From the Terminal:**
+
+```bash
+# Go to your project folder
+cd /path/to/YourProject
+
+# Configure with the preset you want (example: macOS Universal)
+cmake --preset default-macos-universal
+
+# Build
+cmake --build --preset default-macos-universal
+```
+
+**Preset vs machine:** The generated project's CMake enforces consistency: on **Apple Silicon**, the "macOS Intel" preset is rejected at configure (use "macOS Intel-Rosetta" instead); on **Mac Intel**, the "macOS Intel-Rosetta" preset is rejected (use "macOS Intel" instead). You get an explicit error message if you choose the wrong one.
+
+Other presets (use the one that matches your machine and goal):
+
+```bash
+# macOS Apple Silicon
+cmake --preset default-macos-arm64 && cmake --build --preset default-macos-arm64
+
+# macOS Intel (native on Mac Intel only — use Intel-Rosetta on Apple Silicon)
+cmake --preset default-macos-x86_64 && cmake --build --preset default-macos-x86_64
+
+# macOS Intel-Rosetta (x86_64 on Apple Silicon only — use Intel on Mac Intel)
+cmake --preset default-macos-x86_64-rosetta && cmake --build --preset default-macos-x86_64-rosetta
+
+# macOS Universal (Apple Silicon + Intel, for distribution)
+cmake --preset default-macos-universal && cmake --build --preset default-macos-universal
+
+# Windows
+cmake --preset default-windows && cmake --build --preset default-windows
+
+# Linux
+cmake --preset default-linux && cmake --build --preset default-linux
+```
+
+To list all presets available on your system: `cmake --list-presets`.
 
 ### Testing Plugins
 
@@ -327,25 +425,14 @@ Press `F5` in Cursor to start debugging. Debug configurations are available for:
 - Standalone application
 - Plugin in DAW (Logic Pro, Reaper, Ableton Live)
 
-## Platform Switching
+## Platform switching
 
-If you open a project on a different platform than where it was generated (or on a different Mac architecture—Intel vs Apple Silicon):
+If you open a project on another machine (different OS or, on macOS, different architecture—Intel vs Apple Silicon):
 
-```bash
-python configure-platform.py
-```
+- **In Cursor:** Click the preset name in the status bar (bottom of the window), or use **Cmd+Shift+P** (macOS) / **Ctrl+Shift+P** (Windows/Linux) → "CMake: Select Configure Preset", then choose the preset that matches your current machine (e.g. `default-macos-arm64`, `default-macos-universal`, `default-windows`, `default-linux`). Build paths and debug configs update automatically.
+- **From the Terminal:** Run `cmake --preset <preset-name>` then `cmake --build --preset <preset-name>` with the preset appropriate for that machine (see [Building a generated project](#building-a-generated-project) above).
 
-**On macOS**: An interactive menu lets you choose ARM, Intel, or Universal. Selecting Intel on Apple Silicon automatically configures Intel-Rosetta (x86_64 cross-compiled). Use `--arm`, `--intel`, `--intel-rosetta`, or `--universal` to skip the prompt. Double-clicking the script opens a terminal with the same menu.
-
-**On Windows/Linux**: Direct execution, no prompt.
-
-The script updates:
-
-- `.vscode/settings.json` (CMake build directory and preset)
-- `.vscode/launch.json` (debug executable paths)
-- `.vscode/tasks.json` (build paths)
-
-You can also manually select the appropriate CMake preset: `Ctrl+Shift+P` → "CMake: Select Configure Preset" → Choose the preset for your platform (e.g. `default-macos-arm64`, `default-macos-x86_64`, `default-macos-x86_64-rosetta`, `default-macos-universal`, `default-windows`, `default-linux`).
+No extra script is required. Just select the right preset and build.
 
 ## Portable workflow (GitHub, multi-machine)
 
@@ -370,7 +457,7 @@ After changing the environment, restart Cursor (or at least the integrated termi
 
 1. **Create** the project on any machine with the generator; push to GitHub.
 2. **Clone** the repo on the other machines.
-3. On each machine: ensure `JUCE_DIR` is set (see above), then run `python configure-platform.py` to adapt `.vscode/settings.json`, `tasks.json`, and `launch.json` to the current OS (on macOS: interactive menu to choose ARM/Intel/Intel-Rosetta/Universal).
+3. On each machine: ensure `JUCE_DIR` is set (see above), then open the project in Cursor and **select the CMake preset** that matches that machine (e.g. macOS ARM, Windows, Linux). Paths and tasks adapt automatically.
 4. **Build** on each machine; no path edits are needed in the project.
 
 This keeps the repository clean and portable for collaboration and multi-OS development.
@@ -437,25 +524,25 @@ CMake and Visual Studio on Windows have known compatibility issues with Unicode 
 - A clear error message will be displayed showing which characters are problematic
 - **The generator will STOP completely** and exit with an error code
 - **NO fallback paths will be used** - this prevents creating projects in unexpected locations
-- You must fix the path in `generator-config.py` or `project-config.cmake` (or enter a valid path during interactive prompts) before the generator will proceed
+- You must fix the path in `generator-configuration.py` or `project-config.cmake` (or enter a valid path during interactive prompts) before the generator will proceed
 
 ## Troubleshooting
 
 ### Generator uses default values even after creating config files
 
-- Make sure `generator-config.py` is in the same directory as `generate-new-juce-project.py`
+- Make sure `generator-configuration.py` is in the same directory as `generate-new-project.py`
 - Make sure `project-config.cmake` is in the generator directory for build artefact copy defaults
-- Check for syntax errors in `generator-config.py` (Python syntax) - the generator will display a warning if there are errors
+- Check for syntax errors in `generator-configuration.py` (Python syntax) - the generator will display a warning if there are errors
 - Verify that constant names match exactly (case-sensitive)
 - If you see a warning about invalid codes, check that:
   - `DEFAULT_MANUFACTURER_CODE` is exactly 4 alphabetic characters
   - `DEFAULT_PLUGIN_CODE` is exactly 4 alphanumeric characters
 
-### What happens if `generator-config.py` has errors?
+### What happens if `generator-configuration.py` has errors?
 
 The generator is designed to be resilient and will handle various error scenarios:
 
-1. **Syntax errors in `generator-config.py`**:
+1. **Syntax errors in `generator-configuration.py`**:
    
    - The generator will display a warning message showing the error
    - Default values will be used instead
@@ -469,7 +556,7 @@ The generator is designed to be resilient and will handle various error scenario
 
 3. **Invalid or missing JUCE path**:
    
-   - If the path doesn't exist in `generator-config.py`, a warning is displayed
+   - If the path doesn't exist in `generator-configuration.py`, a warning is displayed
    - Project generation continues; for building, set the `JUCE_DIR` environment variable on each machine: `export JUCE_DIR=/path/to/JUCE` (see [Portable workflow](#portable-workflow-github-multi-machine))
 
 4. **Missing constants**:
@@ -503,7 +590,7 @@ If you see errors like `MSB8066` or malformed characters in build output:
 
 When sharing this generator:
 
-1. Include `generator-config.py` and `project-config.cmake` with generic example values (as shown in the Configuration section)
+1. Include `generator-configuration.py` and `project-config.cmake` with generic example values (as shown in the Configuration section)
 2. Document that users should customize these files for their environment
 3. Include this README.md in your distribution
 

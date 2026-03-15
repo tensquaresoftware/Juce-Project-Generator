@@ -2,73 +2,15 @@
     "version": "2.0.0",
     "tasks": [
         {{
-            "label": "CMake: Configure",
-            "type": "shell",
-            "command": "cmake",
-            "args": [
-                "-B", "{buildDirWindows}",
-                "-G", "Visual Studio 17 2022",
-                "-DCMAKE_BUILD_TYPE=Debug"
-            ],
-            "windows": {{
-                "args": [
-                    "-B", "{buildDirWindows}",
-                    "-G", "Visual Studio 17 2022",
-                    "-DCMAKE_BUILD_TYPE=Debug",
-                    "-DJUCE_DIR=${{env:JUCE_DIR}}"
-                ]
-            }},
-            "osx": {{
-                "args": [
-                    "-B", "{buildDirMacOS}",
-                    "-G", "Ninja",
-                    "-DCMAKE_BUILD_TYPE=Debug",
-                    "-DJUCE_DIR=${{env:JUCE_DIR}}"
-                ]
-            }},
-            "linux": {{
-                "args": [
-                    "-B", "{buildDirLinux}",
-                    "-G", "Ninja",
-                    "-DCMAKE_BUILD_TYPE=Debug",
-                    "-DJUCE_DIR=${{env:JUCE_DIR}}"
-                ]
-            }},
-            "group": "build",
-            "problemMatcher": []
-        }},
-        {{
             "label": "Build: Standalone",
             "type": "shell",
             "command": "cmake",
             "args": [
-                "--build", "{buildDirWindows}",
+                "--build", "${{command:cmake.buildDirectory}}",
                 "--target", "{projectName}_Standalone",
-                "--config", "Debug"
+                "--config", "${{command:cmake.buildType}}"
             ],
-            "windows": {{
-                "args": [
-                    "--build", "{buildDirWindows}",
-                    "--target", "{projectName}_Standalone",
-                    "--config", "Debug"
-                ]
-            }},
-            "osx": {{
-                "args": [
-                    "--build", "{buildDirMacOS}",
-                    "--target", "{projectName}_Standalone",
-                    "--config", "Debug"
-                ]
-            }},
-            "linux": {{
-                "args": [
-                    "--build", "{buildDirLinux}",
-                    "--target", "{projectName}_Standalone",
-                    "--config", "Debug"
-                ]
-            }},
             "group": "build",
-            "dependsOn": ["CMake: Configure"],
             "problemMatcher": [
                 "$gcc",
                 "$msCompile"
@@ -79,60 +21,25 @@
             "type": "shell",
             "command": "cmake",
             "args": [
-                "--build", "{buildDirMacOS}",
+                "--build", "${{command:cmake.buildDirectory}}",
                 "--target", "{projectName}_AU",
-                "--config", "Debug"
+                "--config", "${{command:cmake.buildType}}"
             ],
-            "osx": {{
-                "args": [
-                    "--build", "{buildDirMacOS}",
-                    "--target", "{projectName}_AU",
-                    "--config", "Debug"
-                ]
-            }},
             "group": "build",
-            "dependsOn": ["CMake: Configure"],
             "problemMatcher": [
                 "$gcc"
-            ],
-            "options": {{
-                "statusbar": {{
-                    "hide": true
-                }}
-            }}
+            ]
         }},
         {{
             "label": "Build: VST3",
             "type": "shell",
             "command": "cmake",
             "args": [
-                "--build", "{buildDirWindows}",
+                "--build", "${{command:cmake.buildDirectory}}",
                 "--target", "{projectName}_VST3",
-                "--config", "Debug"
+                "--config", "${{command:cmake.buildType}}"
             ],
-            "windows": {{
-                "args": [
-                    "--build", "{buildDirWindows}",
-                    "--target", "{projectName}_VST3",
-                    "--config", "Debug"
-                ]
-            }},
-            "osx": {{
-                "args": [
-                    "--build", "{buildDirMacOS}",
-                    "--target", "{projectName}_VST3",
-                    "--config", "Debug"
-                ]
-            }},
-            "linux": {{
-                "args": [
-                    "--build", "{buildDirLinux}",
-                    "--target", "{projectName}_VST3",
-                    "--config", "Debug"
-                ]
-            }},
             "group": "build",
-            "dependsOn": ["CMake: Configure"],
             "problemMatcher": [
                 "$gcc",
                 "$msCompile"
@@ -143,32 +50,13 @@
             "type": "shell",
             "command": "cmake",
             "args": [
-                "--build", "{buildDirWindows}",
-                "--config", "Debug"
+                "--build", "${{command:cmake.buildDirectory}}",
+                "--config", "${{command:cmake.buildType}}"
             ],
-            "windows": {{
-                "args": [
-                    "--build", "{buildDirWindows}",
-                    "--config", "Debug"
-                ]
-            }},
-            "osx": {{
-                "args": [
-                    "--build", "{buildDirMacOS}",
-                    "--config", "Debug"
-                ]
-            }},
-            "linux": {{
-                "args": [
-                    "--build", "{buildDirLinux}",
-                    "--config", "Debug"
-                ]
-            }},
             "group": {{
                 "kind": "build",
                 "isDefault": true
             }},
-            "dependsOn": ["CMake: Configure"],
             "problemMatcher": [
                 "$gcc",
                 "$msCompile"
