@@ -95,7 +95,7 @@ DEFAULT_PLUGIN_CODE       = "Tssp"
 # Note: The generator will prompt for confirmation, so this is just a default.
 # "Default" = use user's Desktop (system folder, resolves correctly on Windows)
 #
-DEFAULT_PROJECT_DESTINATION = "/Volumes/Guillaume/Dev/Tests/JUCE/Tests/Generator"
+DEFAULT_PROJECT_DESTINATION = "C:/Users/Guillaume/Dev/Tests/Generator"
 
 # =============================================================================
 # ADDITIONAL CONFIGURATION
