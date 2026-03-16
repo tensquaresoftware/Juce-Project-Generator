@@ -11,6 +11,7 @@ Builds/
 
 # Cache directories
 .cache/
+__pycache__/
 
 # Xcode
 *.xcodeproj
