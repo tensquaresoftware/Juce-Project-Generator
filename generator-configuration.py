@@ -62,40 +62,6 @@ DEFAULT_MANUFACTURER_CODE = "Tssf"
 DEFAULT_PLUGIN_CODE       = "Tssp"
 
 # =============================================================================
-# ARTEFACTS CENTRAL DIRECTORY (custom folder for all plugins and Standalone)
-# =============================================================================
-#
-# ⚠️ IMPORTANT - PATH RESTRICTIONS:
-# -----------------------------------------------------------------------------
-# Paths MUST NOT contain accented characters (é, à, è, ç, etc.) or special
-# Unicode characters. Only ASCII characters (0-127) are allowed.
-#
-# This restriction exists because CMake and Visual Studio on Windows have
-# known compatibility issues with Unicode paths, causing build errors (MSB8066)
-# with malformed characters in generated .vcxproj files.
-#
-# Examples:
-#   ❌ "C:/Users/John/Téléchargements"  (contains é)
-#   ✅ "C:/Users/John/Telechargements"  (no accents)
-#   ❌ "D:/Projets/Été 2024"            (contains é and É)
-#   ✅ "D:/Projets/Ete 2024"            (no accents)
-#
-# The generator will STRICTLY validate these paths and refuse to proceed if
-# problematic characters are detected.
-#
-#
-# Central folder where all projects' plugins and Standalone binaries are copied.
-# Paths are injected into generated projects at generation time.
-# Structure:
-#   - Windows: ARTEFACTS_DIR_WINDOWS/VST3/, /Standalone/
-#   - macOS: ARTEFACTS_DIR_MACOS/ARM|Intel|Intel-Rosetta|Universal/AU/, /VST3/, /Standalone/
-#   - Linux: ARTEFACTS_DIR_LINUX/VST3/, /Standalone/ (CLAP/ for future)
-#
-ARTEFACTS_DIR_WINDOWS = "C:/Users/Guillaume/Dev/SDKs/JUCE/Artefacts"
-ARTEFACTS_DIR_MACOS   = "/Volumes/Guillaume/Dev/SDKs/JUCE/Artefacts"
-ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/SDKs/JUCE/Artefacts"
-
-# =============================================================================
 # DEFAULT PROJECT DESTINATION
 # =============================================================================
 #
@@ -133,6 +99,40 @@ ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/SDKs/JUCE/Artefacts"
 DEFAULT_PROJECT_DIR_WINDOWS = "C:/Users/Guillaume/Dev/SDKs/JUCE/Tests/Generator"
 DEFAULT_PROJECT_DIR_MACOS   = "/Volumes/Guillaume/Dev/SDKs/JUCE/Tests/Generator"
 DEFAULT_PROJECT_DIR_LINUX   = "/home/guillaume/Dev/SDKs/JUCE/Tests/Generator"
+
+# =============================================================================
+# ARTEFACTS CENTRAL DIRECTORY (custom folder for all plugins and Standalone)
+# =============================================================================
+#
+# ⚠️ IMPORTANT - PATH RESTRICTIONS:
+# -----------------------------------------------------------------------------
+# Paths MUST NOT contain accented characters (é, à, è, ç, etc.) or special
+# Unicode characters. Only ASCII characters (0-127) are allowed.
+#
+# This restriction exists because CMake and Visual Studio on Windows have
+# known compatibility issues with Unicode paths, causing build errors (MSB8066)
+# with malformed characters in generated .vcxproj files.
+#
+# Examples:
+#   ❌ "C:/Users/John/Téléchargements"  (contains é)
+#   ✅ "C:/Users/John/Telechargements"  (no accents)
+#   ❌ "D:/Projets/Été 2024"            (contains é and É)
+#   ✅ "D:/Projets/Ete 2024"            (no accents)
+#
+# The generator will STRICTLY validate these paths and refuse to proceed if
+# problematic characters are detected.
+#
+#
+# Central folder where all projects' plugins and Standalone binaries are copied.
+# Paths are injected into generated projects at generation time.
+# Structure:
+#   - Windows: ARTEFACTS_DIR_WINDOWS/VST3/, /Standalone/
+#   - macOS: ARTEFACTS_DIR_MACOS/ARM|Intel|Intel-Rosetta|Universal/AU/, /VST3/, /Standalone/
+#   - Linux: ARTEFACTS_DIR_LINUX/VST3/, /Standalone/ (CLAP/ for future)
+#
+ARTEFACTS_DIR_WINDOWS = "C:/Users/Guillaume/Dev/SDKs/JUCE/Artefacts"
+ARTEFACTS_DIR_MACOS   = "/Volumes/Guillaume/Dev/SDKs/JUCE/Artefacts"
+ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/SDKs/JUCE/Artefacts"
 
 # =============================================================================
 # ADDITIONAL CONFIGURATION
