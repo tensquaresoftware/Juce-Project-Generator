@@ -149,7 +149,7 @@ target_compile_definitions({projectName}
 # COPY TO CENTRAL ARTEFACTS FOLDER
 # When COPY_TO_ARTEFACTS_DIR is ON, copies build outputs to a central custom folder.
 # Paths: ARTEFACTS_DIR_WINDOWS, ARTEFACTS_DIR_MACOS, ARTEFACTS_DIR_LINUX (injected from generator-configuration.py).
-# Structure: {ARTEFACTS_DIR}/{OS}/{arch}/{format}/
+# Structure: {{ARTEFACTS_DIR}}/{{OS}}/{{arch}}/{{format}}/
 # - macOS: ARM/, Intel/, Intel-Rosetta/, Universal/
 # - Windows/Linux: no arch subfolder
 # Formats: VST3/, AU/ (macOS only), Standalone/. CLAP/ (Linux, future).

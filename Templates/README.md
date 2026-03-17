@@ -166,7 +166,7 @@ After building, plugins are automatically copied according to your `project-conf
 
 2. **Central custom folder** (`COPY_TO_ARTEFACTS_DIR`): Organized location for all projects
    - Paths configured in `generator-configuration.py` and injected at generation (`ARTEFACTS_DIR_*`)
-   - **Structure**: `{ARTEFACTS_DIR}/{OS}/{arch}/{format}/`
+   - **Structure**: `{{ARTEFACTS_DIR}}/{{OS}}/{{arch}}/{{format}}/`
    - **macOS**: `macOS/ARM/`, `Intel/`, `Intel-Rosetta/`, or `Universal/` (each contains `AU/`, `VST3/`, `Standalone/`)
    - **Windows**: `Windows/VST3/`, `Windows/Standalone/`
    - **Linux**: `Linux/VST3/`, `Linux/Standalone/`
