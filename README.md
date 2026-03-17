@@ -108,6 +108,7 @@ export JUCE_DIR="/opt/JUCE"
 ### 3. Configure the generator (optional)
 
 Edit `generator-configuration.py` to customize:
+
 - Default manufacturer information
 - Central artefacts folder paths (per OS)
 - Default project destination (per OS)
@@ -157,8 +158,8 @@ cmake --build --preset default-macos-arm64
 
 After building, plugins are automatically copied according to `project-configuration.cmake` settings:
 
-- **`COPY_TO_SYSTEM_FOLDERS=ON`**: Plugins go to system folders where DAWs scan automatically
-- **`COPY_TO_ARTEFACTS_DIR=ON`**: Plugins go to your central custom folder
+- `**COPY_TO_SYSTEM_FOLDERS=ON**`: Plugins go to system folders where DAWs scan automatically
+- `**COPY_TO_ARTEFACTS_DIR=ON**`: Plugins go to your central custom folder
 
 Your DAW will find them after a rescan.
 
@@ -174,14 +175,14 @@ Generator-specific settings (defaults for prompts, paths per OS). Edit this file
 
 ```python
 # JUCE installation paths (optional: validation only, not written into projects)
-JUCE_DIR_MACOS = "/Applications/JUCE"
+JUCE_DIR_MACOS   = "/Applications/JUCE"
 JUCE_DIR_WINDOWS = "C:/JUCE"
-JUCE_DIR_LINUX = "/home/username/JUCE"  # or None to skip validation
+JUCE_DIR_LINUX   = "/home/username/JUCE"  # or None to skip validation
 
 # Default manufacturer information
 DEFAULT_MANUFACTURER_NAME = "My Company"
-DEFAULT_MANUFACTURER_CODE = "Myco"  # Must be exactly 4 alphabetic characters
-DEFAULT_PLUGIN_CODE = "Plg1"        # Must be exactly 4 alphanumeric characters
+DEFAULT_MANUFACTURER_CODE = "Myco"        # Must be exactly 4 alphabetic characters
+DEFAULT_PLUGIN_CODE       = "Plg1"        # Must be exactly 4 alphanumeric characters
 
 # Central artefacts folder (custom folder for all projects' plugins/Standalone, per OS)
 ARTEFACTS_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Artefacts"
@@ -269,6 +270,7 @@ cmake --preset default-macos-arm64 && cmake --build --preset default-macos-arm64
 ```
 
 **Available presets** (per platform):
+
 - **macOS**: `default-macos-arm64`, `default-macos-x86_64-rosetta`, `default-macos-x86_64`, `default-macos-universal`
 - **Windows**: `default-windows`
 - **Linux**: `default-linux`
@@ -282,6 +284,7 @@ cmake --preset default-macos-arm64 && cmake --build --preset default-macos-arm64
 After building, plugins are automatically copied according to `project-configuration.cmake` settings:
 
 **System folders** (`COPY_TO_SYSTEM_FOLDERS=ON`):
+
 - **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3)
 - **Windows**: `%LOCALAPPDATA%\Programs\Common\VST3\`
 - **Linux**: `~/.vst3/`
@@ -289,12 +292,14 @@ After building, plugins are automatically copied according to `project-configura
 Your DAW will find them automatically after a rescan.
 
 **Central custom folder** (`COPY_TO_ARTEFACTS_DIR=ON`):
+
 - Plugins go to paths configured in `generator-configuration.py`
 - Add this folder to your DAW's plugin search path if needed
 
 ### Debugging
 
 Press **F5** in Cursor to start debugging. Debug configurations available:
+
 - Standalone application
 - Plugin in DAW (Logic Pro, Reaper, Ableton Live on macOS)
 
@@ -310,13 +315,16 @@ Generated projects use `${env:JUCE_DIR}` everywhere—no machine-specific paths 
 
 **Setup per machine:**
 
-| Platform | Where to set | Example |
-|----------|--------------|---------|
-| **macOS** | `~/.zshrc` | `export JUCE_DIR="/Applications/JUCE"` |
-| **Linux** | `~/.bashrc` | `export JUCE_DIR="/home/username/JUCE"` |
-| **Windows** | System env vars | `setx JUCE_DIR "C:\Path\To\JUCE"` |
+
+| Platform    | Where to set    | Example                                 |
+| ----------- | --------------- | --------------------------------------- |
+| **macOS**   | `~/.zshrc`      | `export JUCE_DIR="/Applications/JUCE"`  |
+| **Linux**   | `~/.bashrc`     | `export JUCE_DIR="/home/username/JUCE"` |
+| **Windows** | System env vars | `setx JUCE_DIR "C:\Path\To\JUCE"`       |
+
 
 **Workflow:**
+
 1. Create project on any machine → push to GitHub
 2. Clone on other machines
 3. Set `JUCE_DIR` on each machine
