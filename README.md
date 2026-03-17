@@ -77,10 +77,10 @@ Generated projects use `${env:JUCE_DIR}` everywhere. Configure it once per machi
 
 ```bash
 # Example 1:
-export JUCE_DIR="/Applications/JUCE"
+export JUCE_DIR="~/JUCE"
 
 # Example 2:
-export JUCE_DIR="~/JUCE"
+export JUCE_DIR="/Applications/JUCE"
 ```
 
 **Windows** (System Environment Variables or PowerShell):
