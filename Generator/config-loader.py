@@ -86,7 +86,7 @@ class ConfigLoader:
         if not self.configModule_ or not attrName or not hasattr(self.configModule_, attrName):
             return str(Path.home() / "Desktop")
         dest = getattr(self.configModule_, attrName)
-        if not dest or dest.lower() == "default":
+        if not dest or dest.lower() == "desktop":
             return str(Path.home() / "Desktop")
         validatePathNoProblematicChars(dest, attrName)
         return dest

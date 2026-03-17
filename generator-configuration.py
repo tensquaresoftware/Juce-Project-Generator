@@ -123,12 +123,12 @@ ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Artefacts"
 # This is used as the default value in the project generator prompt.
 #
 # Examples:
-#   - Desktop: "Default" (uses system Desktop folder, works on Windows even if displayed as "Bureau")
+#   - Desktop: "Desktop" (uses system Desktop folder, works on Windows even if displayed as "Bureau")
 #   - Documents: str(Path.home() / "Documents" / "Projects")
 #   - Custom: "D:/Projects/JUCE"
 #
 # Note: The generator will prompt for confirmation, so this is just a default.
-# "Default" = use user's Desktop (system folder, resolves correctly on Windows)
+# "Desktop" = use user's Desktop (system folder, resolves correctly on Windows)
 #
 DEFAULT_PROJECT_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Projects"
 DEFAULT_PROJECT_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Projects"
