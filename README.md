@@ -76,25 +76,31 @@ Generated projects use `${env:JUCE_DIR}` everywhere. Configure it once per machi
 **macOS** (add to `~/.zshrc` or `~/.bash_profile`):
 
 ```bash
-export JUCE_DIR="/Applications/JUCE"    # Standard installation
-# or
-export JUCE_DIR="~/JUCE"                # User installation
+# Example 1:
+export JUCE_DIR="/Applications/JUCE"
+
+# Example 2:
+export JUCE_DIR="~/JUCE"
 ```
 
 **Windows** (System Environment Variables or PowerShell):
 
 ```powershell
-setx JUCE_DIR "C:\JUCE"                 # Root installation
-# or
-setx JUCE_DIR "C:\Dev\JUCE"             # Custom location
+# Example 1:
+setx JUCE_DIR "C:\JUCE"
+
+# Example 2:
+setx JUCE_DIR "C:\Dev\JUCE"
 ```
 
 **Linux** (add to `~/.bashrc`):
 
 ```bash
-export JUCE_DIR="~/JUCE"                # User installation
-# or
-export JUCE_DIR="~/dev/JUCE"            # Custom location
+# Example 1:
+export JUCE_DIR="~/JUCE"
+
+# Example 2:
+export JUCE_DIR="/opt/JUCE"
 ```
 
 **After setting the environment variable:** Restart Cursor (or at least the integrated terminal).
