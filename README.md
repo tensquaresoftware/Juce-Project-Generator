@@ -174,10 +174,11 @@ The generator uses two configuration files (both included in the repository):
 Generator-specific settings (defaults for prompts, paths per OS). Edit this file to customize:
 
 ```python
-# JUCE installation paths (optional: validation only, not written into projects)
-JUCE_DIR_MACOS   = "/Applications/JUCE"
+# JUCE installation paths (optional: validation only, not written into projects).
+# Use None or "" for any OS to skip validation on that platform.
 JUCE_DIR_WINDOWS = "C:/JUCE"
-JUCE_DIR_LINUX   = "/home/username/JUCE"  # or None to skip validation
+JUCE_DIR_MACOS   = "/Applications/JUCE"
+JUCE_DIR_LINUX   = "/home/username/JUCE"
 
 # Default manufacturer information
 DEFAULT_MANUFACTURER_NAME = "My Company"
