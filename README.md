@@ -20,7 +20,6 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - ✅ **Smart build artefact management:**
   - **System folders**: copies plugins where DAWs look by default (macOS: `~/Library/Audio/Plug-Ins/`, Windows: `%LOCALAPPDATA%\Programs\Common\VST3\`, Linux: `~/.vst3/`)
   - **Central custom folder**: one organized location for all your projects' plugins (paths per OS, configured once in `generator-configuration.py`, injected at generation)
-  - **No more `Artefacts/` folder at project root** — cleaner projects, centralized organization
 - ✅ Support for AU, VST3, and Standalone formats
 - ✅ Configurable via `generator-configuration.py` and `project-configuration.cmake` for easy customization
 - ✅ Customizable default manufacturer and plugin codes
@@ -360,7 +359,6 @@ YourProject/
 │   │   └── Universal/     ← Universal Binary (Apple Silicon + Intel, for distribution)
 │   ├── Windows/
 │   └── Linux/
-├── Artefacts/         ← Created when COPY_TO_PROJECT_FOLDERS=ON (mirrors Builds/ structure)
 ├── .vscode/
 │   ├── settings.json
 │   ├── tasks.json
@@ -424,30 +422,32 @@ To list all presets available on your system: `cmake --list-presets`.
 
 ### Testing Plugins
 
-When `COPY_TO_PROJECT_FOLDERS` is ON, build outputs (AU, VST3, Standalone) are copied to `Artefacts/{OS}/{arch}/{format}/` (e.g. `Artefacts/macOS/ARM/VST3/`, `Artefacts/Windows/Standalone/`). Add the appropriate folder to your DAW's plugin search path.
+After building, plugins are automatically copied according to your `project-configuration.cmake` settings:
 
-When `COPY_TO_SYSTEM_FOLDERS` is ON (macOS only), AU and VST3 are copied to `~/Library/Audio/Plug-Ins/` — your DAW will find them automatically.
+**When `COPY_TO_SYSTEM_FOLDERS` is ON** (all OS): Plugins go to system folders where DAWs scan automatically:
+- **macOS**: AU and VST3 → `~/Library/Audio/Plug-Ins/`
+- **Windows**: VST3 → `%LOCALAPPDATA%\Programs\Common\VST3\`
+- **Linux**: VST3 → `~/.vst3/`
+
+Your DAW will find them automatically after a rescan.
+
+**When `COPY_TO_ARTEFACTS_DIR` is ON**: Plugins go to your central custom folder (paths configured in `generator-configuration.py`). Add this folder to your DAW's plugin search path if needed.
 
 #### macOS
 
-| Build preset | Artefacts destination |
-|--------------|------------------------|
-| ARM (Apple Silicon) | `Artefacts/macOS/ARM/` |
-| Intel (Mac Intel native) | `Artefacts/macOS/Intel/` |
-| Intel-Rosetta (x86_64 on Apple Silicon) | `Artefacts/macOS/Intel-Rosetta/` |
-| Universal | `Artefacts/macOS/Universal/` |
-
-Each folder contains `AU/`, `VST3/`, `Standalone/`. Or use `~/Library/Audio/Plug-Ins/` when system folders are ON.
+**System folders location** (when `COPY_TO_SYSTEM_FOLDERS` is ON):
+- AU: `~/Library/Audio/Plug-Ins/Components/`
+- VST3: `~/Library/Audio/Plug-Ins/VST3/`
 
 #### Windows
 
-- **VST3**: `Artefacts/Windows/VST3/` — add to your DAW's plugin path, or copy to `C:\Program Files\Common Files\VST3\` (requires admin)
-- **Standalone**: `Artefacts/Windows/Standalone/` — run the `.exe` directly
+**System folders location** (when `COPY_TO_SYSTEM_FOLDERS` is ON):
+- VST3: `%LOCALAPPDATA%\Programs\Common\VST3\`
 
 #### Linux
 
-- **VST3**: `Artefacts/Linux/VST3/` — add to your DAW's plugin path
-- **Standalone**: `Artefacts/Linux/Standalone/` — run the binary from this folder
+**System folders location** (when `COPY_TO_SYSTEM_FOLDERS` is ON):
+- VST3: `~/.vst3/`
 
 ### Debugging
 
@@ -514,8 +514,6 @@ Projects support **two independent copy destinations** after build:
    - Controlled by `COPY_TO_ARTEFACTS_DIR` in `project-configuration.cmake`
    - **Use case**: Keep all your plugins organized in one place, backup, distribution prep
    - **Note**: Paths are injected at generation. On a different machine, edit `project-configuration.cmake` to update paths or regenerate with local `generator-configuration.py`
-
-**Key advantage**: Projects **no longer have an `Artefacts/` folder** at the root — cleaner, more organized, centralized management.
 
 Edit `project-configuration.cmake` in any generated project to toggle these options without modifying `CMakeLists.txt`.
 
