@@ -159,9 +159,9 @@ The project uses **CMake Presets** for flexible configuration. Simply:
 
 After building, plugins are automatically copied according to your `project-configuration.cmake` settings:
 
-1. **System folders** (`COPY_TO_SYSTEM_FOLDERS`): Copies where DAWs scan by default for immediate testing
+1. **System folders** (`COPY_TO_SYSTEM_FOLDERS`): Copies to standard locations where DAWs scan (user folders, no admin)
    - **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3)
-   - **Windows**: `%LOCALAPPDATA%\Programs\Common\VST3\`
+   - **Windows**: `%LOCALAPPDATA%\Programs\Common\VST3\` (user folder, first priority per VST3 spec)
    - **Linux**: `~/.vst3/`
 
 2. **Central custom folder** (`COPY_TO_ARTEFACTS_DIR`): Organized location for all projects
@@ -178,7 +178,7 @@ The destination **automatically matches your selected preset**. No manual config
 Control where plugins are copied after each build by editing the **USER OPTIONS** section in `project-configuration.cmake`:
 
 - **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON`/`OFF`
-  - Copies to system folders where DAWs scan (all OS)
+  - Copies to standard locations where DAWs scan (user folders, no admin; all OS)
   - **Use case**: Instant testing in your DAW
   
 - **`USER_COPY_TO_ARTEFACTS_DIR`**: `ON`/`OFF`

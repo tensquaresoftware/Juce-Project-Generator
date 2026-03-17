@@ -10,9 +10,9 @@
 # =============================================================================
 #
 # COPY_TO_SYSTEM_FOLDERS: ON/OFF
-#   When ON: copies plugins to system folders where DAWs look by default.
+#   When ON: copies plugins to the standard locations where DAWs scan (user folders, no admin).
 #   - macOS: AU → ~/Library/Audio/Plug-Ins/Components/, VST3 → ~/Library/Audio/Plug-Ins/VST3/
-#   - Windows: VST3 → %LOCALAPPDATA%\Programs\Common\VST3\
+#   - Windows: VST3 → %LOCALAPPDATA%\Programs\Common\VST3\ (user folder, first priority per VST3 spec)
 #   - Linux: VST3 → ~/.vst3/
 #
 # COPY_TO_ARTEFACTS_DIR: ON/OFF

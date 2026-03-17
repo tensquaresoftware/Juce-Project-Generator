@@ -99,12 +99,17 @@ if(NOT APPLE)
     string(STRIP "${{PLUGIN_FORMATS_LIST}}" PLUGIN_FORMATS_LIST)
 endif()
 
-# COPY_PLUGIN_AFTER_BUILD: copy to system folders (all OS)
-# Controlled by COPY_TO_SYSTEM_FOLDERS in project-configuration.cmake
+# COPY_PLUGIN_AFTER_BUILD: copy to system folders (macOS, Linux only)
+# On Windows, JUCE uses C:\Program Files\Common Files\VST3\ (requires admin).
+# We use the user folder instead (%LOCALAPPDATA%\Programs\Common\VST3\) — standard VST3 location,
+# first priority per spec, no admin. See CopyVST3ToSystemFolder target below.
 # macOS: AU → ~/Library/Audio/Plug-Ins/Components/, VST3 → ~/Library/Audio/Plug-Ins/VST3/
-# Windows: VST3 → %LOCALAPPDATA%\Programs\Common\VST3\
 # Linux: VST3 → ~/.vst3/
-set(COPY_PLUGIN_AFTER_BUILD_VALUE ${{COPY_TO_SYSTEM_FOLDERS}})
+if(WIN32)
+    set(COPY_PLUGIN_AFTER_BUILD_VALUE FALSE)
+else()
+    set(COPY_PLUGIN_AFTER_BUILD_VALUE ${{COPY_TO_SYSTEM_FOLDERS}})
+endif()
 
 juce_add_plugin({projectName}
     COMPANY_NAME "{manufacturerName}"
@@ -262,6 +267,26 @@ if(COPY_TO_ARTEFACTS_DIR)
         ${{COPY_COMMANDS}}
         DEPENDS ${{ALL_PLUGIN_TARGETS}}
         COMMENT "Copying all plugin artefacts to ${{ARTEFACTS_DEST}}"
+        VERBATIM
+    )
+endif()
+
+# =============================================================================
+# COPY TO SYSTEM FOLDERS (Windows only - user folder, standard VST3 location)
+# On Windows, we copy to %LOCALAPPDATA%\Programs\Common\VST3\ — the user folder where
+# DAWs scan first (VST3 spec). No admin required. macOS and Linux use JUCE's built-in copy.
+# =============================================================================
+if(WIN32 AND COPY_TO_SYSTEM_FOLDERS AND PLUGIN_FORMATS_LIST MATCHES "VST3")
+    set(VST3_SYSTEM_DEST "$ENV{LOCALAPPDATA}/Programs/Common/VST3")
+    add_custom_target(CopyVST3ToSystemFolder ALL
+        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 to system folder: ${{VST3_SYSTEM_DEST}}"
+        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{VST3_SYSTEM_DEST}}"
+        COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{VST3_SYSTEM_DEST}}/{projectName}.vst3"
+        COMMAND ${{CMAKE_COMMAND}} -E copy_directory
+            "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/VST3/{projectName}.vst3"
+            "${{VST3_SYSTEM_DEST}}/{projectName}.vst3"
+        DEPENDS {projectName}_VST3
+        COMMENT "Copying VST3 to ${{VST3_SYSTEM_DEST}}"
         VERBATIM
     )
 endif()

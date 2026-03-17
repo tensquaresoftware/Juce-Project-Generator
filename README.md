@@ -18,7 +18,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS/Linux path differences)
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
 - ✅ **Smart build artefact management:**
-  - **System folders**: copies plugins where DAWs look by default (macOS: `~/Library/Audio/Plug-Ins/`, Windows: `%LOCALAPPDATA%\Programs\Common\VST3\`, Linux: `~/.vst3/`)
+  - **System folders**: copies plugins to standard locations where DAWs scan (user folders, no admin). macOS: `~/Library/Audio/Plug-Ins/`, Windows: `%LOCALAPPDATA%\Programs\Common\VST3\`, Linux: `~/.vst3/`
   - **Central custom folder**: one organized location for all your projects' plugins (paths per OS, configured once in `generator-configuration.py`, injected at generation)
 - ✅ Support for AU, VST3, and Standalone formats (CLAP support planned for future)
 - ✅ Configurable via `generator-configuration.py` and `project-configuration.cmake` for easy customization
@@ -158,7 +158,7 @@ cmake --build --preset default-macos-arm64
 
 After building, plugins are automatically copied according to `project-configuration.cmake` settings:
 
-- `**COPY_TO_SYSTEM_FOLDERS=ON**`: Plugins go to system folders where DAWs scan automatically
+- `**COPY_TO_SYSTEM_FOLDERS=ON**`: Plugins go to standard locations where DAWs scan (user folders, no admin)
 - `**COPY_TO_ARTEFACTS_DIR=ON**`: Plugins go to your central custom folder
 
 Your DAW will find them after a rescan.
@@ -286,7 +286,7 @@ After building, plugins are automatically copied according to `project-configura
 **System folders** (`COPY_TO_SYSTEM_FOLDERS=ON`):
 
 - **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3)
-- **Windows**: `%LOCALAPPDATA%\Programs\Common\VST3\`
+- **Windows**: `%LOCALAPPDATA%\Programs\Common\VST3\` (user folder, first priority per VST3 spec, no admin)
 - **Linux**: `~/.vst3/`
 
 Your DAW will find them automatically after a rescan.

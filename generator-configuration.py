@@ -33,7 +33,7 @@ IMPORTANT: Before sharing this generator with others, make sure to:
 #   - Windows: "C:/JUCE" or "C:/Program Files/JUCE"
 #   - Linux: "/usr/local/JUCE" or "/opt/JUCE"
 #
-JUCE_DIR_WINDOWS = "C:/Program Files/JUCE"
+JUCE_DIR_WINDOWS = "C:/JUCE"
 JUCE_DIR_MACOS   = "/Applications/JUCE"
 JUCE_DIR_LINUX   = "/home/guillaume/Dev/JUCE"
 
