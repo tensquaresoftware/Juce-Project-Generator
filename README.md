@@ -185,16 +185,16 @@ DEFAULT_MANUFACTURER_NAME = "My Company"
 DEFAULT_MANUFACTURER_CODE = "Myco"        # Must be exactly 4 alphabetic characters
 DEFAULT_PLUGIN_CODE       = "Plg1"        # Must be exactly 4 alphanumeric characters
 
+# Default project destination (per OS)
+# Use "Desktop" to default to user's Desktop folder
+DEFAULT_PROJECT_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Projects"
+DEFAULT_PROJECT_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Projects"
+DEFAULT_PROJECT_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Projects"
+
 # Central artefacts folder (custom folder for all projects' plugins/Standalone, per OS)
 ARTEFACTS_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Artefacts"
 ARTEFACTS_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Artefacts"
 ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Artefacts"
-
-# Default project destination (per OS)
-DEFAULT_PROJECT_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Projects"
-DEFAULT_PROJECT_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Projects"
-DEFAULT_PROJECT_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Projects"
-# Use "Desktop" to default to user's Desktop folder
 ```
 
 **Path restrictions**: Paths must NOT contain accented characters (é, à, è, ç, etc.) or special Unicode characters. Only ASCII (0-127) is allowed due to CMake/Visual Studio compatibility issues on Windows.
