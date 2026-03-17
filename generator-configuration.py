@@ -29,8 +29,8 @@ IMPORTANT: Before sharing this generator with others, make sure to:
 # without machine-specific paths in Git.
 #
 # Platform-specific examples:
-#   - macOS: "/Applications/JUCE"
 #   - Windows: "C:/JUCE" or "C:/Program Files/JUCE"
+#   - macOS: "/Applications/JUCE"
 #   - Linux: "/usr/local/JUCE" or "/opt/JUCE"
 #
 JUCE_DIR_WINDOWS = "C:/JUCE"

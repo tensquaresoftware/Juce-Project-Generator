@@ -15,15 +15,16 @@ from pathValidation import validatePathNoProblematicChars
 from projectConfigParser import parse as parseProjectConfig, getValue, parseBool
 from uiConstants import Color, kManufacturerCodeLength, kPluginCodeLength
 
+# Order: Windows, macOS (Darwin), Linux (for consistent presentation)
 _JUCE_DIR_ATTR_BY_SYSTEM = {
-    "Darwin": "JUCE_DIR_MACOS",
     "Windows": "JUCE_DIR_WINDOWS",
+    "Darwin": "JUCE_DIR_MACOS",
     "Linux": "JUCE_DIR_LINUX",
 }
 
 _DEFAULT_PROJECT_DIR_ATTR_BY_SYSTEM = {
-    "Darwin": "DEFAULT_PROJECT_DIR_MACOS",
     "Windows": "DEFAULT_PROJECT_DIR_WINDOWS",
+    "Darwin": "DEFAULT_PROJECT_DIR_MACOS",
     "Linux": "DEFAULT_PROJECT_DIR_LINUX",
 }
 

@@ -47,8 +47,8 @@ class TemplateRenderer:
             "artefactsDirWindows": self.config_["artefactsDirWindows"],
             "artefactsDirMacos": self.config_["artefactsDirMacos"],
             "artefactsDirLinux": self.config_["artefactsDirLinux"],
-            "buildDirMacOS": getBuildDirMacOS(),
             "buildDirWindows": BUILD_DIR_WINDOWS,
+            "buildDirMacOS": getBuildDirMacOS(),
             "buildDirLinux": BUILD_DIR_LINUX,
         }
 

@@ -99,10 +99,10 @@ if(NOT APPLE)
     string(STRIP "${{PLUGIN_FORMATS_LIST}}" PLUGIN_FORMATS_LIST)
 endif()
 
-# COPY_PLUGIN_AFTER_BUILD: copy to system folders (macOS, Linux only)
+# COPY_PLUGIN_AFTER_BUILD: copy to system folders (macOS, Linux only).
 # On Windows, JUCE uses C:\Program Files\Common Files\VST3\ (requires admin).
-# We use the user folder instead (%LOCALAPPDATA%\Programs\Common\VST3\) — standard VST3 location,
-# first priority per spec, no admin. See CopyVST3ToSystemFolder target below.
+# We use the user folder instead (%LOCALAPPDATA%\Programs\Common\VST3\) — see CopyVST3ToSystemFolder below.
+# Windows: VST3 → %LOCALAPPDATA%\Programs\Common\VST3\
 # macOS: AU → ~/Library/Audio/Plug-Ins/Components/, VST3 → ~/Library/Audio/Plug-Ins/VST3/
 # Linux: VST3 → ~/.vst3/
 if(WIN32)

@@ -6,23 +6,24 @@ Single responsibility: platform detection and build configuration.
 
 import platform
 
+# Order: Windows, macOS, Linux (for consistent presentation)
+BUILD_DIR_WINDOWS = "Builds/Windows"
 BUILD_DIR_MACOS_ARM = "Builds/macOS/ARM"
 BUILD_DIR_MACOS_INTEL = "Builds/macOS/Intel"
 BUILD_DIR_MACOS_INTEL_ROSETTA = "Builds/macOS/Intel-Rosetta"
 BUILD_DIR_MACOS_UNIVERSAL = "Builds/macOS/Universal"
-BUILD_DIR_WINDOWS = "Builds/Windows"
 BUILD_DIR_LINUX = "Builds/Linux"
 
+PRESET_WINDOWS = "default-windows"
 PRESET_MACOS_ARM = "default-macos-arm64"
 PRESET_MACOS_INTEL = "default-macos-x86_64"
 PRESET_MACOS_INTEL_ROSETTA = "default-macos-x86_64-rosetta"
 PRESET_MACOS_UNIVERSAL = "default-macos-universal"
-PRESET_WINDOWS = "default-windows"
 PRESET_LINUX = "default-linux"
 
+PLATFORM_NAME_WINDOWS = "Windows"
 PLATFORM_NAME_MACOS_ARM = "macOS (Apple Silicon)"
 PLATFORM_NAME_MACOS_INTEL = "macOS (Intel)"
-PLATFORM_NAME_WINDOWS = "Windows"
 PLATFORM_NAME_LINUX = "Linux"
 
 

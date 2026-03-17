@@ -8,14 +8,6 @@ Formats: {pluginFormats}
 
 ### Prerequisites
 
-#### macOS
-
-- macOS Tahoe or later
-- Cursor 2
-- CMake 3.22+
-- Ninja build system
-- JUCE 8 installed at `/Applications/JUCE` (or set `JUCE_DIR` if elsewhere)
-
 #### Windows
 
 - Windows 11 or later
@@ -24,15 +16,25 @@ Formats: {pluginFormats}
 - Visual Studio 2022 with "Desktop development with C++" workload
 - JUCE 8 installed at `C:\Program Files\JUCE` (or set `JUCE_DIR` if elsewhere)
 
+#### macOS
+
+- macOS Tahoe or later
+- Cursor 2
+- CMake 3.22+
+- Ninja build system
+- JUCE 8 installed at `/Applications/JUCE` (or set `JUCE_DIR` if elsewhere)
+
+#### Linux
+
+- Linux (e.g. Ubuntu 22.04)
+- Cursor 2
+- CMake 3.22+
+- Ninja: `sudo apt install ninja-build`
+- JUCE 8 installed at `/usr/local/JUCE` (or set `JUCE_DIR` if elsewhere)
+
 ### Environment Setup
 
-JUCE is auto-detected at standard locations (`/Applications/JUCE` on macOS, `C:/Program Files/JUCE` on Windows, `/usr/local/JUCE` on Linux). If installed elsewhere, set `JUCE_DIR`:
-
-**macOS:**
-
-```bash
-export JUCE_DIR=/path/to/JUCE
-```
+JUCE is auto-detected at standard locations (`C:/Program Files/JUCE` on Windows, `/Applications/JUCE` on macOS, `/usr/local/JUCE` on Linux). If installed elsewhere, set `JUCE_DIR`:
 
 **Windows:**
 
@@ -40,9 +42,21 @@ export JUCE_DIR=/path/to/JUCE
 # System environment variable: JUCE_DIR = C:\path\to\JUCE
 ```
 
+**macOS:**
+
+```bash
+export JUCE_DIR=/path/to/JUCE
+```
+
+**Linux:**
+
+```bash
+export JUCE_DIR=/path/to/JUCE
+```
+
 ### Build
 
-**Important:** Build directories are separated by platform and architecture (`Builds/macOS/ARM`, `Builds/macOS/Intel`, `Builds/macOS/Intel-Rosetta`, `Builds/macOS/Universal`, `Builds/Windows`, `Builds/Linux`) to avoid mixing files when switching between configurations.
+**Important:** Build directories are separated by platform and architecture (`Builds/Windows`, `Builds/macOS/ARM`, `Builds/macOS/Intel`, `Builds/macOS/Intel-Rosetta`, `Builds/macOS/Universal`, `Builds/Linux`) to avoid mixing files when switching between configurations.
 
 After building, plugins are copied according to `project-configuration.cmake` settings:
 - **System folders**: for immediate DAW testing
@@ -141,11 +155,11 @@ The project uses **CMake Presets** for flexible configuration. Simply:
 
 1. Open the project folder in Cursor
 2. Select your preferred CMake preset when prompted:
+   - **Windows**: `default-windows` → builds to `Builds/Windows`
    - **macOS Apple Silicon (Native)**: `default-macos-arm64` → builds to `Builds/macOS/ARM`
    - **macOS Intel (Native on Mac Intel)**: `default-macos-x86_64` → builds to `Builds/macOS/Intel`
    - **macOS Intel-Rosetta (x86_64 on Apple Silicon)**: `default-macos-x86_64-rosetta` → builds to `Builds/macOS/Intel-Rosetta`
    - **macOS Universal (Distribution)**: `default-macos-universal` → builds to `Builds/macOS/Universal`
-   - **Windows**: `default-windows` → builds to `Builds/Windows`
    - **Linux**: `default-linux` → builds to `Builds/Linux`
 
 3. Build the project:
@@ -160,15 +174,15 @@ The project uses **CMake Presets** for flexible configuration. Simply:
 After building, plugins are automatically copied according to your `project-configuration.cmake` settings:
 
 1. **System folders** (`COPY_TO_SYSTEM_FOLDERS`): Copies to standard locations where DAWs scan (user folders, no admin)
-   - **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3)
    - **Windows**: `%LOCALAPPDATA%\Programs\Common\VST3\` (user folder, first priority per VST3 spec)
+   - **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3)
    - **Linux**: `~/.vst3/`
 
 2. **Central custom folder** (`COPY_TO_ARTEFACTS_DIR`): Organized location for all projects
    - Paths configured in `generator-configuration.py` and injected at generation (`ARTEFACTS_DIR_*`)
    - **Structure**: `{{ARTEFACTS_DIR}}/{{OS}}/{{arch}}/{{format}}/`
-   - **macOS**: `macOS/ARM/`, `Intel/`, `Intel-Rosetta/`, or `Universal/` (each contains `AU/`, `VST3/`, `Standalone/`)
    - **Windows**: `Windows/VST3/`, `Windows/Standalone/`
+   - **macOS**: `macOS/ARM/`, `Intel/`, `Intel-Rosetta/`, or `Universal/` (each contains `AU/`, `VST3/`, `Standalone/`)
    - **Linux**: `Linux/VST3/`, `Linux/Standalone/`
 
 The destination **automatically matches your selected preset**. No manual configuration needed.
@@ -192,8 +206,9 @@ Both can be enabled simultaneously for maximum convenience.
 
 Debug configurations automatically use the active preset's build directory. Press `F5` to start debugging:
 
-- **macOS**: Standalone, AU in Logic Pro, VST3 in Reaper, AU in Ableton Live
 - **Windows**: Standalone, VST3 in Reaper
+- **macOS**: Standalone, AU in Logic Pro, VST3 in Reaper, AU in Ableton Live
+- **Linux**: Standalone, VST3 in Reaper
 
 All paths adapt automatically when you switch presets.
 

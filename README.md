@@ -14,16 +14,16 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 - ✅ Complete JUCE plugin project structure
 - ✅ CMake build system configuration
-- ✅ Platform-specific settings (macOS Apple Silicon/Intel/Intel-Rosetta/Universal Binary, Windows, Linux)
+- ✅ Platform-specific settings (Windows, macOS Apple Silicon/Intel/Intel-Rosetta/Universal Binary, Linux)
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS/Linux path differences)
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
 - ✅ **Smart build artefact management:**
-  - **System folders**: copies plugins to standard locations where DAWs scan (user folders, no admin). macOS: `~/Library/Audio/Plug-Ins/`, Windows: `%LOCALAPPDATA%\Programs\Common\VST3\`, Linux: `~/.vst3/`
+  - **System folders**: copies plugins to standard locations where DAWs scan (user folders, no admin). Windows: `%LOCALAPPDATA%\Programs\Common\VST3\`, macOS: `~/Library/Audio/Plug-Ins/`, Linux: `~/.vst3/`
   - **Central custom folder**: one organized location for all your projects' plugins (paths per OS, configured once in `generator-configuration.py`, injected at generation)
 - ✅ Support for AU, VST3, and Standalone formats (CLAP support planned for future)
 - ✅ Configurable via `generator-configuration.py` and `project-configuration.cmake` for easy customization
 - ✅ Customizable default manufacturer and plugin codes
-- ✅ **Portable workflow**: projects use `JUCE_DIR` from the environment—no machine-specific paths in Git; ideal for GitHub and multi-machine (macOS / Windows / Linux) development
+- ✅ **Portable workflow**: projects use `JUCE_DIR` from the environment—no machine-specific paths in Git; ideal for GitHub and multi-machine (Windows / macOS / Linux) development
 
 ## Prerequisites
 
@@ -34,15 +34,15 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - CMake 3.22+ (3.27+ recommended)
 - Cursor or VS Code
 
-### macOS
-
-- Xcode Command Line Tools
-- Ninja: `brew install ninja`
-
 ### Windows
 
 - Visual Studio 2022 with "Desktop development with C++" workload
 - CMake (add to PATH during installation)
+
+### macOS
+
+- Xcode Command Line Tools
+- Ninja: `brew install ninja`
 
 ### Linux
 
@@ -71,7 +71,7 @@ cd Juce-Project-Generator
 
 ### 2. Set `JUCE_DIR` environment variable
 
-Generated projects use `${env:JUCE_DIR}` everywhere. Configure it once per machine so the same project builds on macOS, Windows, and Linux without any machine-specific paths in Git.
+Generated projects use `${env:JUCE_DIR}` everywhere. Configure it once per machine so the same project builds on Windows, macOS, and Linux without any machine-specific paths in Git.
 
 **Windows** (System Environment Variables or PowerShell):
 
@@ -272,8 +272,8 @@ cmake --preset default-macos-arm64 && cmake --build --preset default-macos-arm64
 
 **Available presets** (per platform):
 
-- **macOS**: `default-macos-arm64`, `default-macos-x86_64-rosetta`, `default-macos-x86_64`, `default-macos-universal`
 - **Windows**: `default-windows`
+- **macOS**: `default-macos-arm64`, `default-macos-x86_64-rosetta`, `default-macos-x86_64`, `default-macos-universal`
 - **Linux**: `default-linux`
 
 ---
@@ -354,12 +354,12 @@ YourProject/
 │   ├── PluginEditor.cpp
 │   └── PluginFactory.cpp
 ├── Builds/
+│   ├── Windows/
 │   ├── macOS/
 │   │   ├── ARM/           ← Apple Silicon native
 │   │   ├── Intel/         ← Mac Intel native
 │   │   ├── Intel-Rosetta/ ← x86_64 on Apple Silicon
 │   │   └── Universal/     ← Universal Binary (distribution)
-│   ├── Windows/
 │   └── Linux/
 ├── .vscode/
 │   ├── settings.json
@@ -430,7 +430,7 @@ If you encounter a bug, please [open an issue](https://github.com/tensquaresoftw
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Test your changes on all supported platforms if possible (macOS, Windows, Linux)
+3. Test your changes on all supported platforms if possible (Windows, macOS, Linux)
 4. Commit your changes following the project's commit message style (see git log)
 5. Push to your fork and submit a pull request
 
