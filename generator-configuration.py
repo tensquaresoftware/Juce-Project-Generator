@@ -6,8 +6,8 @@ Generator Configuration file for JUCE Project Generator
 This file configures the generator itself: default values for interactive
 prompts, JUCE path validation, etc.
 
-Build artefact copy settings (COPY_TO_SYSTEM_FOLDERS, COPY_TO_PROJECT_FOLDERS) are in
-project-config.cmake in this directory. That file serves as the default
+Build artefact copy settings (COPY_TO_SYSTEM_FOLDERS, COPY_TO_ARTEFACTS_DIR) are in
+project-configuration.cmake in this directory. That file serves as the default
 template when creating new projects.
 
 IMPORTANT: Before sharing this generator with others, make sure to:
@@ -62,6 +62,40 @@ DEFAULT_MANUFACTURER_CODE = "Tssf"
 DEFAULT_PLUGIN_CODE       = "Tssp"
 
 # =============================================================================
+# ARTEFACTS CENTRAL DIRECTORY (custom folder for all plugins and Standalone)
+# =============================================================================
+#
+# ⚠️ IMPORTANT - PATH RESTRICTIONS:
+# -----------------------------------------------------------------------------
+# Paths MUST NOT contain accented characters (é, à, è, ç, etc.) or special
+# Unicode characters. Only ASCII characters (0-127) are allowed.
+#
+# This restriction exists because CMake and Visual Studio on Windows have
+# known compatibility issues with Unicode paths, causing build errors (MSB8066)
+# with malformed characters in generated .vcxproj files.
+#
+# Examples:
+#   ❌ "C:/Users/John/Téléchargements"  (contains é)
+#   ✅ "C:/Users/John/Telechargements"  (no accents)
+#   ❌ "D:/Projets/Été 2024"            (contains é and É)
+#   ✅ "D:/Projets/Ete 2024"            (no accents)
+#
+# The generator will STRICTLY validate these paths and refuse to proceed if
+# problematic characters are detected.
+#
+#
+# Central folder where all projects' plugins and Standalone binaries are copied.
+# Paths are injected into generated projects at generation time.
+# Structure:
+#   - Windows: ARTEFACTS_DIR_WINDOWS/VST3/, /Standalone/
+#   - macOS: ARTEFACTS_DIR_MACOS/ARM|Intel|Intel-Rosetta|Universal/AU/, /VST3/, /Standalone/
+#   - Linux: ARTEFACTS_DIR_LINUX/VST3/, /Standalone/ (CLAP/ for future)
+#
+ARTEFACTS_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Artefacts"
+ARTEFACTS_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Artefacts"
+ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Artefacts"
+
+# =============================================================================
 # DEFAULT PROJECT DESTINATION
 # =============================================================================
 #
@@ -84,7 +118,8 @@ DEFAULT_PLUGIN_CODE       = "Tssp"
 # problematic characters are detected.
 #
 #
-# Default folder where new projects will be created.
+# Default folder where new projects will be created (per OS).
+# The generator selects the appropriate path based on the current OS.
 # This is used as the default value in the project generator prompt.
 #
 # Examples:
@@ -95,7 +130,9 @@ DEFAULT_PLUGIN_CODE       = "Tssp"
 # Note: The generator will prompt for confirmation, so this is just a default.
 # "Default" = use user's Desktop (system folder, resolves correctly on Windows)
 #
-DEFAULT_PROJECT_DESTINATION = "C:/Users/Guillaume/Dev/Tests/Generator"
+DEFAULT_PROJECT_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Projects"
+DEFAULT_PROJECT_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Projects"
+DEFAULT_PROJECT_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Projects"
 
 # =============================================================================
 # ADDITIONAL CONFIGURATION

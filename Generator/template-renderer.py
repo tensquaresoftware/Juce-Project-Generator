@@ -26,7 +26,7 @@ class TemplateRenderer:
 
     def _buildFormatContext(self) -> dict:
         copyToSystem = "ON" if self.config_["copyToSystemFolders"] else "OFF"
-        copyToProject = "ON" if self.config_["copyToProjectFolders"] else "OFF"
+        copyToArtefacts = "ON" if self.config_["copyToArtefactsDir"] else "OFF"
         return {
             "projectName": self.data_.projectName,
             "projectDisplayName": self.data_.projectDisplayName,
@@ -43,7 +43,10 @@ class TemplateRenderer:
             "vst3Categories": self.data_.vst3Categories,
             "bundleId": self.data_.bundleId,
             "copyToSystemFolders": copyToSystem,
-            "copyToProjectFolders": copyToProject,
+            "copyToArtefactsDir": copyToArtefacts,
+            "artefactsDirWindows": self.config_["artefactsDirWindows"],
+            "artefactsDirMacos": self.config_["artefactsDirMacos"],
+            "artefactsDirLinux": self.config_["artefactsDirLinux"],
             "buildDirMacOS": getBuildDirMacOS(),
             "buildDirWindows": BUILD_DIR_WINDOWS,
             "buildDirLinux": BUILD_DIR_LINUX,

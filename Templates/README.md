@@ -42,7 +42,11 @@ export JUCE_DIR=/path/to/JUCE
 
 ### Build
 
-**Important:** Build directories are separated by platform and architecture (`Builds/macOS/ARM`, `Builds/macOS/Intel`, `Builds/macOS/Intel-Rosetta`, `Builds/macOS/Universal`, `Builds/Windows`, `Builds/Linux`) to avoid mixing files when switching between Mac Intel and Apple Silicon.
+**Important:** Build directories are separated by platform and architecture (`Builds/macOS/ARM`, `Builds/macOS/Intel`, `Builds/macOS/Intel-Rosetta`, `Builds/macOS/Universal`, `Builds/Windows`, `Builds/Linux`) to avoid mixing files when switching between configurations.
+
+After building, plugins are copied according to `project-configuration.cmake` settings:
+- **System folders**: for immediate DAW testing
+- **Central artefacts folder**: for centralized organization (if `COPY_TO_ARTEFACTS_DIR` is ON)
 
 #### macOS (Apple Silicon)
 
@@ -78,7 +82,7 @@ cmake --build Builds/macOS/Intel --target {projectName}_VST3 --config Debug
 
 #### macOS (Intel-Rosetta) — x86_64 on Apple Silicon
 
-When building for Intel compatibility on an Apple Silicon Mac, use the Intel-Rosetta preset. Build outputs go to `Artefacts/macOS/Intel-Rosetta/`. On Mac Intel, this preset is rejected at configure; use "macOS Intel" instead.
+When building for Intel compatibility on an Apple Silicon Mac, use the Intel-Rosetta preset. Build outputs go to your configured central artefacts folder under `macOS/Intel-Rosetta/` (path set in `project-configuration.cmake` via `ARTEFACTS_DIR_MACOS`). On Mac Intel, this preset is rejected at configure; use "macOS Intel" instead.
 
 ```bash
 # Configure (using preset)
@@ -153,21 +157,36 @@ The project uses **CMake Presets** for flexible configuration. Simply:
 
 ### Build Artefacts
 
-When `COPY_TO_PROJECT_FOLDERS` is ON (default), build outputs are copied to `Artefacts/{{OS}}/{{arch}}/`:
-- **macOS**: `Artefacts/macOS/ARM/`, `Intel/`, `Intel-Rosetta/`, or `Universal/` (each contains `AU/`, `VST3/`, `Standalone/`)
-- **Windows**: `Artefacts/Windows/VST3/`, `Artefacts/Windows/Standalone/`
-- **Linux**: `Artefacts/Linux/VST3/`, `Artefacts/Linux/Standalone/`
+After building, plugins are automatically copied according to your `project-configuration.cmake` settings:
 
-The artefact folder **automatically matches your selected preset**. No manual configuration needed.
+1. **System folders** (`COPY_TO_SYSTEM_FOLDERS`): Copies where DAWs scan by default for immediate testing
+   - **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3)
+   - **Windows**: `%LOCALAPPDATA%\Programs\Common\VST3\`
+   - **Linux**: `~/.vst3/`
 
-When `COPY_TO_SYSTEM_FOLDERS` is ON (macOS only), AU and VST3 are also copied to `~/Library/Audio/Plug-Ins/`.
+2. **Central custom folder** (`COPY_TO_ARTEFACTS_DIR`): Organized location for all projects
+   - Paths configured in `generator-configuration.py` and injected at generation (`ARTEFACTS_DIR_*`)
+   - **Structure**: `{ARTEFACTS_DIR}/{OS}/{arch}/{format}/`
+   - **macOS**: `macOS/ARM/`, `Intel/`, `Intel-Rosetta/`, or `Universal/` (each contains `AU/`, `VST3/`, `Standalone/`)
+   - **Windows**: `Windows/VST3/`, `Windows/Standalone/`
+   - **Linux**: `Linux/VST3/`, `Linux/Standalone/`
+
+The destination **automatically matches your selected preset**. No manual configuration needed.
 
 ### Build Artefact Copy Configuration
 
-Edit the **USER OPTIONS** section in `project-config.cmake`:
+Control where plugins are copied after each build by editing the **USER OPTIONS** section in `project-configuration.cmake`:
 
-- **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON`/`OFF` — copy AU and VST3 to system folders on macOS (`~/Library/Audio/Plug-Ins/`)
-- **`USER_COPY_TO_PROJECT_FOLDERS`**: `ON`/`OFF` — copy to project `Artefacts/` folder (organized by platform and architecture)
+- **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON`/`OFF`
+  - Copies to system folders where DAWs scan (all OS)
+  - **Use case**: Instant testing in your DAW
+  
+- **`USER_COPY_TO_ARTEFACTS_DIR`**: `ON`/`OFF`
+  - Copies to central custom folder (paths `ARTEFACTS_DIR_*`)
+  - Organized by platform and architecture
+  - **Use case**: Centralized management, backup, distribution prep
+
+Both can be enabled simultaneously for maximum convenience.
 
 ### Debugging
 

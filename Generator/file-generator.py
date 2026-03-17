@@ -77,8 +77,8 @@ class FileGenerator:
         self._generateFromTemplate("CMakeLists.txt", "CMakeLists.txt")
 
     def _generateProjectConfig(self) -> None:
-        print(f"{Color.GREEN}📝 Generating project-config.cmake...{Color.RESET}")
-        self._generateFromTemplate("project-config.cmake", "project-config.cmake")
+        print(f"{Color.GREEN}📝 Generating project-configuration.cmake...{Color.RESET}")
+        self._generateFromTemplate("project-configuration.cmake", "project-configuration.cmake")
 
     def _generatePluginProcessor(self) -> None:
         self._generateSourcePair("PluginProcessor", "Source/PluginProcessor")

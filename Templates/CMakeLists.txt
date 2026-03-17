@@ -38,8 +38,8 @@ endif()
 
 project({projectName} VERSION {projectVersion})
 
-# Plugin copy configuration (edit project-config.cmake to customize)
-include(project-config.cmake)
+# Plugin copy configuration (edit project-configuration.cmake to customize)
+include(project-configuration.cmake)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -99,13 +99,12 @@ if(NOT APPLE)
     string(STRIP "${{PLUGIN_FORMATS_LIST}}" PLUGIN_FORMATS_LIST)
 endif()
 
-# COPY_PLUGIN_AFTER_BUILD: copy to system folders on macOS (AU: Components, VST3: VST3)
-# Controlled by COPY_TO_SYSTEM_FOLDERS in project-config.cmake (macOS only)
-if(APPLE)
-    set(COPY_PLUGIN_AFTER_BUILD_VALUE ${{COPY_TO_SYSTEM_FOLDERS}})
-else()
-    set(COPY_PLUGIN_AFTER_BUILD_VALUE FALSE)
-endif()
+# COPY_PLUGIN_AFTER_BUILD: copy to system folders (all OS)
+# Controlled by COPY_TO_SYSTEM_FOLDERS in project-configuration.cmake
+# macOS: AU → ~/Library/Audio/Plug-Ins/Components/, VST3 → ~/Library/Audio/Plug-Ins/VST3/
+# Windows: VST3 → %LOCALAPPDATA%\Programs\Common\VST3\
+# Linux: VST3 → ~/.vst3/
+set(COPY_PLUGIN_AFTER_BUILD_VALUE ${{COPY_TO_SYSTEM_FOLDERS}})
 
 juce_add_plugin({projectName}
     COMPANY_NAME "{manufacturerName}"
@@ -147,17 +146,28 @@ target_compile_definitions({projectName}
 )
 
 # =============================================================================
-# COPY TO ARTEFACTS FOLDER (Artefacts/ at project root)
-# When COPY_TO_PROJECT_FOLDERS is ON, copies build outputs to Artefacts/{{OS}}/{{arch}}/{{format}}/
-# Structure: Artefacts/macOS/ARM/, Artefacts/macOS/Intel/, Artefacts/macOS/Intel-Rosetta/,
-#            Artefacts/macOS/Universal/, Artefacts/Windows/, Artefacts/Linux/
+# COPY TO CENTRAL ARTEFACTS FOLDER
+# When COPY_TO_ARTEFACTS_DIR is ON, copies build outputs to a central custom folder.
+# Paths: ARTEFACTS_DIR_WINDOWS, ARTEFACTS_DIR_MACOS, ARTEFACTS_DIR_LINUX (injected from generator-configuration.py).
+# Structure: {ARTEFACTS_DIR}/{OS}/{arch}/{format}/
+# - macOS: ARM/, Intel/, Intel-Rosetta/, Universal/
+# - Windows/Linux: no arch subfolder
+# Formats: VST3/, AU/ (macOS only), Standalone/. CLAP/ (Linux, future).
 # Intel = x86_64 native (Mac Intel). Intel-Rosetta = x86_64 cross-compiled on Apple Silicon.
-# Only copies formats selected for the project (AU, VST3, Standalone).
+# Only copies formats selected for the project.
 # =============================================================================
 
-set(PROJECT_ARTEFACTS_BASE "${{CMAKE_SOURCE_DIR}}/Artefacts")
+if(COPY_TO_ARTEFACTS_DIR)
+    # Determine base artefacts directory for current OS
+    if(APPLE)
+        set(ARTEFACTS_DIR_BASE "${{ARTEFACTS_DIR_MACOS}}")
+    elseif(WIN32)
+        set(ARTEFACTS_DIR_BASE "${{ARTEFACTS_DIR_WINDOWS}}")
+    else()
+        set(ARTEFACTS_DIR_BASE "${{ARTEFACTS_DIR_LINUX}}")
+    endif()
 
-if(COPY_TO_PROJECT_FOLDERS)
+    # Determine architecture subfolder (macOS only)
     if(APPLE)
         set(ARCH_LIST ${{CMAKE_OSX_ARCHITECTURES}})
         list(FIND ARCH_LIST "arm64" IDX_ARM64)
@@ -175,17 +185,18 @@ if(COPY_TO_PROJECT_FOLDERS)
         else()
             set(PLUGIN_ARCH_SUBFOLDER "ARM")
         endif()
-        set(PROJECT_ARTEFACTS_PLATFORM "${{PROJECT_ARTEFACTS_BASE}}/macOS/${{PLUGIN_ARCH_SUBFOLDER}}")
+        set(ARTEFACTS_DEST "${{ARTEFACTS_DIR_BASE}}/macOS/${{PLUGIN_ARCH_SUBFOLDER}}")
     elseif(WIN32)
-        set(PROJECT_ARTEFACTS_PLATFORM "${{PROJECT_ARTEFACTS_BASE}}/Windows")
+        set(ARTEFACTS_DEST "${{ARTEFACTS_DIR_BASE}}/Windows")
     else()
-        set(PROJECT_ARTEFACTS_PLATFORM "${{PROJECT_ARTEFACTS_BASE}}/Linux")
+        set(ARTEFACTS_DEST "${{ARTEFACTS_DIR_BASE}}/Linux")
     endif()
-    message(STATUS "Build artefacts will be copied to: ${{PROJECT_ARTEFACTS_PLATFORM}}")
+
+    message(STATUS "Build artefacts will be copied to: ${{ARTEFACTS_DEST}}")
 endif()
 
 # Create custom target that copies all artefacts after build
-if(COPY_TO_PROJECT_FOLDERS)
+if(COPY_TO_ARTEFACTS_DIR)
     set(ALL_PLUGIN_TARGETS)
     set(COPY_COMMANDS)
     
@@ -193,10 +204,10 @@ if(COPY_TO_PROJECT_FOLDERS)
     if(PLUGIN_FORMATS_LIST MATCHES "VST3")
         list(APPEND ALL_PLUGIN_TARGETS "{projectName}_VST3")
         set(VST3_SOURCE_DIR "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/VST3/{projectName}.vst3")
-        set(VST3_DEST_DIR "${{PROJECT_ARTEFACTS_PLATFORM}}/VST3/{projectName}.vst3")
+        set(VST3_DEST_DIR "${{ARTEFACTS_DEST}}/VST3/{projectName}.vst3")
         list(APPEND COPY_COMMANDS
-            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 to ${{PROJECT_ARTEFACTS_PLATFORM}}/VST3/"
-            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_ARTEFACTS_PLATFORM}}/VST3"
+            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 to ${{ARTEFACTS_DEST}}/VST3/"
+            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{ARTEFACTS_DEST}}/VST3"
             COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{VST3_DEST_DIR}}"
             COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{VST3_SOURCE_DIR}}" "${{VST3_DEST_DIR}}"
         )
@@ -207,27 +218,27 @@ if(COPY_TO_PROJECT_FOLDERS)
         list(APPEND ALL_PLUGIN_TARGETS "{projectName}_Standalone")
         if(APPLE)
             set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}.app")
-            set(STANDALONE_DEST_DIR "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/{projectName}.app")
+            set(STANDALONE_DEST_DIR "${{ARTEFACTS_DEST}}/Standalone/{projectName}.app")
             list(APPEND COPY_COMMANDS
-                COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/"
-                COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone"
+                COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{ARTEFACTS_DEST}}/Standalone/"
+                COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{ARTEFACTS_DEST}}/Standalone"
                 COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{STANDALONE_DEST_DIR}}"
                 COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST_DIR}}"
             )
         elseif(WIN32)
             set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}.exe")
-            set(STANDALONE_DEST "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/{projectName}.exe")
+            set(STANDALONE_DEST "${{ARTEFACTS_DEST}}/Standalone/{projectName}.exe")
             list(APPEND COPY_COMMANDS
-                COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/"
-                COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone"
+                COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{ARTEFACTS_DEST}}/Standalone/"
+                COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{ARTEFACTS_DEST}}/Standalone"
                 COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}"
             )
         else()
             set(STANDALONE_SOURCE "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/Standalone/{projectName}")
-            set(STANDALONE_DEST "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/{projectName}")
+            set(STANDALONE_DEST "${{ARTEFACTS_DEST}}/Standalone/{projectName}")
             list(APPEND COPY_COMMANDS
-                COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone/"
-                COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_ARTEFACTS_PLATFORM}}/Standalone"
+                COMMAND ${{CMAKE_COMMAND}} -E echo "Copying Standalone to ${{ARTEFACTS_DEST}}/Standalone/"
+                COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{ARTEFACTS_DEST}}/Standalone"
                 COMMAND ${{CMAKE_COMMAND}} -E copy "${{STANDALONE_SOURCE}}" "${{STANDALONE_DEST}}"
             )
         endif()
@@ -237,20 +248,20 @@ if(COPY_TO_PROJECT_FOLDERS)
     if(APPLE AND PLUGIN_FORMATS_LIST MATCHES "AU")
         list(APPEND ALL_PLUGIN_TARGETS "{projectName}_AU")
         set(AU_SOURCE_DIR "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/AU/{projectName}.component")
-        set(AU_DEST_DIR "${{PROJECT_ARTEFACTS_PLATFORM}}/AU/{projectName}.component")
+        set(AU_DEST_DIR "${{ARTEFACTS_DEST}}/AU/{projectName}.component")
         list(APPEND COPY_COMMANDS
-            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying AU to ${{PROJECT_ARTEFACTS_PLATFORM}}/AU/"
-            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{PROJECT_ARTEFACTS_PLATFORM}}/AU"
+            COMMAND ${{CMAKE_COMMAND}} -E echo "Copying AU to ${{ARTEFACTS_DEST}}/AU/"
+            COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{ARTEFACTS_DEST}}/AU"
             COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{AU_DEST_DIR}}"
             COMMAND ${{CMAKE_COMMAND}} -E copy_directory "${{AU_SOURCE_DIR}}" "${{AU_DEST_DIR}}"
         )
     endif()
     
     # Create the custom target with all copy commands
-    add_custom_target(CopyArtefacts ALL
+    add_custom_target(CopyToArtefactsDir ALL
         ${{COPY_COMMANDS}}
         DEPENDS ${{ALL_PLUGIN_TARGETS}}
-        COMMENT "Copying all plugin artefacts to ${{PROJECT_ARTEFACTS_PLATFORM}}"
+        COMMENT "Copying all plugin artefacts to ${{ARTEFACTS_DEST}}"
         VERBATIM
     )
 endif()

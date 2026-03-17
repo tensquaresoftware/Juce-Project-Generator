@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ProjectConfigParser: parses project-config.cmake and extracts variable values.
+ProjectConfigParser: parses project-configuration.cmake and extracts variable values.
 Single responsibility: CMake set() variable extraction.
 """
 
@@ -10,7 +10,7 @@ from typing import Dict
 
 
 def parse(configPath: Path) -> Dict[str, str]:
-    """Parse project-config.cmake and return dict of variable names to values."""
+    """Parse project-configuration.cmake and return dict of variable names to values."""
     result: Dict[str, str] = {}
     if not configPath.exists():
         return result

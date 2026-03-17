@@ -19,7 +19,7 @@ Ce document sert de checklist pour valider le bon fonctionnement du générateur
 - [ ] CMake 3.22+ installé
 - [ ] Ninja installé (macOS/Linux)
 - [ ] Cursor ou VS Code avec extension CMake Tools
-- [ ] `generator-configuration.py` et `project-config.cmake` présents (ou utilisation des valeurs par défaut)
+- [ ] `generator-configuration.py` et `project-configuration.cmake` présents (ou utilisation des valeurs par défaut)
 
 ---
 
@@ -90,7 +90,7 @@ Après génération, vérifier la présence de :
 
 - [ ] `CMakeLists.txt`
 - [ ] `CMakeUserPresets.json`
-- [ ] `project-config.cmake`
+- [ ] `project-configuration.cmake`
 - [ ] `configure-platform.py`
 - [ ] `Source/PluginProcessor.h`
 - [ ] `Source/PluginProcessor.cpp`
@@ -211,7 +211,7 @@ Pour chaque format activé (AU, VST3, Standalone), vérifier :
 
 Générer un projet avec **uniquement VST3** (sans AU ni Standalone) :
 
-- [ ] Seul `Artefacts/.../VST3/` est créé
+- [ ] Seul le dossier central custom `{ARTEFACTS_DIR_*}/{OS}/VST3/` est créé (pas AU, pas Standalone)
 - [ ] Pas de dossier `AU/` ni `Standalone/`
 
 ---
@@ -242,9 +242,9 @@ Générer un projet avec **uniquement VST3** (sans AU ni Standalone) :
 - [ ] Génération fonctionne avec valeurs par défaut
 - [ ] Message d'avertissement affiché si erreur de chargement
 
-### 7.2 `project-config.cmake` absent
+### 7.2 `project-configuration.cmake` absent
 
-- [ ] Valeurs par défaut utilisées (`COPY_TO_PROJECT_FOLDERS=ON`)
+- [ ] Valeurs par défaut utilisées (`COPY_TO_ARTEFACTS_DIR=ON`, `COPY_TO_SYSTEM_FOLDERS=ON` selon générateur)
 
 ### 7.3 `DEFAULT_PROJECT_DESTINATION` avec accents
 
@@ -308,7 +308,7 @@ Générer un projet avec **uniquement VST3** (sans AU ni Standalone) :
 | [ ]   | 1     | Générer un projet  | Structure complète                       |
 | [ ]   | 2     | Ouvrir dans Cursor | Preset Windows visible                   |
 | [ ]   | 3     | Configure + Build  | Succès                                   |
-| [ ]   | 4     | Vérifier Artefacts | `Artefacts/Windows/VST3/`, `Standalone/` |
+| [ ]   | 4     | Vérifier artefacts centraux | `{ARTEFACTS_DIR_WINDOWS}/Windows/VST3/`, `Standalone/` |
 
 
 ### Linux
@@ -318,7 +318,7 @@ Générer un projet avec **uniquement VST3** (sans AU ni Standalone) :
 | [ ]   | 1     | Générer un projet  | Structure complète                     |
 | [ ]   | 2     | Ouvrir dans Cursor | Preset Linux visible                   |
 | [ ]   | 3     | Configure + Build  | Succès                                 |
-| [ ]   | 4     | Vérifier Artefacts | `Artefacts/Linux/VST3/`, `Standalone/` |
+| [ ]   | 4     | Vérifier artefacts centraux | `{ARTEFACTS_DIR_LINUX}/Linux/VST3/`, `Standalone/` |
 
 
 ---
@@ -330,7 +330,7 @@ Générer un projet avec **uniquement VST3** (sans AU ni Standalone) :
 - [ ] Presets CMake affichés avec les bons libellés
 - [ ] Build réussi pour chaque configuration disponible sur la machine
 - [ ] Dossiers Artefacts corrects (ARM, Intel, Intel-Rosetta, Universal, Windows, Linux)
-- [ ] **Universal → `Artefacts/macOS/Universal/`** (régression corrigée)
+- [ ] **Universal → `{ARTEFACTS_DIR_MACOS}/macOS/Universal/`** (régression corrigée)
 - [ ] Script `configure-platform.py` fonctionnel
 - [ ] Cas limites (projet existant, formats, config) gérés correctement
 

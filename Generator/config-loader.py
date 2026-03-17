@@ -21,6 +21,12 @@ _JUCE_DIR_ATTR_BY_SYSTEM = {
     "Linux": "JUCE_DIR_LINUX",
 }
 
+_DEFAULT_PROJECT_DIR_ATTR_BY_SYSTEM = {
+    "Darwin": "DEFAULT_PROJECT_DIR_MACOS",
+    "Windows": "DEFAULT_PROJECT_DIR_WINDOWS",
+    "Linux": "DEFAULT_PROJECT_DIR_LINUX",
+}
+
 
 class _ValidatedCodeSpec(NamedTuple):
     attrName: str
@@ -53,7 +59,7 @@ class ConfigLoader:
     def __init__(self, scriptDir: Path):
         self.scriptDir_ = scriptDir
         self.configModule_, self.configLoadError_ = _loadGeneratorConfigModule(scriptDir)
-        self.projectConfigPath_ = scriptDir / "project-config.cmake"
+        self.projectConfigPath_ = scriptDir / "project-configuration.cmake"
 
     def loadAll(self) -> Dict:
         """Load all config values. Returns dict with keys: destination, manufacturer, etc."""
@@ -63,7 +69,10 @@ class ConfigLoader:
             "manufacturerCode": self._loadManufacturerCode(),
             "pluginCode": self._loadPluginCode(),
             "copyToSystemFolders": self._loadCopyToSystemFolders(),
-            "copyToProjectFolders": self._loadCopyToProjectFolders(),
+            "copyToArtefactsDir": self._loadCopyToArtefactsDir(),
+            "artefactsDirWindows": self._loadArtefactsDir("ARTEFACTS_DIR_WINDOWS"),
+            "artefactsDirMacos": self._loadArtefactsDir("ARTEFACTS_DIR_MACOS"),
+            "artefactsDirLinux": self._loadArtefactsDir("ARTEFACTS_DIR_LINUX"),
             "juceDir": self._loadJuceDir(),
         }
 
@@ -72,12 +81,14 @@ class ConfigLoader:
         return self.configLoadError_
 
     def _loadDestination(self) -> str:
-        if not self.configModule_ or not hasattr(self.configModule_, 'DEFAULT_PROJECT_DESTINATION'):
+        system = platform.system()
+        attrName = _DEFAULT_PROJECT_DIR_ATTR_BY_SYSTEM.get(system)
+        if not self.configModule_ or not attrName or not hasattr(self.configModule_, attrName):
             return str(Path.home() / "Desktop")
-        dest = self.configModule_.DEFAULT_PROJECT_DESTINATION
+        dest = getattr(self.configModule_, attrName)
         if not dest or dest.lower() == "default":
             return str(Path.home() / "Desktop")
-        validatePathNoProblematicChars(dest, "DEFAULT_PROJECT_DESTINATION")
+        validatePathNoProblematicChars(dest, attrName)
         return dest
 
     def _loadManufacturer(self) -> str:
@@ -124,8 +135,17 @@ class ConfigLoader:
     def _loadCopyToSystemFolders(self) -> bool:
         return self._loadCopyFlag("USER_COPY_TO_SYSTEM_FOLDERS", "COPY_TO_SYSTEM_FOLDERS", "OFF")
 
-    def _loadCopyToProjectFolders(self) -> bool:
-        return self._loadCopyFlag("USER_COPY_TO_PROJECT_FOLDERS", "COPY_TO_PROJECT_FOLDERS", "ON")
+    def _loadCopyToArtefactsDir(self) -> bool:
+        return self._loadCopyFlag("USER_COPY_TO_ARTEFACTS_DIR", "COPY_TO_ARTEFACTS_DIR", "ON")
+
+    def _loadArtefactsDir(self, attrName: str) -> str:
+        if not self.configModule_ or not hasattr(self.configModule_, attrName):
+            return ""
+        artefactsDir = getattr(self.configModule_, attrName)
+        if not artefactsDir:
+            return ""
+        validatePathNoProblematicChars(artefactsDir, attrName)
+        return Path(artefactsDir).as_posix()
 
     def _loadJuceDir(self) -> Optional[str]:
         system = platform.system()

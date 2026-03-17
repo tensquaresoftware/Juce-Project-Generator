@@ -6,7 +6,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 **Author:** Guillaume DUPONT  
 **Organization:** Ten Square Software  
-**Revision date:** 2026-03-15
+**Revision date:** 2026-03-17
 
 ---
 
@@ -17,9 +17,12 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - ✅ Platform-specific settings (macOS Apple Silicon/Intel/Intel-Rosetta/Universal Binary, Windows, Linux)
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS path differences)
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
-- ✅ Configurable build artefact copy: system folders (macOS AU/VST3), project Artefacts/ folder (all platforms)
+- ✅ **Smart build artefact management:**
+  - **System folders**: copies plugins where DAWs look by default (macOS: `~/Library/Audio/Plug-Ins/`, Windows: `%LOCALAPPDATA%\Programs\Common\VST3\`, Linux: `~/.vst3/`)
+  - **Central custom folder**: one organized location for all your projects' plugins (paths per OS, configured once in `generator-configuration.py`, injected at generation)
+  - **No more `Artefacts/` folder at project root** — cleaner projects, centralized organization
 - ✅ Support for AU, VST3, and Standalone formats
-- ✅ Configurable via `generator-configuration.py` and `project-config.cmake` for easy customization
+- ✅ Configurable via `generator-configuration.py` and `project-configuration.cmake` for easy customization
 - ✅ Customizable default manufacturer and plugin codes
 - ✅ **Portable workflow**: projects use `JUCE_DIR` from the environment—no machine-specific paths in Git; ideal for GitHub and multi-machine (macOS / Windows / Linux) development
 
@@ -54,7 +57,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 2. **Configure your environment** (optional, for the generator only):
    
-   - Copy `generator-configuration.py` and `project-config.cmake` and customize them (see Configuration section below). The `JUCE_DIR_*` options in `generator-configuration.py` are only used for **validation** when generating; they are not written into generated projects.
+   - Copy `generator-configuration.py` and `project-configuration.cmake` and customize them (see Configuration section below). The `JUCE_DIR_*` options in `generator-configuration.py` are only used for **validation** when generating; they are not written into generated projects.
 
 3. **Run the generator** (see [Using the generator](#using-the-generator) below for detailed examples).
 
@@ -156,7 +159,7 @@ cmake --list-presets
 The generator uses two configuration files (both in the generator directory):
 
 - **`generator-configuration.py`**: Generator-specific settings (defaults for prompts, JUCE validation)
-- **`project-config.cmake`**: Build artefact copy settings used as defaults when creating new projects. Each generated project gets its own copy of this file at the project root, which you can edit afterward to customize where AU, VST3, and Standalone are copied after each build.
+- **`project-configuration.cmake`**: Build artefact copy settings used as defaults when creating new projects. Each generated project gets its own copy of this file at the project root, which you can edit afterward to customize where AU, VST3, and Standalone are copied after each build.
 
 ### Setup
 
@@ -166,13 +169,13 @@ The generator uses two configuration files (both in the generator directory):
    
    If the file doesn't exist, the generator will use default values. You can create it by copying the example below.
 
-2. **Create or Edit `project-config.cmake`** (in the generator directory):
+2. **Create or Edit `project-configuration.cmake`** (in the generator directory):
    
-   This file defines default build artefact copy options for new projects (system folders, project Artefacts/ folder). Edit it to match your workflow. If it doesn't exist, the generator uses built-in defaults.
+   This file defines default build artefact copy options for new projects (system folders and central artefacts folder). Edit it to match your workflow. If it doesn't exist, the generator uses built-in defaults.
 
 3. **Configure Your Settings**:
    
-   Edit `generator-configuration.py` and `project-config.cmake` to match your environment.
+   Edit `generator-configuration.py` and `project-configuration.cmake` to match your environment.
 
 ### Configuration Options
 
@@ -190,7 +193,7 @@ The generator uses two configuration files (both in the generator directory):
 
 **Note**: If set to `None`, the generator skips path validation. **Building** always requires `JUCE_DIR` to be set in your shell/IDE environment on each machine (see [Portable workflow](#portable-workflow-github-multi-machine)).
 
-#### `project-config.cmake` (in generator directory)
+#### `project-configuration.cmake` (in generator directory)
 
 **Purpose**: Defines default build artefact copy settings for new projects. The generator reads this file and copies its values into each generated project.
 
@@ -200,22 +203,45 @@ The generator uses two configuration files (both in the generator directory):
 
 ```cmake
 # USER OPTIONS - Edit these values only
-set(USER_COPY_TO_SYSTEM_FOLDERS OFF)
-set(USER_COPY_TO_PROJECT_FOLDERS ON)
+set(USER_COPY_TO_SYSTEM_FOLDERS ON)
+set(USER_COPY_TO_ARTEFACTS_DIR ON)
 
 # CODE - Do not edit below
 set(COPY_TO_SYSTEM_FOLDERS ${USER_COPY_TO_SYSTEM_FOLDERS} CACHE BOOL "...")
-set(COPY_TO_PROJECT_FOLDERS ${USER_COPY_TO_PROJECT_FOLDERS} CACHE BOOL "...")
+set(COPY_TO_ARTEFACTS_DIR ${USER_COPY_TO_ARTEFACTS_DIR} CACHE BOOL "...")
+# Central artefacts directories (per OS) - injected at generation
+set(ARTEFACTS_DIR_WINDOWS "C:/Users/Guillaume/Dev/JUCE/Artefacts")
+set(ARTEFACTS_DIR_MACOS   "/Volumes/Guillaume/Dev/JUCE/Artefacts")
+set(ARTEFACTS_DIR_LINUX   "/home/guillaume/Dev/JUCE/Artefacts")
 ```
 
-- **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — when ON (macOS only), copies AU to `~/Library/Audio/Plug-Ins/Components/` and VST3 to `~/Library/Audio/Plug-Ins/VST3/`. No effect on Windows/Linux.
-- **`USER_COPY_TO_PROJECT_FOLDERS`**: `ON` or `OFF` — when ON, copies build outputs (AU, VST3, Standalone) to `{project_root}/Artefacts/`, organized by platform and architecture (macOS: ARM/Intel/Intel-Rosetta/Universal, Windows, Linux). No path to configure.
+- **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — when ON, copies plugins to system folders where DAWs look by default:
+  - macOS: AU → `~/Library/Audio/Plug-Ins/Components/`, VST3 → `~/Library/Audio/Plug-Ins/VST3/`
+  - Windows: VST3 → `%LOCALAPPDATA%\Programs\Common\VST3\`
+  - Linux: VST3 → `~/.vst3/`
+- **`USER_COPY_TO_ARTEFACTS_DIR`**: `ON` or `OFF` — when ON, copies build outputs (AU, VST3, Standalone) to a central custom folder (paths `ARTEFACTS_DIR_*` injected from `generator-configuration.py`), organized by platform and architecture (macOS: ARM/Intel/Intel-Rosetta/Universal).
 
-#### `DEFAULT_PROJECT_DESTINATION`
+#### `ARTEFACTS_DIR_WINDOWS`, `ARTEFACTS_DIR_MACOS`, `ARTEFACTS_DIR_LINUX`
 
-**Purpose**: Sets the default folder where new projects will be created.
+**Purpose**: Defines the central custom folder where all projects' build outputs (plugins and Standalone) are copied (per OS). These paths are injected into generated projects at generation time.
 
-**Default**: If set to `"Default"`, projects will be created on your Desktop.
+**Structure**:
+- Windows: `ARTEFACTS_DIR_WINDOWS/Windows/VST3/`, `/Standalone/`
+- macOS: `ARTEFACTS_DIR_MACOS/macOS/{ARM|Intel|Intel-Rosetta|Universal}/AU/`, `/VST3/`, `/Standalone/`
+- Linux: `ARTEFACTS_DIR_LINUX/Linux/VST3/`, `/Standalone/` (CLAP/ for future)
+
+**Examples**:
+- Windows: `ARTEFACTS_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Artefacts"`
+- macOS: `ARTEFACTS_DIR_MACOS = "/Volumes/Guillaume/Dev/JUCE/Artefacts"`
+- Linux: `ARTEFACTS_DIR_LINUX = "/home/guillaume/Dev/JUCE/Artefacts"`
+
+**Note**: These paths are injected at generation. On a different machine (e.g. after cloning from GitHub), either edit `project-configuration.cmake` in the generated project to update `ARTEFACTS_DIR_*`, or regenerate the project with your local `generator-configuration.py`.
+
+#### `DEFAULT_PROJECT_DIR_WINDOWS`, `DEFAULT_PROJECT_DIR_MACOS`, `DEFAULT_PROJECT_DIR_LINUX`
+
+**Purpose**: Sets the default folder where new projects will be created (per OS). The generator selects the appropriate path based on the current OS.
+
+**Default**: If not set or set to `"Default"`, projects will be created on your Desktop.
 
 **Examples**:
 
@@ -274,47 +300,52 @@ JUCE_DIR_MACOS = "/Applications/JUCE"
 JUCE_DIR_WINDOWS = "C:/JUCE"
 JUCE_DIR_LINUX = "/home/username/Dev/JUCE"  # or None to skip; set env JUCE_DIR on each machine for building
 
-# Default project destination
-# Set to "Default" to use Desktop, or specify a custom path
-DEFAULT_PROJECT_DESTINATION = "Default"
+# Central artefacts folder (custom folder for all projects' plugins/Standalone, per OS)
+ARTEFACTS_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Artefacts"
+ARTEFACTS_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Artefacts"
+ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Artefacts"
+
+# Default project destination (per OS)
+DEFAULT_PROJECT_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Projects"
+DEFAULT_PROJECT_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Projects"
+DEFAULT_PROJECT_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Projects"
 
 # Default manufacturer information
-# These will be used as defaults when generating new projects
 DEFAULT_MANUFACTURER_NAME = "My Company"
 DEFAULT_MANUFACTURER_CODE = "Myco"
 DEFAULT_PLUGIN_CODE = "Plg1"
 ```
 
-**Note**: Build artefact copy settings are in `project-config.cmake` (same format as in generated projects).
+**Note**: Build artefact copy settings are in `project-configuration.cmake` (same format as in generated projects).
 
 ### How It Works
 
 1. When you run `generate-new-project.py`, it loads `generator-configuration.py` for generator settings
-2. It reads `project-config.cmake` (in the generator directory) for build artefact copy defaults
+2. It reads `project-configuration.cmake` (in the generator directory) for build artefact copy defaults
 3. If `generator-configuration.py` doesn't exist or constants are missing, default values are used
-4. If `project-config.cmake` doesn't exist, built-in defaults are used for build artefact copy
+4. If `project-configuration.cmake` doesn't exist, built-in defaults are used for build artefact copy
 5. The values are injected into the generated project templates
 
 ### Customizing Generated Projects
 
-**Each generated project includes its own `project-config.cmake`** at the project root. This file controls where build outputs (AU, VST3, Standalone) are copied after each build. You can edit it at any time—no need to regenerate the project.
+**Each generated project includes its own `project-configuration.cmake`** at the project root. This file controls where build outputs (AU, VST3, Standalone) are copied after each build. You can edit it at any time—no need to regenerate the project.
 
-To change build artefact copy options for a specific project, open `project-config.cmake` in that project and edit the **USER OPTIONS** section only:
+To change build artefact copy options for a specific project, open `project-configuration.cmake` in that project and edit the **USER OPTIONS** section only:
 
-- **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — copy to system folders (macOS only)
-- **`USER_COPY_TO_PROJECT_FOLDERS`**: `ON` or `OFF` — copy to project `Artefacts/` folder (organized by platform/architecture)
+- **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON` or `OFF` — copy to system folders (all OS: macOS AU/VST3, Windows VST3, Linux VST3)
+- **`USER_COPY_TO_ARTEFACTS_DIR`**: `ON` or `OFF` — copy to central custom folder (paths `ARTEFACTS_DIR_*` injected at generation)
 
 Override at configure time:
 
 ```bash
-cmake .. -DUSER_COPY_TO_PROJECT_FOLDERS=ON
+cmake .. -DUSER_COPY_TO_ARTEFACTS_DIR=OFF
 ```
 
 ## Generated Project Structure
 
 ```
 YourProject/
-├── project-config.cmake   ← Build artefact copy settings (edit to customize)
+├── project-configuration.cmake ← Build artefact copy settings (edit to customize)
 ├── Source/
 │   ├── PluginProcessor.h
 │   ├── PluginProcessor.cpp
@@ -466,15 +497,27 @@ This keeps the repository clean and portable for collaboration and multi-OS deve
 
 ### Build Artefact Copy Configuration
 
-Projects support two types of build artefact copy after build:
+Projects support **two independent copy destinations** after build:
 
-1. **System folders** (macOS only): AU → `~/Library/Audio/Plug-Ins/Components/`, VST3 → `~/Library/Audio/Plug-Ins/VST3/`
-   - Controlled by `COPY_TO_SYSTEM_FOLDERS` in `project-config.cmake`
+1. **System folders** (all OS, where DAWs scan by default):
+   - **macOS**: AU → `~/Library/Audio/Plug-Ins/Components/`, VST3 → `~/Library/Audio/Plug-Ins/VST3/`
+   - **Windows**: VST3 → `%LOCALAPPDATA%\Programs\Common\VST3\`
+   - **Linux**: VST3 → `~/.vst3/`
+   - Controlled by `COPY_TO_SYSTEM_FOLDERS` in `project-configuration.cmake`
+   - **Use case**: Instant testing in your DAW after each build
 
-2. **Project Artefacts folder**: Copies to `{project_root}/Artefacts/`, organized by platform and architecture (macOS: ARM/Intel/Intel-Rosetta/Universal, Windows, Linux). Each format (AU, VST3, Standalone) goes to its own subfolder. Structure mirrors `Builds/` for clarity.
-   - Controlled by `COPY_TO_PROJECT_FOLDERS` in `project-config.cmake`
+2. **Central custom artefacts folder** (centralized organization):
+   - Copies to a **single custom folder** for all your projects (paths `ARTEFACTS_DIR_WINDOWS/MACOS/LINUX` injected from `generator-configuration.py` at generation)
+   - **Structure**: `{ARTEFACTS_DIR}/{OS}/{arch}/{format}/`
+     - macOS: organized by architecture (ARM, Intel, Intel-Rosetta, Universal)
+     - Windows/Linux: organized by format only (VST3, Standalone)
+   - Controlled by `COPY_TO_ARTEFACTS_DIR` in `project-configuration.cmake`
+   - **Use case**: Keep all your plugins organized in one place, backup, distribution prep
+   - **Note**: Paths are injected at generation. On a different machine, edit `project-configuration.cmake` to update paths or regenerate with local `generator-configuration.py`
 
-Edit `project-config.cmake` in any generated project to customize without modifying `CMakeLists.txt`.
+**Key advantage**: Projects **no longer have an `Artefacts/` folder** at the root — cleaner, more organized, centralized management.
+
+Edit `project-configuration.cmake` in any generated project to toggle these options without modifying `CMakeLists.txt`.
 
 ## Path Restrictions
 
@@ -484,10 +527,9 @@ Edit `project-config.cmake` in any generated project to customize without modify
 
 This includes:
 
-- Project destination paths (`DEFAULT_PROJECT_DESTINATION`)
+- Project destination paths (`DEFAULT_PROJECT_DIR_*`)
+- Central artefacts folder paths (`ARTEFACTS_DIR_*`)
 - Any path entered during interactive prompts
-
-**Note**: Build artefact copy uses the project `Artefacts/` folder (relative path) when `COPY_TO_PROJECT_FOLDERS` is ON — no custom paths to configure.
 
 **Why this restriction?**
 
@@ -524,14 +566,14 @@ CMake and Visual Studio on Windows have known compatibility issues with Unicode 
 - A clear error message will be displayed showing which characters are problematic
 - **The generator will STOP completely** and exit with an error code
 - **NO fallback paths will be used** - this prevents creating projects in unexpected locations
-- You must fix the path in `generator-configuration.py` or `project-config.cmake` (or enter a valid path during interactive prompts) before the generator will proceed
+- You must fix the path in `generator-configuration.py` or `project-configuration.cmake` (or enter a valid path during interactive prompts) before the generator will proceed
 
 ## Troubleshooting
 
 ### Generator uses default values even after creating config files
 
 - Make sure `generator-configuration.py` is in the same directory as `generate-new-project.py`
-- Make sure `project-config.cmake` is in the generator directory for build artefact copy defaults
+- Make sure `project-configuration.cmake` is in the generator directory for build artefact copy defaults
 - Check for syntax errors in `generator-configuration.py` (Python syntax) - the generator will display a warning if there are errors
 - Verify that constant names match exactly (case-sensitive)
 - If you see a warning about invalid codes, check that:
@@ -566,9 +608,9 @@ The generator is designed to be resilient and will handle various error scenario
 
 ### VST3/AU plugin not copying after build
 
-- Ensure `COPY_TO_PROJECT_FOLDERS` or `COPY_TO_SYSTEM_FOLDERS` is `ON` in `project-config.cmake`
-- When `COPY_TO_PROJECT_FOLDERS` is ON, build outputs go to `Artefacts/{OS}/{arch}/{format}/` (e.g. `Artefacts/macOS/ARM/VST3/`)
-- For system folder copy on macOS, ensure `COPY_TO_SYSTEM_FOLDERS` is `ON` — AU and VST3 will go to `~/Library/Audio/Plug-Ins/`
+- Ensure `COPY_TO_ARTEFACTS_DIR` or `COPY_TO_SYSTEM_FOLDERS` is `ON` in `project-configuration.cmake`
+- When `COPY_TO_ARTEFACTS_DIR` is ON, build outputs go to the central custom folder (paths `ARTEFACTS_DIR_*` injected from `generator-configuration.py`)
+- When `COPY_TO_SYSTEM_FOLDERS` is ON (all OS), plugins go to system folders (macOS: `~/Library/Audio/Plug-Ins/`, Windows: `%LOCALAPPDATA%\Programs\Common\VST3\`, Linux: `~/.vst3/`)
 
 ### JUCE not found (any platform)
 
@@ -590,7 +632,7 @@ If you see errors like `MSB8066` or malformed characters in build output:
 
 When sharing this generator:
 
-1. Include `generator-configuration.py` and `project-config.cmake` with generic example values (as shown in the Configuration section)
+1. Include `generator-configuration.py` and `project-configuration.cmake` with generic example values (as shown in the Configuration section)
 2. Document that users should customize these files for their environment
 3. Include this README.md in your distribution
 
