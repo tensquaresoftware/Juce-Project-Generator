@@ -91,9 +91,9 @@ DEFAULT_PLUGIN_CODE       = "Tssp"
 #   - macOS: ARTEFACTS_DIR_MACOS/ARM|Intel|Intel-Rosetta|Universal/AU/, /VST3/, /Standalone/
 #   - Linux: ARTEFACTS_DIR_LINUX/VST3/, /Standalone/ (CLAP/ for future)
 #
-ARTEFACTS_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Artefacts"
-ARTEFACTS_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Artefacts"
-ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Artefacts"
+ARTEFACTS_DIR_WINDOWS = "C:/Users/Guillaume/Dev/SDKs/JUCE/Artefacts"
+ARTEFACTS_DIR_MACOS   = "/Volumes/Guillaume/Dev/SDKs/JUCE/Artefacts"
+ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/SDKs/JUCE/Artefacts"
 
 # =============================================================================
 # DEFAULT PROJECT DESTINATION
@@ -130,9 +130,9 @@ ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Artefacts"
 # Note: The generator will prompt for confirmation, so this is just a default.
 # "Desktop" = use user's Desktop (system folder, resolves correctly on Windows)
 #
-DEFAULT_PROJECT_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Projects"
-DEFAULT_PROJECT_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Projects"
-DEFAULT_PROJECT_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Projects"
+DEFAULT_PROJECT_DIR_WINDOWS = "C:/Users/Guillaume/Dev/SDKs/JUCE/Tests/Generator"
+DEFAULT_PROJECT_DIR_MACOS   = "/Volumes/Guillaume/Dev/SDKs/JUCE/Tests/Generator"
+DEFAULT_PROJECT_DIR_LINUX   = "/home/guillaume/Dev/SDKs/JUCE/Tests/Generator"
 
 # =============================================================================
 # ADDITIONAL CONFIGURATION

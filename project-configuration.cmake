@@ -22,7 +22,7 @@
 #
 # ==============================================================================
 
-set(USER_COPY_TO_SYSTEM_FOLDERS ON)
+set(USER_COPY_TO_SYSTEM_FOLDERS OFF)
 set(USER_COPY_TO_ARTEFACTS_DIR ON)
 
 # ==============================================================================
