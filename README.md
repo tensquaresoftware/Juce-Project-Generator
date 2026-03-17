@@ -53,12 +53,21 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 ## Quick Start
 
-### 1. Clone the repository
+### 1. Get the repository
+
+**Option A: Clone with Git** (recommended for updates)
 
 ```bash
 git clone https://github.com/tensquaresoftware/Juce-Project-Generator.git
 cd Juce-Project-Generator
 ```
+
+**Option B: Download ZIP** (simpler for beginners)
+
+1. Visit [https://github.com/tensquaresoftware/Juce-Project-Generator](https://github.com/tensquaresoftware/Juce-Project-Generator)
+2. Click the green **Code** button
+3. Select **Download ZIP**
+4. Extract the ZIP file to your desired location
 
 ### 2. Set `JUCE_DIR` environment variable
 
