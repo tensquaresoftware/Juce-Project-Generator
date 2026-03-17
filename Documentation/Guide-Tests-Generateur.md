@@ -91,7 +91,6 @@ Après génération, vérifier la présence de :
 - [ ] `CMakeLists.txt`
 - [ ] `CMakeUserPresets.json`
 - [ ] `project-configuration.cmake`
-- [ ] `configure-platform.py`
 - [ ] `Source/PluginProcessor.h`
 - [ ] `Source/PluginProcessor.cpp`
 - [ ] `Source/PluginEditor.h`
@@ -216,28 +215,9 @@ Générer un projet avec **uniquement VST3** (sans AU ni Standalone) :
 
 ---
 
-## 6. Tests du script `configure-platform.py`
+## 6. Tests de configuration
 
-### 6.1 Sur macOS
-
-- [ ] Exécuter `python configure-platform.py` → menu interactif affiché
-- [ ] Option 1 (ARM) → `.vscode/settings.json` pointe vers `Builds/macOS/ARM`
-- [ ] Option 2 (Intel) → sur Apple Silicon : Intel-Rosetta ; sur Mac Intel : Intel natif
-- [ ] Option 3 (Universal) → pointe vers `Builds/macOS/Universal`
-- [ ] `--arm` / `-a` → configure ARM sans prompt
-- [ ] `--intel` / `-i` → configure Intel (ou Intel-Rosetta sur Apple Silicon)
-- [ ] `--universal` / `-u` → configure Universal sans prompt
-
-### 6.2 Sur Windows / Linux
-
-- [ ] Exécution directe sans menu
-- [ ] `.vscode/settings.json` mis à jour pour la plateforme courante
-
----
-
-## 7. Tests de configuration
-
-### 7.1 `generator-configuration.py` absent ou invalide
+### 6.1 `generator-configuration.py` absent ou invalide
 
 - [ ] Génération fonctionne avec valeurs par défaut
 - [ ] Message d'avertissement affiché si erreur de chargement
@@ -295,10 +275,9 @@ Générer un projet avec **uniquement VST3** (sans AU ni Standalone) :
 | [ ]   | 1     | Générer un projet                | Structure complète                               |
 | [ ]   | 2     | Ouvrir dans Cursor               | Presets visibles                                 |
 | [ ]   | 3     | Sélectionner Apple Silicon       | Configure + Build                                |
-| [ ]   | 4     | Vérifier Artefacts               | `Artefacts/macOS/ARM/` avec AU, VST3, Standalone |
-| [ ]   | 5     | Sélectionner Universal           | Configure + Build                                |
-| [ ]   | 6     | Vérifier Artefacts               | `Artefacts/macOS/Universal/` (et non ARM)        |
-| [ ]   | 7     | Exécuter `configure-platform.py` | Menu et mise à jour des fichiers                 |
+| [ ]   | 4     | Vérifier artefacts centraux    | `{ARTEFACTS_DIR_MACOS}/macOS/ARM/` avec AU, VST3, Standalone |
+| [ ]   | 5     | Changer preset → Universal     | Recompiler                                                   |
+| [ ]   | 6     | Vérifier artefacts centraux    | `{ARTEFACTS_DIR_MACOS}/macOS/Universal/` (et non ARM)       |
 
 
 ### Windows
@@ -329,9 +308,8 @@ Générer un projet avec **uniquement VST3** (sans AU ni Standalone) :
 - [ ] Structure du projet générée correctement
 - [ ] Presets CMake affichés avec les bons libellés
 - [ ] Build réussi pour chaque configuration disponible sur la machine
-- [ ] Dossiers Artefacts corrects (ARM, Intel, Intel-Rosetta, Universal, Windows, Linux)
+- [ ] Dossiers artefacts corrects (ARM, Intel, Intel-Rosetta, Universal, Windows, Linux)
 - [ ] **Universal → `{ARTEFACTS_DIR_MACOS}/macOS/Universal/`** (régression corrigée)
-- [ ] Script `configure-platform.py` fonctionnel
 - [ ] Cas limites (projet existant, formats, config) gérés correctement
 
 ---
@@ -340,7 +318,7 @@ Générer un projet avec **uniquement VST3** (sans AU ni Standalone) :
 
 Certains scénarios peuvent être vérifiés automatiquement (validation des chemins, structure des fichiers, etc.).
 
-**Tests possibles par l'agent :** validation des chemins (accents), structure des fichiers générés, substitution des variables, exécution de `configure-platform.py` avec `--arm`/`--universal`, vérification des presets dans `CMakeUserPresets.json`.
+**Tests possibles par l'agent :** validation des chemins (accents), structure des fichiers générés, substitution des variables, vérification des presets dans `CMakeUserPresets.json`.
 
 **Tests non automatisables :** prompts interactifs du générateur, build CMake/compilation (JUCE requis), tests Windows/Linux (machine macOS uniquement).
 
