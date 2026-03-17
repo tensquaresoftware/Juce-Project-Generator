@@ -73,16 +73,6 @@ cd Juce-Project-Generator
 
 Generated projects use `${env:JUCE_DIR}` everywhere. Configure it once per machine so the same project builds on macOS, Windows, and Linux without any machine-specific paths in Git.
 
-**macOS** (add to `~/.zshrc` or `~/.bash_profile`):
-
-```bash
-# Example 1:
-export JUCE_DIR="~/JUCE"
-
-# Example 2:
-export JUCE_DIR="/Applications/JUCE"
-```
-
 **Windows** (System Environment Variables or PowerShell):
 
 ```powershell
@@ -91,6 +81,16 @@ setx JUCE_DIR "C:\JUCE"
 
 # Example 2:
 setx JUCE_DIR "C:\Dev\JUCE"
+```
+
+**macOS** (add to `~/.zshrc` or `~/.bash_profile`):
+
+```bash
+# Example 1:
+export JUCE_DIR="~/JUCE"
+
+# Example 2:
+export JUCE_DIR="/Applications/JUCE"
 ```
 
 **Linux** (add to `~/.bashrc`):
@@ -286,8 +286,8 @@ After building, plugins are automatically copied according to `project-configura
 
 **System folders** (`COPY_TO_SYSTEM_FOLDERS=ON`):
 
-- **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3)
 - **Windows**: `%LOCALAPPDATA%\Programs\Common\VST3\` (user folder, first priority per VST3 spec, no admin)
+- **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3)
 - **Linux**: `~/.vst3/`
 
 Your DAW will find them automatically after a rescan.
@@ -319,9 +319,9 @@ Generated projects use `${env:JUCE_DIR}` everywhere—no machine-specific paths 
 
 | Platform    | Where to set    | Example                                 |
 | ----------- | --------------- | --------------------------------------- |
+| **Windows** | System env vars | `setx JUCE_DIR "C:\Path\To\JUCE"`       |
 | **macOS**   | `~/.zshrc`      | `export JUCE_DIR="/Applications/JUCE"`  |
 | **Linux**   | `~/.bashrc`     | `export JUCE_DIR="/home/username/JUCE"` |
-| **Windows** | System env vars | `setx JUCE_DIR "C:\Path\To\JUCE"`       |
 
 
 **Workflow:**
