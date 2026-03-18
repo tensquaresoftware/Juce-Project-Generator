@@ -37,6 +37,7 @@ class FileGenerator:
         """Create structure and generate all files."""
         self._createStructure()
         self._generateCMakeLists()
+        self._generateCmakeScripts()
         self._generateProjectConfig()
         self._generatePluginProcessor()
         self._generatePluginEditor()
@@ -55,6 +56,7 @@ class FileGenerator:
             shutil.rmtree(self.projectDir_)
         (self.projectDir_ / "Source").mkdir(parents=True, exist_ok=True)
         (self.projectDir_ / ".vscode").mkdir(parents=True, exist_ok=True)
+        (self.projectDir_ / "CMake").mkdir(parents=True, exist_ok=True)
 
     def _writeFile(self, relativePath: str, content: str) -> None:
         filePath = self.projectDir_ / relativePath
@@ -75,6 +77,13 @@ class FileGenerator:
     def _generateCMakeLists(self) -> None:
         print(f"{Color.GREEN}📝 Generating CMakeLists.txt...{Color.RESET}")
         self._generateFromTemplate("CMakeLists.txt", "CMakeLists.txt")
+
+    def _generateCmakeScripts(self) -> None:
+        """Copy CMake helper scripts (no template substitution)."""
+        scriptPath = self.scriptDir_ / "Templates" / "CMake" / "CopyVst3Elevated.ps1"
+        if scriptPath.exists():
+            destPath = self.projectDir_ / "CMake" / "CopyVst3Elevated.ps1"
+            destPath.write_text(scriptPath.read_text(encoding="utf-8"), encoding="utf-8")
 
     def _generateProjectConfig(self) -> None:
         print(f"{Color.GREEN}📝 Generating project-configuration.cmake...{Color.RESET}")

@@ -272,21 +272,22 @@ if(COPY_TO_ARTEFACTS_DIR)
 endif()
 
 # =============================================================================
-# COPY TO SYSTEM FOLDERS (Windows only - user folder, standard VST3 location)
-# On Windows, we copy to %LOCALAPPDATA%\Programs\Common\VST3\ — the user folder where
-# DAWs scan first (VST3 spec). No admin required. macOS and Linux use JUCE's built-in copy.
+# COPY TO SYSTEM FOLDERS (Windows only - global folder, UAC elevation)
+# On Windows, we copy to C:\Program Files\Common Files\VST3\ (Ableton/DAW standard).
+# Copy runs elevated via PowerShell (UAC prompt); if user cancels, build still succeeds.
+# macOS and Linux use JUCE's built-in copy.
 # =============================================================================
 if(WIN32 AND COPY_TO_SYSTEM_FOLDERS AND PLUGIN_FORMATS_LIST MATCHES "VST3")
-    set(VST3_SYSTEM_DEST "$ENV{LOCALAPPDATA}/Programs/Common/VST3")
+    set(VST3_SYSTEM_DEST "C:/Program Files/Common Files/VST3")
+    set(VST3_ELEVATED_SCRIPT "${{CMAKE_SOURCE_DIR}}/CMake/CopyVst3Elevated.ps1")
+    set(VST3_SOURCE_PATH "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/VST3/{projectName}.vst3")
+    set(VST3_ARGS_FILE "${{CMAKE_BINARY_DIR}}/vst3_copy_args.txt")
     add_custom_target(CopyVST3ToSystemFolder ALL
-        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 to system folder: ${{VST3_SYSTEM_DEST}}"
-        COMMAND ${{CMAKE_COMMAND}} -E make_directory "${{VST3_SYSTEM_DEST}}"
-        COMMAND ${{CMAKE_COMMAND}} -E remove_directory "${{VST3_SYSTEM_DEST}}/{projectName}.vst3"
-        COMMAND ${{CMAKE_COMMAND}} -E copy_directory
-            "${{CMAKE_BINARY_DIR}}/{projectName}_artefacts/$<CONFIG>/VST3/{projectName}.vst3"
-            "${{VST3_SYSTEM_DEST}}/{projectName}.vst3"
+        COMMAND ${{CMAKE_COMMAND}} -E echo "Copying VST3 to ${{VST3_SYSTEM_DEST}} (UAC may prompt for admin rights)..."
+        COMMAND PowerShell -NoProfile -ExecutionPolicy Bypass -Command "Set-Content -LiteralPath '${{VST3_ARGS_FILE}}' -Value '${{VST3_SOURCE_PATH}}','${{VST3_SYSTEM_DEST}}' -Encoding UTF8"
+        COMMAND PowerShell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process PowerShell -Verb RunAs -Wait -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-File','${{VST3_ELEVATED_SCRIPT}}','-ArgsFile','${{VST3_ARGS_FILE}}'; exit 0"
         DEPENDS {projectName}_VST3
-        COMMENT "Copying VST3 to ${{VST3_SYSTEM_DEST}}"
+        COMMENT "Copying VST3 to ${{VST3_SYSTEM_DEST}} (elevated)"
         VERBATIM
     )
 endif()

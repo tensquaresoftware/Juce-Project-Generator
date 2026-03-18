@@ -18,7 +18,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS/Linux path differences)
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
 - ✅ **Smart build artefact management:**
-  - **System folders**: copies plugins to standard locations where DAWs scan (user folders, no admin). Windows: `%LOCALAPPDATA%\Programs\Common\VST3\`, macOS: `~/Library/Audio/Plug-Ins/`, Linux: `~/.vst3/`
+  - **System folders**: copies plugins to standard locations where DAWs scan. **Windows**: `C:\Program Files\Common Files\VST3\` (UAC prompt at build time; click Yes to copy). **macOS**: `~/Library/Audio/Plug-Ins/`. **Linux**: `~/.vst3/`
   - **Central custom folder**: one organized location for all your projects' plugins (paths per OS, configured once in `generator-configuration.py`, injected at generation)
 - ✅ Support for AU, VST3, and Standalone formats (CLAP support planned for future)
 - ✅ Configurable via `generator-configuration.py` and `project-configuration.cmake` for easy customization
@@ -158,8 +158,8 @@ cmake --build --preset default-macos-arm64
 
 After building, plugins are automatically copied according to `project-configuration.cmake` settings:
 
-- `**COPY_TO_SYSTEM_FOLDERS=ON**`: Plugins go to standard locations where DAWs scan (user folders, no admin)
-- `**COPY_TO_ARTEFACTS_DIR=ON**`: Plugins go to your central custom folder
+- **`COPY_TO_SYSTEM_FOLDERS=ON`**: Plugins go to standard locations where DAWs scan (on Windows, a UAC prompt appears—click Yes to copy to `C:\Program Files\Common Files\VST3\`)
+- **`COPY_TO_ARTEFACTS_DIR=ON`**: Plugins go to your central custom folder
 
 Your DAW will find them after a rescan.
 
@@ -286,7 +286,7 @@ After building, plugins are automatically copied according to `project-configura
 
 **System folders** (`COPY_TO_SYSTEM_FOLDERS=ON`):
 
-- **Windows**: `%LOCALAPPDATA%\Programs\Common\VST3\` (user folder, first priority per VST3 spec, no admin)
+- **Windows**: VST3 is copied to `C:\Program Files\Common Files\VST3\` (the folder where Ableton and most DAWs look by default). **At each build, Windows shows a UAC prompt** (“Do you want to allow this app to make changes?”). **Click Yes** to allow the copy; the plugin is then installed in the system folder. If you click No, the build still completes but the plugin is not copied (you can copy it manually or rebuild and accept UAC).
 - **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3)
 - **Linux**: `~/.vst3/`
 
@@ -365,6 +365,8 @@ YourProject/
 │   ├── settings.json
 │   ├── tasks.json
 │   └── launch.json
+├── CMake/
+│   └── CopyVst3Elevated.ps1   ← Windows: used for UAC-elevated copy to Program Files
 ├── CMakeLists.txt
 ├── CMakeUserPresets.json
 └── README.md
@@ -401,6 +403,7 @@ If you see errors like `MSB8066` or malformed characters:
 
 - Ensure `COPY_TO_ARTEFACTS_DIR` or `COPY_TO_SYSTEM_FOLDERS` is `ON` in `project-configuration.cmake`
 - Check CMake output for copy status messages
+- **Windows (system folder)**: If the VST3 does not appear in `C:\Program Files\Common Files\VST3\`, the UAC prompt may have been cancelled. Rebuild and click **Yes** when Windows asks to allow the app to make changes. The build does not fail if you click No—the plugin is simply not copied to the system folder.
 
 ---
 
