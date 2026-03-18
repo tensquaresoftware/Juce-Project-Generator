@@ -6,7 +6,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 **Author:** Guillaume DUPONT  
 **Organization:** Ten Square Software  
-**Revision date:** 2026-03-17
+**Revision date:** 2026-03-18
 
 ---
 
@@ -100,6 +100,9 @@ export JUCE_DIR="/Applications/JUCE"
 export JUCE_DIR="~/JUCE"
 
 # Example 2:
+export JUCE_DIR="/usr/local/JUCE"
+
+# Example 3:
 export JUCE_DIR="/opt/JUCE"
 ```
 
@@ -122,14 +125,14 @@ The generator works out-of-the-box with default values if you skip this step.
 
 1. Open the generator folder in Cursor (`Cmd+O` / `Ctrl+O`)
 2. Open integrated terminal (`Cmd+J` / `Ctrl+J`)
-3. Run: `python3 generate-new-project.py` (or `python` on Windows)
+3. Run: `python3 generate-new-project.py` (or `./generate-new-project.py` on Linux/macOS, or `python` on Windows)
 4. Follow the interactive prompts
 5. Open the generated project: `cursor .` in the project folder
 
 **From terminal:**
 
 ```bash
-python3 generate-new-project.py
+python3 generate-new-project.py   # or ./generate-new-project.py on Linux/macOS
 # Follow prompts
 cd YourProject
 cursor .  # or 'code .' for VS Code
@@ -178,7 +181,7 @@ Generator-specific settings (defaults for prompts, paths per OS). Edit this file
 # Use None or "" for any OS to skip validation on that platform.
 JUCE_DIR_WINDOWS = "C:/JUCE"
 JUCE_DIR_MACOS   = "/Applications/JUCE"
-JUCE_DIR_LINUX   = "/home/username/JUCE"
+JUCE_DIR_LINUX   = "/usr/local/JUCE"
 
 # Default manufacturer information
 DEFAULT_MANUFACTURER_NAME = "My Company"
@@ -187,14 +190,14 @@ DEFAULT_PLUGIN_CODE       = "Plg1"        # Must be exactly 4 alphanumeric chara
 
 # Default project destination (per OS)
 # Use "Desktop" to default to user's Desktop folder
-DEFAULT_PROJECT_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Projects"
-DEFAULT_PROJECT_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Projects"
-DEFAULT_PROJECT_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Projects"
+DEFAULT_PROJECT_DIR_WINDOWS = "C:/Users/Guillaume/Dev/SDKs/JUCE/Projects"
+DEFAULT_PROJECT_DIR_MACOS   = "/Volumes/Guillaume/Dev/SDKs/JUCE/Projects"
+DEFAULT_PROJECT_DIR_LINUX   = "/home/guillaume/Dev/SDKs/JUCE/Projects"
 
 # Central artefacts folder (custom folder for all projects' plugins/Standalone, per OS)
-ARTEFACTS_DIR_WINDOWS = "C:/Users/Guillaume/Dev/JUCE/Artefacts"
-ARTEFACTS_DIR_MACOS   = "/Volumes/Guillaume/Dev/JUCE/Artefacts"
-ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/JUCE/Artefacts"
+ARTEFACTS_DIR_WINDOWS = "C:/Users/Guillaume/Dev/SDKs/JUCE/Artefacts"
+ARTEFACTS_DIR_MACOS   = "/Volumes/Guillaume/Dev/SDKs/JUCE/Artefacts"
+ARTEFACTS_DIR_LINUX   = "/home/guillaume/Dev/SDKs/JUCE/Artefacts"
 ```
 
 **Path restrictions**: Paths must NOT contain accented characters (é, à, è, ç, etc.) or special Unicode characters. Only ASCII (0-127) is allowed due to CMake/Visual Studio compatibility issues on Windows.
@@ -231,7 +234,7 @@ The generator can be run from an IDE or from the terminal.
 
 1. Open the generator folder in Cursor
 2. Open integrated terminal (`Cmd+J` / `Ctrl+J`)
-3. Run: `python3 generate-new-project.py`
+3. Run: `python3 generate-new-project.py` (or `./generate-new-project.py` on Linux/macOS)
 4. Answer the prompts
 5. Open the generated project: `cursor .` in the project folder
 
@@ -321,7 +324,7 @@ Generated projects use `${env:JUCE_DIR}` everywhere—no machine-specific paths 
 | ----------- | --------------- | --------------------------------------- |
 | **Windows** | System env vars | `setx JUCE_DIR "C:\Path\To\JUCE"`       |
 | **macOS**   | `~/.zshrc`      | `export JUCE_DIR="/Applications/JUCE"`  |
-| **Linux**   | `~/.bashrc`     | `export JUCE_DIR="/home/username/JUCE"` |
+| **Linux**   | `~/.bashrc`     | `export JUCE_DIR="/usr/local/JUCE"`     |
 
 
 **Workflow:**
