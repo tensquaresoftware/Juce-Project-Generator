@@ -33,6 +33,6 @@ set(COPY_TO_SYSTEM_FOLDERS ${USER_COPY_TO_SYSTEM_FOLDERS} CACHE BOOL "Copy plugi
 set(COPY_TO_ARTEFACTS_DIR ${USER_COPY_TO_ARTEFACTS_DIR} CACHE BOOL "Copy build outputs to central artefacts folder (organized by platform/architecture)")
 
 # Central artefacts directories (per OS) - defined in generator-configuration.py
-set(ARTEFACTS_DIR_WINDOWS "C:/Users/Guillaume/Dev/JUCE/Artefacts")
-set(ARTEFACTS_DIR_MACOS   "/Volumes/Guillaume/Dev/JUCE/Artefacts")
-set(ARTEFACTS_DIR_LINUX   "/home/guillaume/Dev/JUCE/Artefacts")
+set(ARTEFACTS_DIR_WINDOWS "C:/Users/Guillaume/Dev/SDKs/JUCE/Artefacts")
+set(ARTEFACTS_DIR_MACOS   "/Volumes/Guillaume/Dev/SDKs/JUCE/Artefacts")
+set(ARTEFACTS_DIR_LINUX   "/home/guillaume/Dev/SDKs/JUCE/Artefacts")

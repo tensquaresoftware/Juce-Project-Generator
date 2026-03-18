@@ -35,7 +35,7 @@ IMPORTANT: Before sharing this generator with others, make sure to:
 #
 JUCE_DIR_WINDOWS = "C:/JUCE"
 JUCE_DIR_MACOS   = "/Applications/JUCE"
-JUCE_DIR_LINUX   = "/home/guillaume/Dev/JUCE"
+JUCE_DIR_LINUX   = "/usr/local/JUCE"
 
 # =============================================================================
 # DEFAULT MANUFACTURER INFORMATION
