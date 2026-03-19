@@ -10,7 +10,7 @@ if(APPLE)
     endif()
     # Preset vs host consistency: avoid wrong preset for the current machine
     # - Apple Silicon: reject "macOS Intel" (native); use "macOS Intel-Rosetta"
-    # - Mac Intel: reject "macOS Intel-Rosetta"; use "macOS Intel" (native)
+    # - Mac Intel: reject "macOS Intel-Rosetta" and "macOS Apple Silicon" (ARM); use "macOS Intel" (native)
     if(HOST_ARCH STREQUAL "arm64")
         if("${{CMAKE_BINARY_DIR}}" MATCHES "Builds/macOS/Intel/?$" AND NOT "${{CMAKE_BINARY_DIR}}" MATCHES "Intel-Rosetta")
             message(FATAL_ERROR
@@ -20,6 +20,10 @@ if(APPLE)
         if("${{CMAKE_BINARY_DIR}}" MATCHES "Intel-Rosetta")
             message(FATAL_ERROR
                 "On Mac Intel, do not use the 'macOS Intel-Rosetta' preset (default-macos-x86_64-rosetta; meant for Apple Silicon). Use 'macOS Intel' instead (preset default-macos-x86_64): in Cursor select that preset. To list all presets: cmake --list-presets.")
+        endif()
+        if("${{CMAKE_BINARY_DIR}}" MATCHES "Builds/macOS/ARM/?$")
+            message(FATAL_ERROR
+                "On Mac Intel, do not use the 'macOS Apple Silicon' preset (default-macos-arm64). Use 'macOS Intel' instead (preset default-macos-x86_64): in Cursor select that preset. To list all presets: cmake --list-presets.")
         endif()
     endif()
     # Use Ninja generator on macOS if not specified
@@ -99,10 +103,8 @@ if(NOT APPLE)
     string(STRIP "${{PLUGIN_FORMATS_LIST}}" PLUGIN_FORMATS_LIST)
 endif()
 
-# COPY_PLUGIN_AFTER_BUILD: copy to system folders (macOS, Linux only).
-# On Windows, JUCE uses C:\Program Files\Common Files\VST3\ (requires admin).
-# We use the user folder instead (%LOCALAPPDATA%\Programs\Common\VST3\) — see CopyVST3ToSystemFolder below.
-# Windows: VST3 → %LOCALAPPDATA%\Programs\Common\VST3\
+# COPY_PLUGIN_AFTER_BUILD: JUCE built-in copy for macOS and Linux only.
+# On Windows, COPY_PLUGIN_AFTER_BUILD is OFF; VST3 → Program Files is done by CopyVST3ToSystemFolder (UAC).
 # macOS: AU → ~/Library/Audio/Plug-Ins/Components/, VST3 → ~/Library/Audio/Plug-Ins/VST3/
 # Linux: VST3 → ~/.vst3/
 if(WIN32)

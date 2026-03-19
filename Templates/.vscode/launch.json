@@ -17,6 +17,22 @@
                 "type": "cppvsdbg",
                 "program": "${{workspaceFolder}}/${{command:cmake.buildDirectory}}/{projectName}_artefacts/${{command:cmake.buildType}}/Standalone/{projectName}.exe",
                 "MIMode": "windows"
+            }},
+            "linux": {{
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${{workspaceFolder}}/${{command:cmake.buildDirectory}}/{projectName}_artefacts/${{command:cmake.buildType}}/Standalone/{projectName}",
+                "args": [],
+                "cwd": "${{workspaceFolder}}",
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {{
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }}
+                ],
+                "preLaunchTask": "Build: Standalone"
             }}
         }},
         {{

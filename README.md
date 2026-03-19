@@ -6,7 +6,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 **Author:** Guillaume DUPONT  
 **Organization:** Ten Square Software  
-**Revision date:** 2026-03-18
+**Revision date:** 2026-03-19
 
 ---
 
@@ -18,12 +18,12 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS/Linux path differences)
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
 - ✅ **Smart build artefact management:**
-  - **System folders**: copies plugins to standard locations where DAWs scan. **Windows**: `C:\Program Files\Common Files\VST3\` (UAC prompt at build time; click Yes to copy). **macOS**: `~/Library/Audio/Plug-Ins/`. **Linux**: `~/.vst3/`
+  - **System folders**: copies plugins to standard locations where DAWs scan. **Windows**: `C:\Program Files\Common Files\VST3\` (UAC prompt at build time; click Yes to copy). **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3). **Linux**: `~/.vst3/` (VST3)
   - **Central custom folder**: one organized location for all your projects' plugins (paths per OS, configured once in `generator-configuration.py`, injected at generation)
 - ✅ Support for AU, VST3, and Standalone formats (CLAP support planned for future)
 - ✅ Configurable via `generator-configuration.py` and `project-configuration.cmake` for easy customization
 - ✅ Customizable default manufacturer and plugin codes
-- ✅ **Portable workflow**: projects use `JUCE_DIR` from the environment—no machine-specific paths in Git; ideal for GitHub and multi-machine (Windows / macOS / Linux) development
+- ✅ **Portable workflow**: projects resolve `JUCE_DIR` from the environment (recommended) or common install locations; no per-user paths injected at generation—ideal for GitHub and multi-machine (Windows / macOS / Linux) development
 
 ## Prerequisites
 
@@ -32,7 +32,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - Python 3.7+
 - JUCE 8 installed
 - CMake 3.22+ (3.27+ recommended)
-- Cursor or VS Code
+- **Cursor** or **VS Code** with the **CMake Tools** extension (and C/C++ debugging support where you use **F5**)
 
 ### Windows
 
@@ -46,8 +46,8 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 ### Linux
 
-- Ninja: `sudo apt install ninja-build`
-- GCC, GDB, build-essential: `sudo apt install build-essential gdb`
+- Ninja, GCC, GDB, and build tools (example for Debian/Ubuntu: `sudo apt install ninja-build build-essential gdb`)
+- Other distributions: install the equivalent packages with your package manager
 
 ---
 
@@ -106,7 +106,9 @@ export JUCE_DIR="/usr/local/JUCE"
 export JUCE_DIR="/opt/JUCE"
 ```
 
-**After setting the environment variable:** Restart Cursor (or at least the integrated terminal).
+**Tilde in `JUCE_DIR`:** Prefer an absolute path (e.g. `/Applications/JUCE`). A value like `~/JUCE` is not always expanded when tools read the environment outside a login shell.
+
+**After setting the environment variable:** Restart Cursor or VS Code (or at least the integrated terminal).
 
 ### 3. Configure the generator (optional)
 
@@ -121,9 +123,9 @@ The generator works out-of-the-box with default values if you skip this step.
 
 ### 4. Generate your first project
 
-**In Cursor IDE:**
+**In Cursor or VS Code:**
 
-1. Open the generator folder in Cursor (`Cmd+O` / `Ctrl+O`)
+1. Open the generator folder (`Cmd+O` / `Ctrl+O`)
 2. Open integrated terminal (`Cmd+J` / `Ctrl+J`)
 3. Run: `python3 generate-new-project.py` (or `./generate-new-project.py` on Linux/macOS, or `python` on Windows)
 4. Follow the interactive prompts
@@ -140,11 +142,11 @@ cursor .  # or 'code .' for VS Code
 
 ### 5. Build your project
 
-**In Cursor:**
+**In Cursor or VS Code** (with **CMake Tools**):
 
-1. Cursor asks you to select a **CMake preset** → choose one matching your system
-2. Build: press **F7** (or `Cmd+Shift+P` → "CMake: Build")
-3. Build specific target: press **Shift+F7**
+1. When prompted, select a **CMake preset** that matches your system
+2. Build: press **F7** (default CMake Tools shortcut; yours may differ if remapped) or `Cmd+Shift+P` / `Ctrl+Shift+P` → **CMake: Build**
+3. Build specific target: **Shift+F7** (default) or the equivalent command from the palette
 
 **From terminal:**
 
@@ -230,9 +232,9 @@ set(ARTEFACTS_DIR_LINUX   "...")
 
 The generator can be run from an IDE or from the terminal.
 
-#### Option A: From Cursor (recommended for beginners)
+#### Option A: From Cursor or VS Code (recommended for beginners)
 
-1. Open the generator folder in Cursor
+1. Open the generator folder in the editor
 2. Open integrated terminal (`Cmd+J` / `Ctrl+J`)
 3. Run: `python3 generate-new-project.py` (or `./generate-new-project.py` on Linux/macOS)
 4. Answer the prompts
@@ -250,9 +252,9 @@ cursor .  # or open manually in IDE
 
 ### Building a generated project
 
-#### In Cursor (recommended)
+#### In Cursor or VS Code (recommended)
 
-1. Open project folder in Cursor
+1. Open project folder in the editor
 2. Select CMake preset when prompted (matches your OS and architecture)
 3. Build: **F7** (or `Cmd+Shift+P` → "CMake: Build")
 4. Switch preset: click preset name in status bar
@@ -302,12 +304,11 @@ Your DAW will find them automatically after a rescan.
 
 ### Debugging
 
-Press **F5** in Cursor to start debugging. Debug configurations available:
+With **CMake Tools** and the **C/C++** extension (or equivalent debugger support), press **F5** to start debugging. Build output paths follow the **active CMake preset** (via `cmake.buildDirectory`).
 
-- Standalone application
-- Plugin in DAW (Logic Pro, Reaper, Ableton Live on macOS)
-
-All paths adapt automatically when you switch presets.
+- **macOS**: Standalone; AU in Logic Pro or Ableton Live; VST3 in Reaper (DAW paths are fixed in `launch.json`—adjust if your apps live elsewhere).
+- **Windows**: Standalone; VST3 in Reaper (default path targets `C:\Program Files\REAPER (x64)\reaper.exe`—edit `launch.json` if your install differs).
+- **Linux**: **Standalone** uses **GDB** (`cppdbg`) in the generated `launch.json`. DAW-hosted debug is not preset-specific in the template; add or edit launch entries for your DAW path if needed.
 
 ---
 
@@ -315,7 +316,7 @@ All paths adapt automatically when you switch presets.
 
 ### Portable workflow (GitHub / multi-machine)
 
-Generated projects use `${env:JUCE_DIR}` everywhere—no machine-specific paths in Git.
+Generated projects pass `JUCE_DIR` from the environment into CMake (see `.vscode/settings.json`). The `CMakeLists.txt` also falls back to common install paths when `JUCE_DIR` is unset—set the variable explicitly on each machine for predictable CI and team builds.
 
 **Setup per machine:**
 
@@ -332,16 +333,16 @@ Generated projects use `${env:JUCE_DIR}` everywhere—no machine-specific paths 
 1. Create project on any machine → push to GitHub
 2. Clone on other machines
 3. Set `JUCE_DIR` on each machine
-4. Open in Cursor → select appropriate preset → build
+4. Open in Cursor or VS Code → select appropriate preset → build
 
 ### macOS preset validation
 
-CMake validates presets against host architecture to prevent configuration errors:
+CMake validates the build directory against the host architecture where checks apply:
 
-- **On Apple Silicon**: Cannot use "macOS Intel" preset (use "Intel-Rosetta" instead for x86_64)
-- **On Mac Intel**: Cannot use "macOS Intel-Rosetta" or "Apple Silicon" presets
+- **On Apple Silicon**: configuring under `Builds/macOS/Intel` (without `Intel-Rosetta`) is rejected—use **Intel-Rosetta** for x86_64 or **ARM** for native arm64.
+- **On Mac Intel**: configuring under `Builds/macOS/Intel-Rosetta` or `Builds/macOS/ARM` is rejected—use **Intel** for native x86_64.
 
-Errors are explicit with instructions to use `cmake --list-presets`.
+Errors are explicit with instructions to use `cmake --list-presets`. Other mismatches (e.g. Universal preset on an unusual setup) may still fail later at compile or link time.
 
 ---
 
@@ -364,6 +365,7 @@ YourProject/
 │   │   ├── Intel-Rosetta/ ← x86_64 on Apple Silicon
 │   │   └── Universal/     ← Universal Binary (distribution)
 │   └── Linux/
+├── .cursorrules        ← optional Cursor AI rules (ignored by VS Code)
 ├── .vscode/
 │   ├── settings.json
 │   ├── tasks.json
@@ -392,7 +394,7 @@ Build directories are separated by platform and architecture to avoid mixing fil
 CMake reports `JUCE not found. Set JUCE_DIR...` when `JUCE_DIR` is not set or not visible.
 
 1. Set the environment variable (see Setup section above)
-2. Restart Cursor or the terminal
+2. Restart Cursor or VS Code (or the terminal)
 3. On Linux: ensure Ninja is installed (`sudo apt install ninja-build`)
 
 ### Build errors with accented characters

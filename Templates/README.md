@@ -10,26 +10,26 @@ Formats: {pluginFormats}
 
 #### Windows
 
-- Windows 11 or later
-- Cursor 2
+- Windows 10 or later
+- **Cursor** or **VS Code** with **CMake Tools** (and C/C++ debugging if you use **F5**)
 - CMake 3.22+ (add to system PATH during installation)
 - Visual Studio 2022 with "Desktop development with C++" workload
 - JUCE 8 installed at `C:\Program Files\JUCE` (or set `JUCE_DIR` if elsewhere)
 
 #### macOS
 
-- macOS Tahoe or later
-- Cursor 2
+- macOS 13 or later (tested on recent releases)
+- **Cursor** or **VS Code** with **CMake Tools** (and C/C++ debugging if you use **F5**)
 - CMake 3.22+
 - Ninja build system
 - JUCE 8 installed at `/Applications/JUCE` (or set `JUCE_DIR` if elsewhere)
 
 #### Linux
 
-- Linux (e.g. Ubuntu 22.04)
-- Cursor 2
+- Linux (e.g. Ubuntu 22.04; other distros: install equivalent packages)
+- **Cursor** or **VS Code** with **CMake Tools** (and C/C++ debugging if you use **F5**)
 - CMake 3.22+
-- Ninja: `sudo apt install ninja-build`
+- Ninja and a GDB-capable toolchain (example: `sudo apt install ninja-build build-essential gdb`)
 - JUCE 8 installed at `/usr/local/JUCE` (or set `JUCE_DIR` if elsewhere)
 
 ### Environment Setup
@@ -79,7 +79,7 @@ cmake --build Builds/macOS/ARM --target {projectName}_VST3 --config Debug
 
 #### macOS (Intel) — native on Mac Intel
 
-**Note:** On Apple Silicon, this preset is rejected at configure; use "macOS Intel-Rosetta" instead.
+**Note:** On Apple Silicon, this preset is rejected at configure; use "macOS Intel-Rosetta" instead. On Mac Intel, the Apple Silicon (ARM) preset is rejected at configure—stay on this Intel native flow.
 
 ```bash
 # Configure (using Ninja)
@@ -149,11 +149,11 @@ cmake --build Builds/Windows --target {projectName}_VST3 --config Debug
 
 **Note:** Audio Unit (AU) format is only available on macOS. On Windows, only VST3 and Standalone formats are built.
 
-### Using Cursor IDE
+### Using Cursor or VS Code
 
 The project uses **CMake Presets** for flexible configuration. Simply:
 
-1. Open the project folder in Cursor
+1. Open the project folder in **Cursor** or **VS Code** (CMake Tools extension installed)
 2. Select your preferred CMake preset when prompted:
    - **Windows**: `default-windows` → builds to `Builds/Windows`
    - **macOS Apple Silicon (Native)**: `default-macos-arm64` → builds to `Builds/macOS/ARM`
@@ -163,11 +163,11 @@ The project uses **CMake Presets** for flexible configuration. Simply:
    - **Linux**: `default-linux` → builds to `Builds/Linux`
 
 3. Build the project:
-   - **Recommended**: Press `Cmd+Shift+B` (macOS) or `Ctrl+Shift+B` (Windows/Linux) to build
-   - **Or** use command palette: `Cmd+Shift+P` → "CMake: Build"
-   - **Or** run specific tasks: `Cmd+Shift+P` → "Tasks: Run Task" → Choose task
+   - **Recommended**: `Cmd+Shift+B` (macOS) / `Ctrl+Shift+B` (Windows/Linux) if mapped to the default build task, or **F7** if you use CMake Tools defaults
+   - **Or** command palette: `Cmd+Shift+P` / `Ctrl+Shift+P` → **CMake: Build**
+   - **Or** **Tasks: Run Task** → choose a build task
 
-**Switching presets**: Click the preset name in the status bar (bottom of Cursor window) or use `Cmd+Shift+P` → "CMake: Select Configure Preset". All paths automatically adapt to the selected preset.
+**Switching presets**: Click the preset name in the status bar or use the palette → **CMake: Select Configure Preset**. CMake output paths (including debug `launch.json` placeholders) follow the active preset.
 
 ### Build Artefacts
 
@@ -192,7 +192,7 @@ The destination **automatically matches your selected preset**. No manual config
 Control where plugins are copied after each build by editing the **USER OPTIONS** section in `project-configuration.cmake`:
 
 - **`USER_COPY_TO_SYSTEM_FOLDERS`**: `ON`/`OFF`
-  - Copies to standard locations where DAWs scan (user folders, no admin; all OS)
+  - Copies to standard locations where DAWs scan: **macOS/Linux** use JUCE’s built-in copy to user plugin folders; **Windows VST3** uses an elevated copy to `C:\Program Files\Common Files\VST3\` (UAC prompt when enabled)
   - **Use case**: Instant testing in your DAW
   
 - **`USER_COPY_TO_ARTEFACTS_DIR`**: `ON`/`OFF`
@@ -204,13 +204,11 @@ Both can be enabled simultaneously for maximum convenience.
 
 ### Debugging
 
-Debug configurations automatically use the active preset's build directory. Press `F5` to start debugging:
+Debug configurations use the active CMake preset’s build directory (`cmake.buildDirectory`). Press **F5** when the **C/C++** extension and debugger back end match your OS (**cppvsdbg** on Windows, **lldb** on macOS, **cppdbg**/GDB on Linux for Standalone).
 
-- **Windows**: Standalone, VST3 in Reaper
-- **macOS**: Standalone, AU in Logic Pro, VST3 in Reaper, AU in Ableton Live
-- **Linux**: Standalone, VST3 in Reaper
-
-All paths adapt automatically when you switch presets.
+- **macOS**: Standalone; AU in Logic Pro; VST3 in Reaper; AU in Ableton Live—edit `launch.json` if your DAW is installed in a non-default location.
+- **Windows**: Standalone; VST3 in Reaper (default executable path targets `C:\Program Files\REAPER (x64)\reaper.exe`—change it if Reaper lives elsewhere).
+- **Linux**: **Standalone** is configured with **GDB** in `launch.json`. There is no default Linux Reaper path in the template; duplicate a launch entry and set the `program` path to your DAW if you need plugin debugging.
 
 ### Command Line Usage (Advanced)
 
