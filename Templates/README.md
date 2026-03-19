@@ -210,6 +210,8 @@ Debug configurations use the active CMake preset’s build directory (`cmake.bui
 - **Windows**: Standalone; VST3 in Reaper (default executable path targets `C:\Program Files\REAPER (x64)\reaper.exe`—change it if Reaper lives elsewhere).
 - **Linux**: **Standalone** is configured with **GDB** in `launch.json`. There is no default Linux Reaper path in the template; duplicate a launch entry and set the `program` path to your DAW if you need plugin debugging.
 
+**JUCE Audio Plugin Host (`AudioPluginHost`):** In your JUCE checkout, `extras/AudioPluginHost` builds on **macOS, Windows, and Linux** (CMake or Projucer). Use it as a **lightweight host** to load and debug AU/VST3 quickly without a full DAW, in addition to **Standalone** and the DAW entries in `launch.json`.
+
 ### Command Line Usage (Advanced)
 
 For advanced users or CI/CD:

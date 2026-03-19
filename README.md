@@ -18,9 +18,12 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS/Linux path differences)
 - ✅ Cursor/VS Code integration (tasks, launch configs, settings)
 - ✅ **Smart build artefact management:**
-  - **System folders**: copies plugins to standard locations where DAWs scan. **Windows**: `C:\Program Files\Common Files\VST3\` (UAC prompt at build time; click Yes to copy). **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3). **Linux**: `~/.vst3/` (VST3)
+  - **System folders**: copies plugins to standard locations where DAWs scan:
+    - **Windows**: `C:\Program Files\Common Files\VST3\` (UAC prompt at build time; click Yes to copy).
+    - **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3).
+    - **Linux**: `~/.vst3/` (VST3)
   - **Central custom folder**: one organized location for all your projects' plugins (paths per OS, configured once in `generator-configuration.py`, injected at generation)
-- ✅ Support for AU, VST3, and Standalone formats (CLAP support planned for future)
+- ✅ Support for AU, VST3, and Standalone formats (CLAP format support planned for the upcoming release of JUCE 9)
 - ✅ Configurable via `generator-configuration.py` and `project-configuration.cmake` for easy customization
 - ✅ Customizable default manufacturer and plugin codes
 - ✅ **Portable workflow**: projects resolve `JUCE_DIR` from the environment (recommended) or common install locations; no per-user paths injected at generation—ideal for GitHub and multi-machine (Windows / macOS / Linux) development
@@ -81,6 +84,9 @@ setx JUCE_DIR "C:\JUCE"
 
 # Example 2:
 setx JUCE_DIR "C:\Dev\JUCE"
+
+# Example 3:
+setx JUCE_DIR "D:\Guillaume\Dev\SDKs\JUCE"
 ```
 
 **macOS** (add to `~/.zshrc` or `~/.bash_profile`):
@@ -91,6 +97,9 @@ export JUCE_DIR="~/JUCE"
 
 # Example 2:
 export JUCE_DIR="/Applications/JUCE"
+
+# Example 3:
+export JUCE_DIR="/Volumes/Guillaume/Dev/SDKs/JUCE"
 ```
 
 **Linux** (add to `~/.bashrc`):
@@ -140,6 +149,8 @@ cd YourProject
 cursor .  # or 'code .' for VS Code
 ```
 
+**From the file manager (double-click):** On **macOS**, if **Python Launcher** is installed (included with the [python.org macOS installer](https://www.python.org/downloads/macos/)), you can **double-click `generate-new-project.py`** in Finder, answer the prompts in the Terminal window, then open the new project in Cursor or VS Code. On **Windows** and **Linux**, there is no Python Launcher app; double-click behaviour varies—see [Usage → Option C](#option-c-double-click-from-the-file-manager).
+
 ### 5. Build your project
 
 **In Cursor or VS Code** (with **CMake Tools**):
@@ -154,8 +165,8 @@ cursor .  # or 'code .' for VS Code
 # List available presets
 cmake --list-presets
 
-# Configure and build
-cmake --preset default-macos-arm64    # or default-windows, default-linux, etc.
+# Configure and build (below is an example for macOS / Apple Silicon)
+cmake --preset default-macos-arm64   # or default-windows, default-linux, etc.
 cmake --build --preset default-macos-arm64
 ```
 
@@ -163,8 +174,8 @@ cmake --build --preset default-macos-arm64
 
 After building, plugins are automatically copied according to `project-configuration.cmake` settings:
 
-- **`COPY_TO_SYSTEM_FOLDERS=ON`**: Plugins go to standard locations where DAWs scan (on Windows, a UAC prompt appears—click Yes to copy to `C:\Program Files\Common Files\VST3\`)
-- **`COPY_TO_ARTEFACTS_DIR=ON`**: Plugins go to your central custom folder
+- `**COPY_TO_SYSTEM_FOLDERS=ON**`: Plugins go to standard locations where DAWs scan (on Windows, a UAC prompt appears—click Yes to copy to `C:\Program Files\Common Files\VST3\`)
+- `**COPY_TO_ARTEFACTS_DIR=ON**`: Plugins go to your central custom folder
 
 Your DAW will find them after a rescan.
 
@@ -230,7 +241,7 @@ set(ARTEFACTS_DIR_LINUX   "...")
 
 ### Using the generator
 
-The generator can be run from an IDE or from the terminal.
+The generator can be run from an IDE, from the terminal, or from the file manager where double-click is supported (see **Option C**).
 
 #### Option A: From Cursor or VS Code (recommended for beginners)
 
@@ -238,7 +249,7 @@ The generator can be run from an IDE or from the terminal.
 2. Open integrated terminal (`Cmd+J` / `Ctrl+J`)
 3. Run: `python3 generate-new-project.py` (or `./generate-new-project.py` on Linux/macOS)
 4. Answer the prompts
-5. Open the generated project: `cursor .` in the project folder
+5. Open the generated project: `cursor .` in the project folder (or `code .` for VS Code)
 
 #### Option B: From terminal only
 
@@ -249,6 +260,20 @@ python3 generate-new-project.py
 cd YourProject
 cursor .  # or open manually in IDE
 ```
+
+#### Option C: Double-click from the file manager
+
+**macOS — Python Launcher**
+
+**Python Launcher** is included with the official [python.org macOS installer](https://www.python.org/downloads/macos/). **Double-click `generate-new-project.py`** in Finder to run it in a Terminal window, answer the prompts, then open the new project in Cursor or VS Code.
+
+**Windows**
+
+There is **no** Python Launcher app (that name is macOS-specific). The [python.org Windows installer](https://www.python.org/downloads/windows/) can **register `.py` files** with the interpreter so that **double-clicking** runs the script in a console window; the working directory is usually the folder that contains the script, which suits this generator. If the window flashes closed or nothing runs, use PowerShell, Command Prompt, or your IDE terminal instead.
+
+**Linux**
+
+There is **no** Python Launcher. Behaviour depends on your desktop and file manager: **double-click often opens `.py` files in a text editor** rather than executing them. Prefer the terminal or your IDE, or use a file-manager action such as **Run in terminal** (if available). Ensure `generate-new-project.py` is executable (`chmod +x`) when your environment expects it.
 
 ### Building a generated project
 
@@ -265,7 +290,7 @@ cursor .  # or open manually in IDE
 # List presets
 cmake --list-presets
 
-# Configure with preset
+# Configure with preset (below is an example for macOS / Apple Silicon)
 cmake --preset default-macos-arm64
 
 # Build
@@ -291,7 +316,7 @@ After building, plugins are automatically copied according to `project-configura
 
 **System folders** (`COPY_TO_SYSTEM_FOLDERS=ON`):
 
-- **Windows**: VST3 is copied to `C:\Program Files\Common Files\VST3\` (the folder where Ableton and most DAWs look by default). **At each build, Windows shows a UAC prompt** (“Do you want to allow this app to make changes?”). **Click Yes** to allow the copy; the plugin is then installed in the system folder. If you click No, the build still completes but the plugin is not copied (you can copy it manually or rebuild and accept UAC).
+- **Windows**: VST3 is copied to `C:\Program Files\Common Files\VST3\` (the folder where Ableton Live and most DAWs look by default). **At each build, Windows shows a UAC prompt** (“Do you want to allow this app to make changes?”). **Click Yes** to allow the copy; the plugin is then installed in the system folder. If you click No, the build still completes but the plugin is not copied (you can copy it manually or rebuild and accept UAC).
 - **macOS**: `~/Library/Audio/Plug-Ins/Components/` (AU), `~/Library/Audio/Plug-Ins/VST3/` (VST3)
 - **Linux**: `~/.vst3/`
 
@@ -304,11 +329,15 @@ Your DAW will find them automatically after a rescan.
 
 ### Debugging
 
-With **CMake Tools** and the **C/C++** extension (or equivalent debugger support), press **F5** to start debugging. Build output paths follow the **active CMake preset** (via `cmake.buildDirectory`).
+With **CMake Tools** and the **C/C++** extension (or equivalent debugger support), press **F5** to start debugging. Build output paths follow the active CMake preset (via `cmake.buildDirectory`).
+
+**Launch configurations (`launch.json`, generated project):**
 
 - **macOS**: Standalone; AU in Logic Pro or Ableton Live; VST3 in Reaper (DAW paths are fixed in `launch.json`—adjust if your apps live elsewhere).
 - **Windows**: Standalone; VST3 in Reaper (default path targets `C:\Program Files\REAPER (x64)\reaper.exe`—edit `launch.json` if your install differs).
 - **Linux**: **Standalone** uses **GDB** (`cppdbg`) in the generated `launch.json`. DAW-hosted debug is not preset-specific in the template; add or edit launch entries for your DAW path if needed.
+
+**JUCE Audio Plugin Host (`AudioPluginHost`):** The official JUCE tree includes a minimal host in `[extras/AudioPluginHost](https://github.com/juce-framework/JUCE/tree/master/extras/AudioPluginHost)`. Build it with **CMake** or **Projucer** on **macOS, Windows, and Linux** to **load, test, and debug** AU, VST3, and other supported formats without a full DAW—handy next to the **Standalone** target and the DAW attach configurations above. It is compiled from your **JUCE installation**, not from the generated plugin project.
 
 ---
 
@@ -321,11 +350,11 @@ Generated projects pass `JUCE_DIR` from the environment into CMake (see `.vscode
 **Setup per machine:**
 
 
-| Platform    | Where to set    | Example                                 |
-| ----------- | --------------- | --------------------------------------- |
-| **Windows** | System env vars | `setx JUCE_DIR "C:\Path\To\JUCE"`       |
-| **macOS**   | `~/.zshrc`      | `export JUCE_DIR="/Applications/JUCE"`  |
-| **Linux**   | `~/.bashrc`     | `export JUCE_DIR="/usr/local/JUCE"`     |
+| Platform    | Where to set    | Example                                |
+| ----------- | --------------- | -------------------------------------- |
+| **Windows** | System env vars | `setx JUCE_DIR "C:\Path\To\JUCE"`      |
+| **macOS**   | `~/.zshrc`      | `export JUCE_DIR="/Applications/JUCE"` |
+| **Linux**   | `~/.bashrc`     | `export JUCE_DIR="/usr/local/JUCE"`    |
 
 
 **Workflow:**
@@ -335,14 +364,14 @@ Generated projects pass `JUCE_DIR` from the environment into CMake (see `.vscode
 3. Set `JUCE_DIR` on each machine
 4. Open in Cursor or VS Code → select appropriate preset → build
 
-### macOS preset validation
+### `macOS preset validation`
 
-CMake validates the build directory against the host architecture where checks apply:
+`CMake validates the build directory against the host architecture where checks apply:`
 
-- **On Apple Silicon**: configuring under `Builds/macOS/Intel` (without `Intel-Rosetta`) is rejected—use **Intel-Rosetta** for x86_64 or **ARM** for native arm64.
-- **On Mac Intel**: configuring under `Builds/macOS/Intel-Rosetta` or `Builds/macOS/ARM` is rejected—use **Intel** for native x86_64.
+- `On Apple Silicon: configuring under Builds/macOS/Intel (without Intel-Rosetta) is rejected—use Intel-Rosetta for x86_64 or ARM for native arm64.`
+- `On Mac Intel: configuring under Builds/macOS/Intel-Rosetta or Builds/macOS/ARM is rejected—use Intel for native x86_64.`
 
-Errors are explicit with instructions to use `cmake --list-presets`. Other mismatches (e.g. Universal preset on an unusual setup) may still fail later at compile or link time.
+`Errors are explicit with instructions to use cmake --list-presets. Other mismatches (e.g. Universal preset on an unusual setup) may still fail later at compile or link time.`
 
 ---
 
