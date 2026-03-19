@@ -6,7 +6,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 **Author:** Guillaume DUPONT  
 **Organization:** Ten Square Software  
-**Revision date:** 2026-03-19
+**Revision date:** 2026-03-20
 
 ---
 
@@ -174,8 +174,8 @@ cmake --build --preset default-macos-arm64
 
 After building, plugins are automatically copied according to `project-configuration.cmake` settings:
 
-- `**COPY_TO_SYSTEM_FOLDERS=ON**`: Plugins go to standard locations where DAWs scan (on Windows, a UAC prompt appears—click Yes to copy to `C:\Program Files\Common Files\VST3\`)
-- `**COPY_TO_ARTEFACTS_DIR=ON**`: Plugins go to your central custom folder
+- `COPY_TO_SYSTEM_FOLDERS=ON`: Plugins go to standard locations where DAWs scan (on Windows, a UAC prompt appears—click Yes to copy to `C:\Program Files\Common Files\VST3\`)
+- `COPY_TO_ARTEFACTS_DIR=ON`: Plugins go to your central custom folder
 
 Your DAW will find them after a rescan.
 
@@ -337,7 +337,7 @@ With **CMake Tools** and the **C/C++** extension (or equivalent debugger support
 - **Windows**: Standalone; VST3 in Reaper (default path targets `C:\Program Files\REAPER (x64)\reaper.exe`—edit `launch.json` if your install differs).
 - **Linux**: **Standalone** uses **GDB** (`cppdbg`) in the generated `launch.json`. DAW-hosted debug is not preset-specific in the template; add or edit launch entries for your DAW path if needed.
 
-**JUCE Audio Plugin Host (`AudioPluginHost`):** The official JUCE tree includes a minimal host in `[extras/AudioPluginHost](https://github.com/juce-framework/JUCE/tree/master/extras/AudioPluginHost)`. Build it with **CMake** or **Projucer** on **macOS, Windows, and Linux** to **load, test, and debug** AU, VST3, and other supported formats without a full DAW—handy next to the **Standalone** target and the DAW attach configurations above. It is compiled from your **JUCE installation**, not from the generated plugin project.
+**JUCE Audio Plugin Host (`AudioPluginHost`):** The official JUCE tree includes a minimal host in [`extras/AudioPluginHost`](https://github.com/juce-framework/JUCE/tree/master/extras/AudioPluginHost). Build it with **CMake** or **Projucer** on **macOS, Windows, and Linux** to **load, test, and debug** AU, VST3, and other supported formats without a full DAW—handy next to the **Standalone** target and the DAW attach configurations above. It is compiled from your **JUCE installation**, not from the generated plugin project.
 
 ---
 
@@ -364,14 +364,14 @@ Generated projects pass `JUCE_DIR` from the environment into CMake (see `.vscode
 3. Set `JUCE_DIR` on each machine
 4. Open in Cursor or VS Code → select appropriate preset → build
 
-### `macOS preset validation`
+### macOS preset validation
 
-`CMake validates the build directory against the host architecture where checks apply:`
+CMake validates the build directory against the host architecture where checks apply:
 
-- `On Apple Silicon: configuring under Builds/macOS/Intel (without Intel-Rosetta) is rejected—use Intel-Rosetta for x86_64 or ARM for native arm64.`
-- `On Mac Intel: configuring under Builds/macOS/Intel-Rosetta or Builds/macOS/ARM is rejected—use Intel for native x86_64.`
+- **On Apple Silicon**: configuring under `Builds/macOS/Intel` (without `Intel-Rosetta`) is rejected—use **Intel-Rosetta** for x86_64 or **ARM** for native arm64.
+- **On Mac Intel**: configuring under `Builds/macOS/Intel-Rosetta` or `Builds/macOS/ARM` is rejected—use **Intel** for native x86_64.
 
-`Errors are explicit with instructions to use cmake --list-presets. Other mismatches (e.g. Universal preset on an unusual setup) may still fail later at compile or link time.`
+Errors are explicit with instructions to use `cmake --list-presets`. Other mismatches (e.g. Universal preset on an unusual setup) may still fail later at compile or link time.
 
 ---
 
@@ -411,6 +411,10 @@ Build directories are separated by platform and architecture to avoid mixing fil
 ---
 
 ## Troubleshooting
+
+### Red squiggles on `Templates/CMakeLists.txt` in Cursor / VS Code
+
+That file is a **Python template** (`{{…}}`, `{projectName}`, etc.), not a CMake project until you run the generator. The repo **`.vscode/settings.json`** disables CMake configure-on-open and treats `Templates/CMakeLists.txt` as **Plain Text** so CMake Tools does not validate it. Do **not** set `cmake.sourceDirectory` to `Templates/`. To work with CMake, open a **generated** plugin folder.
 
 ### Generator uses default values
 

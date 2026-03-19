@@ -1,8 +1,10 @@
 {
-    "cmake.sourceDirectory": "/Volumes/Guillaume/Dev/Tools/JUCE/Scripts/Juce-Project-Generator/Templates",
-    "cmake.buildDirectory": "${workspaceFolder}/Builds/macOS/ARM",
+    "cmake.configureOnOpen": false,
+    "cmake.ignoreCMakeListsMissing": true,
+    "files.associations": {
+        "**/Templates/CMakeLists.txt": "plaintext"
+    },
     "terminal.integrated.env.linux": {
         "JUCE_DIR": "/usr/local/JUCE"
-    },
-    "cmake.ignoreCMakeListsMissing": true
+    }
 }

@@ -1,3 +1,4 @@
+# TEMPLATE: Python str.format input for the generator — not valid CMake until rendered. See repo .vscode/settings.json (Plain Text) to avoid false CMake IDE diagnostics.
 cmake_minimum_required(VERSION 3.22)
 
 # Platform-specific configuration
@@ -12,16 +13,17 @@ if(APPLE)
     # - Apple Silicon: reject "macOS Intel" (native); use "macOS Intel-Rosetta"
     # - Mac Intel: reject "macOS Intel-Rosetta" and "macOS Apple Silicon" (ARM); use "macOS Intel" (native)
     if(HOST_ARCH STREQUAL "arm64")
-        if("${{CMAKE_BINARY_DIR}}" MATCHES "Builds/macOS/Intel/?$" AND NOT "${{CMAKE_BINARY_DIR}}" MATCHES "Intel-Rosetta")
+        # Rosetta builds use .../Intel-Rosetta, so they do not match .../Intel/?$ at end of path.
+        if(CMAKE_BINARY_DIR MATCHES "Builds/macOS/Intel/?$")
             message(FATAL_ERROR
                 "On Apple Silicon, do not use the 'macOS Intel' preset (default-macos-x86_64; meant for native Mac Intel). Use 'macOS Intel-Rosetta' instead (preset default-macos-x86_64-rosetta): in Cursor select that preset. To list all presets: cmake --list-presets.")
         endif()
     elseif(HOST_ARCH STREQUAL "x86_64" OR HOST_ARCH STREQUAL "i386")
-        if("${{CMAKE_BINARY_DIR}}" MATCHES "Intel-Rosetta")
+        if(CMAKE_BINARY_DIR MATCHES "Intel-Rosetta")
             message(FATAL_ERROR
                 "On Mac Intel, do not use the 'macOS Intel-Rosetta' preset (default-macos-x86_64-rosetta; meant for Apple Silicon). Use 'macOS Intel' instead (preset default-macos-x86_64): in Cursor select that preset. To list all presets: cmake --list-presets.")
         endif()
-        if("${{CMAKE_BINARY_DIR}}" MATCHES "Builds/macOS/ARM/?$")
+        if(CMAKE_BINARY_DIR MATCHES "Builds/macOS/ARM/?$")
             message(FATAL_ERROR
                 "On Mac Intel, do not use the 'macOS Apple Silicon' preset (default-macos-arm64). Use 'macOS Intel' instead (preset default-macos-x86_64): in Cursor select that preset. To list all presets: cmake --list-presets.")
         endif()
