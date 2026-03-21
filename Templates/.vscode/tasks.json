@@ -11,10 +11,7 @@
                 "--config", "${{command:cmake.buildType}}"
             ],
             "group": "build",
-            "problemMatcher": [
-                "$gcc",
-                "$msCompile"
-            ]
+            "problemMatcher": []
         }},
         {{
             "label": "Build: AU",
@@ -26,9 +23,7 @@
                 "--config", "${{command:cmake.buildType}}"
             ],
             "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ]
+            "problemMatcher": []
         }},
         {{
             "label": "Build: VST3",
@@ -40,10 +35,7 @@
                 "--config", "${{command:cmake.buildType}}"
             ],
             "group": "build",
-            "problemMatcher": [
-                "$gcc",
-                "$msCompile"
-            ]
+            "problemMatcher": []
         }},
         {{
             "label": "Build: All",
@@ -57,10 +49,7 @@
                 "kind": "build",
                 "isDefault": true
             }},
-            "problemMatcher": [
-                "$gcc",
-                "$msCompile"
-            ]
+            "problemMatcher": []
         }},
         {{
             "label": "Clean",

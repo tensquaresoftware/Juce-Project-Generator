@@ -169,6 +169,15 @@ The project uses **CMake Presets** for flexible configuration. Simply:
 
 **Switching presets**: Click the preset name in the status bar or use the palette → **CMake: Select Configure Preset**. CMake output paths (including debug `launch.json` placeholders) follow the active preset.
 
+#### C++ IntelliSense (no false red squiggles on JUCE includes)
+
+1. **Wait for CMake to finish configuring** after opening the folder (status bar). IntelliSense needs the same include paths and defines as the active CMake target.
+2. **Ninja / Makefile** presets generate `compile_commands.json` in the build tree; CMake Tools is set to **copy it to the project root** so tools that look there can find it. The root copy is gitignored.
+3. This template uses **CMake Tools** plus **Microsoft C/C++** with CMake as the configuration provider. **clangd** is disabled in `.vscode/settings.json` and listed under **unwantedRecommendations** in `.vscode/extensions.json` so you do not get duplicate or conflicting diagnostics from two language servers.
+4. **Windows** with the **Visual Studio** generator may not emit `compile_commands.json`; C/C++ IntelliSense still follows CMake Tools once configuration succeeds.
+
+If the **CMake** status bar or a **terminal task** still shows **“Task has errors”** after a build that actually finished successfully, it is often a **false positive** from CMake Tools **output parsers** matching harmless lines (for example `cmake -E echo` from post-build copy steps). The generated `.vscode/settings.json` disables the generic **`cmake`** parser and keeps **compiler** parsers (`gcc`, `gnuld`, `msvc`, …). **Build** tasks in `tasks.json` use **no** `problemMatcher` so the shell task does not re-flag the same output—use the **Problems** panel for real compiler diagnostics.
+
 ### Build Artefacts
 
 After building, plugins are automatically copied according to your `project-configuration.cmake` settings:

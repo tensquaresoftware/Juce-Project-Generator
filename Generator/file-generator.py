@@ -43,6 +43,7 @@ class FileGenerator:
         self._generatePluginEditor()
         self._generatePluginFactory()
         self._generateVSCodeSettings()
+        self._generateVSCodeExtensions()
         self._generateVSCodeTasks()
         self._generateVSCodeLaunch()
         self._generateCursorRules()
@@ -102,6 +103,11 @@ class FileGenerator:
     def _generateVSCodeSettings(self) -> None:
         print(f"{Color.GREEN}📝 Generating .vscode/settings.json...{Color.RESET}")
         self._generateFromTemplate(".vscode/settings.json", ".vscode/settings.json")
+
+    def _generateVSCodeExtensions(self) -> None:
+        print(f"{Color.GREEN}📝 Generating .vscode/extensions.json...{Color.RESET}")
+        content = self.loader_.load(".vscode/extensions.json")
+        self._writeFile(".vscode/extensions.json", content)
 
     def _generateVSCodeTasks(self) -> None:
         print(f"{Color.GREEN}📝 Generating .vscode/tasks.json...{Color.RESET}")

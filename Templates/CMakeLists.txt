@@ -1,5 +1,8 @@
-# TEMPLATE: Python str.format input for the generator — not valid CMake until rendered. See repo .vscode/settings.json (Plain Text) to avoid false CMake IDE diagnostics.
+# JUCE audio plugin project (CMake). Do not remove cmake_minimum_required / project() order.
 cmake_minimum_required(VERSION 3.22)
+
+# IDE: compile_commands.json (Ninja / Makefile generators). Set before project() so generation picks it up.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Platform-specific configuration
 if(APPLE)

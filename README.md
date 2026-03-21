@@ -6,7 +6,7 @@ A Python-based project generator that creates complete JUCE plugin projects with
 
 **Author:** Guillaume DUPONT  
 **Organization:** Ten Square Software  
-**Revision date:** 2026-03-20
+**Revision date:** 2026-03-21
 
 ---
 
@@ -16,7 +16,8 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - ✅ CMake build system configuration
 - ✅ Platform-specific settings (Windows, macOS Apple Silicon/Intel/Intel-Rosetta/Universal Binary, Linux)
 - ✅ Cross-platform path normalization (automatic handling of Windows/macOS/Linux path differences)
-- ✅ Cursor/VS Code integration (tasks, launch configs, settings)
+- ✅ **Cursor / VS Code:** `.vscode/extensions.json` (CMake Tools + C/C++; clangd listed as unwanted), tasks, launch, settings; **`cmake.environment`** for `JUCE_DIR`; **`cmake.copyCompileCommands`** to the workspace root; narrowed **`cmake.enabledOutputParsers`** (no generic `cmake` parser); build **tasks** use empty `problemMatcher`s—reduces duplicate diagnostics and false “Task has errors” when post-build copy steps print harmless lines
+- ✅ **C++ IntelliSense:** `CMAKE_EXPORT_COMPILE_COMMANDS`, then **CMake Tools + Microsoft C/C++** with **clangd** off by default so JUCE includes resolve without spurious red squiggles after configure
 - ✅ **Smart build artefact management:**
   - **System folders**: copies plugins to standard locations where DAWs scan:
     - **Windows**: `C:\Program Files\Common Files\VST3\` (UAC prompt at build time; click Yes to copy).
@@ -27,6 +28,8 @@ A Python-based project generator that creates complete JUCE plugin projects with
 - ✅ Configurable via `generator-configuration.py` and `project-configuration.cmake` for easy customization
 - ✅ Customizable default manufacturer and plugin codes
 - ✅ **Portable workflow**: projects resolve `JUCE_DIR` from the environment (recommended) or common install locations; no per-user paths injected at generation—ideal for GitHub and multi-machine (Windows / macOS / Linux) development
+
+**Generator entry point:** `generate-new-juce-project.py` in the repository root (see **Quick Start** §4).
 
 ## Prerequisites
 
@@ -136,20 +139,20 @@ The generator works out-of-the-box with default values if you skip this step.
 
 1. Open the generator folder (`Cmd+O` / `Ctrl+O`)
 2. Open integrated terminal (`Cmd+J` / `Ctrl+J`)
-3. Run: `python3 generate-new-project.py` (or `./generate-new-project.py` on Linux/macOS, or `python` on Windows)
+3. Run: `python3 generate-new-juce-project.py` (or `./generate-new-juce-project.py` on Linux/macOS, or `python` on Windows)
 4. Follow the interactive prompts
 5. Open the generated project: `cursor .` in the project folder
 
 **From terminal:**
 
 ```bash
-python3 generate-new-project.py   # or ./generate-new-project.py on Linux/macOS
+python3 generate-new-juce-project.py   # or ./generate-new-juce-project.py on Linux/macOS
 # Follow prompts
 cd YourProject
 cursor .  # or 'code .' for VS Code
 ```
 
-**From the file manager (double-click):** On **macOS**, if **Python Launcher** is installed (included with the [python.org macOS installer](https://www.python.org/downloads/macos/)), you can **double-click `generate-new-project.py`** in Finder, answer the prompts in the Terminal window, then open the new project in Cursor or VS Code. On **Windows** and **Linux**, there is no Python Launcher app; double-click behaviour varies—see [Usage → Option C](#option-c-double-click-from-the-file-manager).
+**From the file manager (double-click):** On **macOS**, if **Python Launcher** is installed (included with the [python.org macOS installer](https://www.python.org/downloads/macos/)), you can **double-click `generate-new-juce-project.py`** in Finder, answer the prompts in the Terminal window, then open the new project in Cursor or VS Code. On **Windows** and **Linux**, there is no Python Launcher app; double-click behaviour varies—see [Usage → Option C](#option-c-double-click-from-the-file-manager).
 
 ### 5. Build your project
 
@@ -247,7 +250,7 @@ The generator can be run from an IDE, from the terminal, or from the file manage
 
 1. Open the generator folder in the editor
 2. Open integrated terminal (`Cmd+J` / `Ctrl+J`)
-3. Run: `python3 generate-new-project.py` (or `./generate-new-project.py` on Linux/macOS)
+3. Run: `python3 generate-new-juce-project.py` (or `./generate-new-juce-project.py` on Linux/macOS)
 4. Answer the prompts
 5. Open the generated project: `cursor .` in the project folder (or `code .` for VS Code)
 
@@ -255,7 +258,7 @@ The generator can be run from an IDE, from the terminal, or from the file manage
 
 ```bash
 cd /path/to/Juce-Project-Generator
-python3 generate-new-project.py
+python3 generate-new-juce-project.py
 # Follow prompts
 cd YourProject
 cursor .  # or open manually in IDE
@@ -265,7 +268,7 @@ cursor .  # or open manually in IDE
 
 **macOS — Python Launcher**
 
-**Python Launcher** is included with the official [python.org macOS installer](https://www.python.org/downloads/macos/). **Double-click `generate-new-project.py`** in Finder to run it in a Terminal window, answer the prompts, then open the new project in Cursor or VS Code.
+**Python Launcher** is included with the official [python.org macOS installer](https://www.python.org/downloads/macos/). **Double-click `generate-new-juce-project.py`** in Finder to run it in a Terminal window, answer the prompts, then open the new project in Cursor or VS Code.
 
 **Windows**
 
@@ -273,7 +276,7 @@ There is **no** Python Launcher app (that name is macOS-specific). The [python.o
 
 **Linux**
 
-There is **no** Python Launcher. Behaviour depends on your desktop and file manager: **double-click often opens `.py` files in a text editor** rather than executing them. Prefer the terminal or your IDE, or use a file-manager action such as **Run in terminal** (if available). Ensure `generate-new-project.py` is executable (`chmod +x`) when your environment expects it.
+There is **no** Python Launcher. Behaviour depends on your desktop and file manager: **double-click often opens `.py` files in a text editor** rather than executing them. Prefer the terminal or your IDE, or use a file-manager action such as **Run in terminal** (if available). Ensure `generate-new-juce-project.py` is executable (`chmod +x`) when your environment expects it.
 
 ### Building a generated project
 
@@ -398,7 +401,9 @@ YourProject/
 ├── .vscode/
 │   ├── settings.json
 │   ├── tasks.json
-│   └── launch.json
+│   ├── launch.json
+│   └── extensions.json   ← recommended extensions (CMake Tools, C/C++)
+├── compile_commands.json   ← optional copy at workspace root after configure (gitignored; CMake Tools)
 ├── CMake/
 │   └── CopyVst3Elevated.ps1   ← Windows: used for UAC-elevated copy to Program Files
 ├── CMakeLists.txt
@@ -415,6 +420,10 @@ Build directories are separated by platform and architecture to avoid mixing fil
 ### Red squiggles on `Templates/CMakeLists.txt` in Cursor / VS Code
 
 That file is a **Python template** (`{{…}}`, `{projectName}`, etc.), not a CMake project until you run the generator. The repo **`.vscode/settings.json`** disables CMake configure-on-open and treats `Templates/CMakeLists.txt` as **Plain Text** so CMake Tools does not validate it. Do **not** set `cmake.sourceDirectory` to `Templates/`. To work with CMake, open a **generated** plugin folder.
+
+### “Task has errors” or a red CMake indicator after a successful build
+
+If **CMake Tools** reports **Task has errors** but the build actually finished (plugins produced, exit code 0), it is often a **false positive** from output parsing (for example `cmake -E echo` lines in post-build copy steps). Generated projects omit the generic **`cmake`** parser from **`cmake.enabledOutputParsers`** and avoid duplicate **problem matchers** on shell build tasks. If you still see it, check the **CMake** and **Build** output channels for a real `error:` / `FAILED:` line; otherwise reload the window after a clean configure.
 
 ### Generator uses default values
 
