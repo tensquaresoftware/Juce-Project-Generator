@@ -89,7 +89,6 @@ set(PLUGIN_SOURCES
     # Core
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
-    Source/PluginFactory.cpp
     
     # Add your new source files below
 )

@@ -387,8 +387,7 @@ YourProject/
 │   ├── PluginProcessor.h
 │   ├── PluginProcessor.cpp
 │   ├── PluginEditor.h
-│   ├── PluginEditor.cpp
-│   └── PluginFactory.cpp
+│   └── PluginEditor.cpp
 ├── Builds/
 │   ├── Windows/
 │   ├── macOS/

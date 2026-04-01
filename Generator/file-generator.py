@@ -41,7 +41,6 @@ class FileGenerator:
         self._generateProjectConfig()
         self._generatePluginProcessor()
         self._generatePluginEditor()
-        self._generatePluginFactory()
         self._generateVSCodeSettings()
         self._generateVSCodeExtensions()
         self._generateVSCodeTasks()
@@ -95,10 +94,6 @@ class FileGenerator:
 
     def _generatePluginEditor(self) -> None:
         self._generateSourcePair("PluginEditor", "Source/PluginEditor")
-
-    def _generatePluginFactory(self) -> None:
-        print(f"{Color.GREEN}📝 Generating PluginFactory.cpp...{Color.RESET}")
-        self._generateFromTemplate("Source/PluginFactory.cpp", "Source/PluginFactory.cpp")
 
     def _generateVSCodeSettings(self) -> None:
         print(f"{Color.GREEN}📝 Generating .vscode/settings.json...{Color.RESET}")

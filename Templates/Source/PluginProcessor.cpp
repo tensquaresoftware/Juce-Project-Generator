@@ -118,3 +118,8 @@ void PluginProcessor::setStateInformation(const void* data, int sizeInBytes)
 {{
     juce::ignoreUnused(data, sizeInBytes);
 }}
+
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+{{
+    return new PluginProcessor();
+}}
